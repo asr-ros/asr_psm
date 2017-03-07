@@ -154,5 +154,8 @@ namespace ProbabilisticSceneRecognition {
      * Coordinates the secondary scene object visualizers.
      */
     boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> mVisualizer;
+
+    bool mIsReference;
+    unsigned int mReferenceTo;
   };
 }

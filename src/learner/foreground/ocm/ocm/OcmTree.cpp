@@ -26,6 +26,9 @@ namespace ProbabilisticSceneRecognition {
     
     // Take object observations.
     mObjectSet = pRoot->mObjectSet;
+
+    mIsReference = pRoot->mIsReference;
+    if (mIsReference) mReferenceToID = pRoot->mReferenceTo->mID;
     
     // Create child nodes and copy observations.
     BOOST_FOREACH(boost::shared_ptr<SceneModel::TreeNode> child, pRoot->mChildren)
@@ -107,6 +110,9 @@ namespace ProbabilisticSceneRecognition {
     
     // Add the name of the child.
     subtree.add("<xmlattr>.name", mType);
+
+    // If reference: add ID of referenced
+    if (mIsReference) subtree.add("<xmlattr>.references", mReferenceToID);
     
     // Save the pose.
     mGaussianMixtureModelPosition.save(subtree, "position");
@@ -122,6 +128,8 @@ namespace ProbabilisticSceneRecognition {
   
   unsigned int OcmTree::getNumberOfNodes()
   {
+    if (mIsReference) return 0; // Do not count references as unique nodes
+
     unsigned int result = 1;
     
     BOOST_FOREACH(boost::shared_ptr<OcmTree> child, mChildren)

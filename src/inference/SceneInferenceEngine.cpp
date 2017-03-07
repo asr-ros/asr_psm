@@ -72,14 +72,14 @@ namespace ProbabilisticSceneRecognition {
 	// When not called directly from CLI, we can used a list as input.
       } else {
 	// Check whether parameter loaded is really a list of values.
-	if(mInputBagFilenames.getType() != XmlRpc::XmlRpcValue::TypeArray)
+    if(mInputBagFilenames.getType() != XmlRpc::XmlRpcValue::TypeArray)
 	  throw std::invalid_argument("CLI option \"bag_filenames_list\" not set with an array.");
 	
     // Go through all potential filenames of AsrSceneGraph rosbag files.
-	for(int i = 0; i < mInputBagFilenames.size(); i++)
+    for(int i = 0; i < mInputBagFilenames.size(); i++)
 	{
 	  // Check whether parameter list element is really a filename. 
-	  if(mInputBagFilenames[i].getType() != XmlRpc::XmlRpcValue::TypeString)
+      if(mInputBagFilenames[i].getType() != XmlRpc::XmlRpcValue::TypeString)
 	    throw std::invalid_argument("Bag file path no. " + boost::lexical_cast<std::string>(i) + "is no valid string.");
 	}
       }
@@ -194,11 +194,31 @@ namespace ProbabilisticSceneRecognition {
     std::vector<SceneIdentifier> pSceneList;
     mModel.getSceneListWithProbabilities(pSceneList);
     
+    bool alreadySeen = false;
+    if (mSceneList.empty()) mSceneList = pSceneList;
+    else if (mSceneList.size() == pSceneList.size())
+    {
+        alreadySeen = true;
+        for (unsigned int i = 0; i < mSceneList.size(); i++)
+        {
+            SceneIdentifier oldSI = mSceneList[i];
+            SceneIdentifier newSI = pSceneList[i];
+            if ((oldSI.mDescription != newSI.mDescription) || (oldSI.mType != newSI.mType) || (oldSI.mLikelihood != newSI.mLikelihood) || (oldSI.mPriori != newSI.mPriori))
+            {
+                alreadySeen = false;
+                break;
+            }
+        }
+    }
+
+    if (!alreadySeen)
+    {
+        mSceneList = pSceneList;
     printf("===========================================");
     printf("This are the scene probabilities:\n");
     for(SceneIdentifier i : pSceneList)
       printf(" -> %s (%s): %f (%f)\n", i.mDescription.c_str(), i.mType.c_str(), i.mLikelihood, i.mPriori);
-    
+
     // Show plot of scene probabilities?
     if(showPlot)
     {
@@ -215,7 +235,7 @@ namespace ProbabilisticSceneRecognition {
       mVisGnuplot.updateBarChartValues(currentData);
       mVisGnuplot.sendBarChartToGnuplot(true);
     }
-    
+    }
     /********************************************************************
      * Visualize the scene.
      ********************************************************************/
@@ -226,7 +246,7 @@ namespace ProbabilisticSceneRecognition {
     else
       mVisualizer->drawInInferenceMode();
   }
-  
+
   void SceneInferenceEngine::executeInStackMode()
   {
     // Try to get the bag path. We read it here so it doesn't throw any errors in online mode.
@@ -399,17 +419,18 @@ namespace ProbabilisticSceneRecognition {
       mVisGnuplot.initAnimatedBarChart(barLabels, "Scene Probability", "Probability", std::pair<float, float>(0.0, 1.0));
     }
   }
-    
+
   void SceneInferenceEngine::newObservationCallback(const boost::shared_ptr<asr_msgs::AsrObject>& pObject)
   {
     // Buffers the evidence to keep callback time as short as possible.
     mEvidenceBuffer.push(pObject);
   }
-  
+
   void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Buffers the scene graph to keep callback time as short as possible.
     mSceneGraphBuffer.push(pSceneGraph);
   }
+
   
 }

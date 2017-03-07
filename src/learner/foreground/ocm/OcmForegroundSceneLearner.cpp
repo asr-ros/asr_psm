@@ -69,7 +69,7 @@ namespace ProbabilisticSceneRecognition {
      * We create a scene object learner for every unique object in the scene. Objects ARE ONLY IDENTIFIED BY THEIR TYPE,
      * NOT THEIR INSTANCE. That is because at the time of implementation, no instance information was available!
      *****************************************************************************************************************/
-    
+    std::vector<std::string> types; // FOR TESTING
     // First we iterate over all examples for this scene.
     BOOST_FOREACH(boost::shared_ptr<const asr_msgs::AsrSceneGraph> example, mExamplesList)
     {
@@ -87,7 +87,7 @@ namespace ProbabilisticSceneRecognition {
 	// If no learner was found, create a new one.
 	if(!isExisting) {
 	  mSceneObjectLearners.push_back(boost::shared_ptr<SceneObjectLearner>(new OcmSceneObjectLearner(type)));
-	  
+      types.push_back(type); // FOR TESTING
 	  ROS_INFO_STREAM("Found a new scene object of type '" << type << "' in scene '" << mSceneName << "'.");
 	}
       }
@@ -95,30 +95,133 @@ namespace ProbabilisticSceneRecognition {
     
     ROS_INFO("Building relation tree.");
     
+
+
+    std::vector<boost::shared_ptr<SceneModel::Relation>> relations;
+    unsigned int topologyType = 1;
+    switch(topologyType)
+    {
+    case 0:
+    {
+        // Generate Fully Meshed topology FOR TESTING purposes:
+        for (std::string typeA: types)
+            for (std::string typeB: types)
+                if (typeA != typeB)
+                {
+                    boost::shared_ptr<SceneModel::Relation> newRelation(new SceneModel::Relation(typeA, typeB));
+                    relations.push_back(newRelation);
+                }
+        break;
+    }
+    case 1:
+    {
+        // Generate chain of relations:
+        for (unsigned int i = 0; i < types.size() - 1; i++)
+        {
+            boost::shared_ptr<SceneModel::Relation> newRelation(new SceneModel::Relation(types[i], types[i + 1]));
+            relations.push_back(newRelation);
+        }
+        break;
+    }
+    }
+
     // Create the relation graph.
-    SceneModel::PSMTrainer trainer(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
-    trainer.addSceneGraphMessages(mExamplesList);
+    //SceneModel::PSMTrainer trainer(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
+    //SceneModel::FullyMeshedTrainer trainer;
+    //SceneModel::TopologyTreeTrainer trainer(relations);
+    SceneModel::AbstractTrainer trainer;
+    unsigned int trainerType = 3;
+    switch(trainerType)
+    {
+    case 0:     // Hierarchical tree, like before, without references.
+    {
+        SceneModel::PSMTrainer psmtrainer(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
+        psmtrainer.addSceneGraphMessages(mExamplesList);
+        trainer = psmtrainer;
+        break;
+    }
+    case 1:     // Fully meshed topology -> tree with references.
+    {
+        SceneModel::FullyMeshedTrainer fmtrainer;
+        fmtrainer.addSceneGraphMessages(mExamplesList);
+        trainer = fmtrainer;
+        break;
+    }
+    case 2:     // Transforms relations from above into tree with references.
+    {
+        SceneModel::TopologyTreeTrainer tttrainer(relations);
+        tttrainer.addSceneGraphMessages(mExamplesList);
+        trainer = tttrainer;
+        break;
+    }
+    case 3:     // Generates all connected topologies and transforms them into trees with references. Learns and prints results to console.
+    {
+        SceneModel::TopologyGenerator topgen(types, types.size() * types.size() + 1);   // maximum neighbour count higher than possible number of relations
+        std::vector<boost::shared_ptr<SceneModel::Topology>> topologies = topgen.generateAllConnectedTopologies();
+        for (unsigned int i = 0; i < topologies.size(); i++)
+        {
+            boost::shared_ptr<SceneModel::Topology> topology = topologies[i];
+            std::cout << "Generating tree from topology " << i + 1 << " (" << topology->mIdentifier << "):" << std::endl;
+            SceneModel::TopologyTreeTrainer tttrainer(topology->mRelations);
+            tttrainer.addSceneGraphMessages(mExamplesList);
+            // Do the same as below and print learning process to console
+            tttrainer.loadTrajectoriesAndBuildTree();
+
+            // Print tree.
+            ROS_INFO("PSM trainer successfully generated tree.");
+            std::cout << "------------- TREE:" << std::endl;
+            tttrainer.getTree()->printTreeToConsole(0);
+            std::cout << "---------------------" << std::endl;
+
+            std::cout << "===========================================================" << std::endl;
+            std::cout << "Starting to learn OCM foreground for this tree:" << std::endl;
+            std::cout << "===========================================================" << std::endl;
+
+            // Now just forward all examples for the scene to the scene object learners.
+            for (boost::shared_ptr<SceneObjectLearner> learner: mSceneObjectLearners)
+            {
+                learner->setClusteringParameters(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
+                learner->setVolumeOfWorkspace(mWorkspaceVolume);
+                learner->learn(mExamplesList, tttrainer.getTree());
+            }
+            std::cout << "===========================================================" << std::endl;
+            std::cout << "Learning complete." << std::endl;
+            std::cout << "===========================================================" << std::endl;
+        }
+        std::vector<boost::shared_ptr<SceneModel::Relation>> allcrelations;
+        // for testing: set first topology as the one to be transformed into the tree to be used for the final result
+        if (!topologies.empty()) allcrelations = topologies[0]->mRelations;
+        else allcrelations = relations;     // if none available: default to the relations used above
+        SceneModel::TopologyTreeTrainer tttrainer(allcrelations);
+        tttrainer.addSceneGraphMessages(mExamplesList);
+        trainer = tttrainer;
+        break;
+    }
+    }
+
+    //trainer.addSceneGraphMessages(mExamplesList);
     trainer.loadTrajectoriesAndBuildTree();
-    
+
     // Print tree.
     ROS_INFO("PSM trainer successfully generated tree.");
     std::cout << "------------- TREE:" << std::endl;
     trainer.getTree()->printTreeToConsole(0);
     std::cout << "---------------------" << std::endl;
-    
-    // Now just forward all examples for the scene to the scene object learners. 
+
+    // Now just forward all examples for the scene to the scene object learners.
     BOOST_FOREACH(boost::shared_ptr<SceneObjectLearner> learner, mSceneObjectLearners)
     {
-      learner->setClusteringParameters(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
-      learner->setVolumeOfWorkspace(mWorkspaceVolume);
-      learner->learn(mExamplesList, trainer.getTree());
+        learner->setClusteringParameters(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
+        learner->setVolumeOfWorkspace(mWorkspaceVolume);
+        learner->learn(mExamplesList, trainer.getTree());
     }
-    
+
     // DEPRECATED could be removed!
     // Same problem as in the occurence learner. We don't have tracking, so we don't anything about the frequency of an object appearing.
     // We assume an equal distribution over all objects.
     BOOST_FOREACH(boost::shared_ptr<SceneObjectLearner> learner, mSceneObjectLearners)
-      learner->setPriori(1.0);
+            learner->setPriori(1.0);
+
   }
   
 }

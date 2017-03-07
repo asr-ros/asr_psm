@@ -32,6 +32,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
 #include <trainer/PSMTrainer.h>
+#include <trainer/FullyMeshedTrainer.h>
+#include <trainer/TopologyTreeTrainer.h>
+#include <topology_generator/TopologyGenerator.h>
 
 // Local includes
 #include "learner/foreground/ForegroundSceneLearner.h"

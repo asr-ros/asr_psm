@@ -174,5 +174,7 @@ namespace ProbabilisticSceneRecognition {
      * Class for coordinating the scene visualizers.
      */
     boost::shared_ptr<Visualization::ProbabilisticSceneModelVisualization> mVisualizer;
+    
+    std::vector<SceneIdentifier> mSceneList;
   };
 }

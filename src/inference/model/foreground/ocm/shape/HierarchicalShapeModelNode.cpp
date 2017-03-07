@@ -37,6 +37,15 @@ namespace ProbabilisticSceneRecognition {
   {
     // Load the name of the object that is represented by this node.
     mSceneObject = pPt.get<std::string>("<xmlattr>.name");
+
+    // Try to load the index of the object referenced by this node. If attribute is not found, node is not a reference.
+    boost::optional<std::string> referenceTo = pPt.get_optional<std::string>("<xmlattr>.references");
+    if (referenceTo)
+    {
+        mIsReference = true;
+        mReferenceTo = boost::lexical_cast<unsigned int>(*referenceTo);
+    }
+    else mIsReference = false;
     
     // Load the gaussian mixture distribution associated with this node.
     mGaussianMixtureDistributionPosition->load(pPt, "position");
@@ -135,15 +144,18 @@ namespace ProbabilisticSceneRecognition {
   {
     double result = 1.0;
     
+    unsigned int oldSlotId = pSlotId;
+    if (!mIsReference)
     // Go to the next slot.
     pSlotId++;
+    else pSlotId = mReferenceTo;
     
     // Subtree already cut?
     if(pCut || pAssignments[pSlotId] == 0)
     {
       // Continue moving down the tree to increment the slot id.
       BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
-	child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true);
+    child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true);
     } else {
       // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
       mAbsolutePose.reset(new ResourcesForPsm::Pose(pEvidenceList[pAssignments[pSlotId] - 1]));
@@ -156,14 +168,12 @@ namespace ProbabilisticSceneRecognition {
       double score = scorePos * scoreOri;
       
 //       ROS_DEBUG_STREAM("Pose fitting report for scene object '" << mSceneObject <<"'. Position is " << scorePos << ", orientation is " << scoreOri << ". Total is " << score << ".");
-      
       // Add score to global result.
       result *= score;
       
       // Forward the current score to the visualizer. If this is part of the best hypothesis,
       // it will be used for coloring the link to the parent object.
       mVisualizer->setBestPoseCandidate(score);
-      
       // Ok, now we need to give the pose of this object to the children of this node.
       // Using this information and the evidence they're also able to calculate their probabilities.
       BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
@@ -175,10 +185,12 @@ namespace ProbabilisticSceneRecognition {
 	// The returned probability will be one, so it has no influence at all.
 	result *= child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, false);
       }
-      
       // Forward position of this primary scene object to visualizer.
       mVisualizer->setBestCandidatePose(mAbsolutePose);
     }
+
+    if (mIsReference) pSlotId = oldSlotId;
+
     return result;
   }
   
@@ -225,6 +237,8 @@ namespace ProbabilisticSceneRecognition {
   
   unsigned int HierarchicalShapeModelNode::getNumberOfNodes()
   {
+    if (mIsReference) return 0;     // References not counted as unique nodes
+
     unsigned int result = 1;
     
     // Let the children of this node count their children.

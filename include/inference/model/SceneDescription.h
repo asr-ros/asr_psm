@@ -132,5 +132,11 @@ namespace ProbabilisticSceneRecognition {
      * Coordinates the primary scene object visualization.
      */
     boost::shared_ptr<Visualization::ProbabilisticSceneVisualization> mVisualizer;
+
+    /**
+     * Probability from last run, so that each newly calculated probability only gets shown once.
+     * Set to -2 by default because no probability can have this value, so the first one gets shown in all cases.
+     */
+    double mOldProbability = -2.0;
   };
 }
