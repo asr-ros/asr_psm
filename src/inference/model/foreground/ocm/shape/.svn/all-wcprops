@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 146
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ocm/shape
+END
+GaussianMixtureDistribution.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 178
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ocm/shape/GaussianMixtureDistribution.cpp
+END
+GaussianKernel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 165
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ocm/shape/GaussianKernel.cpp
+END
+ShapeTermEvaluator.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ocm/shape/ShapeTermEvaluator.cpp
+END
+HierarchicalShapeModel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 173
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ocm/shape/HierarchicalShapeModel.cpp
+END
+HierarchicalShapeModelNode.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 177
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.cpp
+END

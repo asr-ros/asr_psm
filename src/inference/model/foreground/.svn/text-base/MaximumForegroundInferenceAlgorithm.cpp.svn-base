@@ -1,0 +1,48 @@
+#include "inference/model/foreground/MaximumForegroundInferenceAlgorithm.h"
+
+namespace ProbabilisticSceneRecognition {
+ 
+  MaximumForegroundInferenceAlgorithm::MaximumForegroundInferenceAlgorithm(boost::shared_ptr<std::vector<boost::shared_ptr<SceneObjectDescription> > >& pSceneObjects)
+  : ForegroundInferenceAlgorithm(pSceneObjects)
+  , mProbability(0.0)
+  {
+  }
+  
+  MaximumForegroundInferenceAlgorithm::~MaximumForegroundInferenceAlgorithm()
+  {
+  }
+  
+  void MaximumForegroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  {
+    ROS_INFO_STREAM("Calculating scene probability.");
+    
+    // Iterate over all scene objects, evaluate them and summarize the results.
+    mProbability = 0.0;
+    for(boost::shared_ptr<SceneObjectDescription> sceneObject : *mSceneObjects)
+    {
+      // Update the scene objects with the new evidence.
+      sceneObject->update(pEvidenceList, pRuntimeLogger);
+      
+      mProbability = std::max(mProbability, sceneObject->getSceneObjectProbability() * sceneObject->getSceneObjectPriori());
+    }
+    
+    // Iterate over all scene objects and mark the best one.
+    bool done = false;
+    for(boost::shared_ptr<SceneObjectDescription> sceneObject : *mSceneObjects)
+    {
+      if(sceneObject->getSceneObjectProbability() * sceneObject->getSceneObjectPriori() == mProbability && !done)
+      {
+	sceneObject->setBestStatus(true);
+	done = true;
+      } else
+	sceneObject->setBestStatus(false);
+    }
+    ROS_INFO_STREAM(" > Maximum scene probability is: '" << mProbability << "'.");
+  }
+  
+  double MaximumForegroundInferenceAlgorithm::getProbability()
+  {
+    return mProbability;
+  }
+  
+}

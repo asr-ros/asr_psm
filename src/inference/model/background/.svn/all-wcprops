@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background
+END
+BackgroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background/BackgroundInferenceAlgorithm.cpp
+END
+SummarizedBackgroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 179
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background/SummarizedBackgroundInferenceAlgorithm.cpp
+END
+BackgroundSceneContent.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 163
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background/BackgroundSceneContent.cpp
+END
+MultipliedBackgroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 179
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background/MultipliedBackgroundInferenceAlgorithm.cpp
+END
+PowerSetBackgroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 177
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background/PowerSetBackgroundInferenceAlgorithm.cpp
+END
+MaximumBackgroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 176
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/background/MaximumBackgroundInferenceAlgorithm.cpp
+END

@@ -1,0 +1,14 @@
+<!-- Please take into account that recognition_for_grasping does not set AsrObject identifier yet. Therefore all measured object locations of the same object type are accumulated into one trajectory even for multiple objects. -->
+<launch>
+  <!-- Start the generator with some dummy parameters. Intermediate functionality has not been tested yet. If using it remind to alter tf chain. -->
+  <node name="scene_graph_generator" pkg="scene_graph_generator" type="scene_graph_generator" output="screen">
+    <!--The name of the frame thw objects should be transformed to. -->
+    <param name="base_frame" value="/PTU"/>
+    <!--Private parameter of scene_graph_generator has to be set when starting this launch file and sets the scene identifier in the generated graph.-->
+    <param name="scene_id" value="$(arg scene_id)"/>
+    <!--This is the frame_id for the frame of the intermediate object. This frame is only going to be defined, if any input rosbag file contains an intermediate object.-->
+    <param name="im_frame_id" value="null"/>
+    <param name="rosbag_source" value=""/>
+    <param name="rosbag_target" value=""/>
+  </node>
+</launch>

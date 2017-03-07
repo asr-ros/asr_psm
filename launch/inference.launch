@@ -1,0 +1,32 @@
+<!-- Launches the inference engine for probabilistic scene recognition. Incoming AsrObject messages are being processed and the results used for scene recognition. -->
+<launch>
+  <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
+    <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
+    <param name="plot" value="true"/>
+    <!-- The topic to get the the AsrObject messages from. -->
+    <param name="object_topic" value="/stereo/objects"/>
+    <!-- The topic to get the the AsrSceneGraph messages from. -->
+    <param name="scene_graph_topic" value="/scene_graphs"/>
+    <!-- Path to the file containing the probabilistic scene model.-->
+    <param name="scene_model_filename" value="/home/SMBAD/gehrung/home/Data/P1V2/psm_models/breakfast.xml"/>
+    <!-- Path to the bag file that contains the learning data. -->
+    <rosparam param="bag_filenames_list">
+    - '/home/SMBAD/gehrung/home/Data/P1V2/scenegraphs/SCENEGRAPH_falsepositive.bag'
+    </rosparam>
+    <!--The name of the frame the objects should be transformed to. -->
+    <param name="base_frame_id" value="/PTU"/>
+    <!-- The visualization is pretty small, this scale factor enlarges it. -->
+    <param name="scale_factor" value="1.0"/>
+    <!-- This factor determines the multiple of the standard deviation. -->
+    <param name="sigma_multiplicator" value="2.0"/>
+    <!-- Set true, to overwrite the visualization of results and plot the target distributions instead. -->
+    <param name="targeting_help" value="false"/>
+    <!-- The timeout for object evidences in milliseconds. -->
+    <param name="evidence_timeout" value="100"/>
+    <!-- The name of the inference algorithm. There are 'powerset', 'summarized', 'multiplied' and 'maximum'. -->
+    <param name="inference_algorithm" value="maximum"/>
+    <!-- The path to the directory that should hold the log files containing the runtimes of the different scenes. -->
+    <!-- To deactivate logging, remove this line from the launch file. Runtime will then be printed to console. -->
+    <!--<param name="runtime_log_path" value="/media/data_ext/data/gehrung/evaluation"/>-->
+  </node>
+</launch>

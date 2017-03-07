@@ -1,0 +1,243 @@
+<model>
+  <scenes>
+    <scene name="background" type="background" priori="0.33">
+      <description objects="4" volume="27.0"/>
+    </scene>
+    <scene name="test1" type="foreground" priori="0.33">
+      <object name="CupPdV" type="hsm" priori="1.0">
+	<slots number="2"/>
+	<shape>
+	  <root volume="27.0">
+	    <child>
+	      <pose>
+		<gmm>
+		  <kernel weight="1" mean="5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="1" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+	      </pose>
+	    </child>
+	  </root>
+	</shape>
+	<appearance>
+	  <mapping>
+	    <map id="1" name="CupPdV"/>
+	    <map id="2" name="Vitalis"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.0 1.0 0.0"/>
+	    <entry values="0.1 0.0 0.9"/>
+	  </table>
+	</appearance>
+	<occlusion>
+	  <table>
+	    <entry values="0.0 1.0"/>
+	    <entry values="0.2 0.8"/>
+	  </table>
+	</occlusion>
+	<hypothesis>
+	  <mapping>
+	    <map id="1" name="CupPdV"/>
+	    <map id="2" name="Vitalis"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.2 0.7 0.1"/>
+	    <entry values="0.7 0.1 0.2"/>
+	  </table>
+	</hypothesis>
+      </object>
+      <object name="Vitalis" type="hsm" priori="1.0">
+	<slots number="2"/>
+	<shape>
+	  <root volume="27.0">
+	    <child>
+	      <pose>
+		<gmm>
+		  <kernel weight="1" mean="-5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="-5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="-5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="1" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+	      </pose>
+	    </child>
+	  </root>
+	</shape>
+	<appearance>
+	  <mapping>
+	    <map id="1" name="Vitalis"/>
+	    <map id="2" name="CupPdV"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.0 1.0 0.0"/>
+	    <entry values="0.1 0.0 0.9"/>
+	  </table>
+	</appearance>
+	<occlusion>
+	  <table>
+	    <entry values="0.0 1.0"/>
+	    <entry values="0.2 0.8"/>
+	  </table>
+	</occlusion>
+	<hypothesis>
+	  <mapping>
+	    <map id="1" name="CupPdV"/>
+	    <map id="2" name="Vitalis"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.2 0.7 0.1"/>
+	    <entry values="0.7 0.1 0.2"/>
+	  </table>
+	</hypothesis>
+      </object>
+    </scene>
+    <scene name="test2" type="foreground" priori="0.33">
+      <object name="CupPdV" type="hsm" priori="1.0">
+	<slots number="2"/>
+	<shape>
+	  <root volume="27.0">
+	    <child>
+	      <pose>
+		<gmm>
+		  <kernel weight="1" mean="5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="1" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+	      </pose>
+	    </child>
+	  </root>
+	</shape>
+	<appearance>
+	  <mapping>
+	    <map id="1" name="CupPdV"/>
+	    <map id="2" name="Plate"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.0 1.0 0.0"/>
+	    <entry values="0.1 0.0 0.9"/>
+	  </table>
+	</appearance>
+	<occlusion>
+	  <table>
+	    <entry values="0.0 1.0"/>
+	    <entry values="0.2 0.8"/>
+	  </table>
+	</occlusion>
+	<hypothesis>
+	  <mapping>
+	    <map id="1" name="CupPdV"/>
+	    <map id="2" name="Vitalis"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.2 0.7 0.1"/>
+	    <entry values="0.7 0.1 0.2"/>
+	  </table>
+	</hypothesis>
+      </object>
+      <object name="Plate" type="hsm" priori="1.0">
+	<slots number="2"/>
+	<shape>
+	  <root volume="27.0">
+	    <child>
+	      <pose>
+		<gmm>
+		  <kernel weight="1" mean="-5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="-5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="-5" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="1" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+		<gmm>
+		  <kernel weight="1" mean="0" covariance="0.25"/>
+		</gmm>
+	      </pose>
+	    </child>
+	  </root>
+	</shape>
+	<appearance>
+	  <mapping>
+	    <map id="1" name="Plate"/>
+	    <map id="2" name="CupPdV"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.0 1.0 0.0"/>
+	    <entry values="0.1 0.0 0.9"/>
+	  </table>
+	</appearance>
+	<occlusion>
+	  <table>
+	    <entry values="0.0 1.0"/>
+	    <entry values="0.2 0.8"/>
+	  </table>
+	</occlusion>
+	<hypothesis>
+	  <mapping>
+	    <map id="1" name="CupPdV"/>
+	    <map id="2" name="Vitalis"/>
+	  </mapping>
+	  <table>
+	    <entry values="0.2 0.7 0.1"/>
+	    <entry values="0.7 0.1 0.2"/>
+	  </table>
+	</hypothesis>
+      </object>
+    </scene>
+  </scenes>
+</model>

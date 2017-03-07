@@ -1,0 +1,16 @@
+<!-- Launches the whole system for probabilistic scene recognition. -->
+<launch>
+
+  <!-- Start FoB. -->
+  <include file="$(flock_of_birds)/launch/flock_of_birds_remote.sh"/>
+
+  <!-- Start tracking of the glove. -->
+  <node name = "ptu_tracker" pkg = "ptu_tracking" type = "ptu_tracking" output = "screen">
+    <param name = "ptu_calibration" value = "false"/>
+    <rosparam file = "$(find ptu_tracking)/launch/tracker_left_glove_settings.yaml"/>
+  </node>
+</launch>
+
+ 
+ 
+ file:///data/joachimgehrung/ilcasRosPkg/trunk/control/ptu_tracking

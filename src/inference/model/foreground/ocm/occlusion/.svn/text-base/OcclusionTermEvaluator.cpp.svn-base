@@ -1,0 +1,80 @@
+#include "inference/model/foreground/ocm/occlusion/OcclusionTermEvaluator.h"
+
+namespace ProbabilisticSceneRecognition {
+ 
+  OcclusionTermEvaluator::OcclusionTermEvaluator()
+  : TermEvaluator()
+  {
+    // Initialize pointer.
+    mTable.reset(new ProbabilityTable());
+  }
+  
+  OcclusionTermEvaluator::~OcclusionTermEvaluator()
+  {
+  }
+  
+  void OcclusionTermEvaluator::load(boost::property_tree::ptree& pPt)
+  {
+    // Load the probability table.
+    mTable.reset(new ProbabilityTable(pPt.get_child("occlusion")));
+  }
+  
+  void OcclusionTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  {
+    // Scene graph is no of interest here.
+  }
+  
+  void OcclusionTermEvaluator::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
+  {
+    // Here is no visualization required.
+  }
+  
+  double OcclusionTermEvaluator::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  {
+    /**************************************************************************************************
+     * Build an entry of the conditional joint distribution P(h) bases on the given hypothesis
+     **************************************************************************************************/  
+    
+    // The occlusion probability based on the given hypothesis.
+    // It will be calculated in this function.
+    double result = 1.0;
+   
+    // If no part was assigned to the root node, we don't need to continue (because the model doesn't allow cases like this).
+    if(pAssignments[0] > 0)
+    {
+      // The number of filled slots.
+      unsigned int numberOfFilledSlots = 0;
+      
+      // Evaluate all slots with associated objects. Multiply their probability to the hypothesis probability.
+      for(unsigned int slot = 0; slot < mTable->getNumberOfRows(); slot++)
+      { 
+	// Get the information whether or not a part is associated with the slot.
+	unsigned int part = std::min(pAssignments[slot], (unsigned int) 1);
+	
+	// Get the probability for the given occlusion status of the given slot.
+	result *= mTable->getProbability(slot, part);
+	
+	// Used to calculate the number of filled slots.
+	if(pAssignments[slot] > 0)
+	  numberOfFilledSlots++;
+      }
+    } else {
+      // A hypothesis without an assigned root object is invalid and will therefore be scored with the impossible event.
+      result = 0.0;
+    }
+    
+    // Return the probability for the given hypothesis.
+    return result;
+  }
+  
+  void OcclusionTermEvaluator::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  {
+    // No visualization to update.
+  }
+  
+  unsigned int OcclusionTermEvaluator::getNumberOfSlots()
+  {
+    return mTable->getNumberOfRows();
+  }
+  
+}

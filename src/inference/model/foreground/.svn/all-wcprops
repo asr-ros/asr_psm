@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground
+END
+SceneObjectDescription.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 163
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/SceneObjectDescription.cpp
+END
+MultipliedForegroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 179
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/MultipliedForegroundInferenceAlgorithm.cpp
+END
+PowerSetForegroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 177
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/PowerSetForegroundInferenceAlgorithm.cpp
+END
+MaximumForegroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 176
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/MaximumForegroundInferenceAlgorithm.cpp
+END
+SceneObjectContent.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 159
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/SceneObjectContent.cpp
+END
+ForegroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ForegroundInferenceAlgorithm.cpp
+END
+SummarizedForegroundInferenceAlgorithm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 179
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/SummarizedForegroundInferenceAlgorithm.cpp
+END
+ForegroundSceneContent.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 163
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/inference/model/foreground/ForegroundSceneContent.cpp
+END

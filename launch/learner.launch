@@ -1,0 +1,47 @@
+<!-- Launches the learner for probabilistic scene models. Incoming AsrScenGraph messages are collected and being used for model learning. -->
+<launch>
+  <node name="js_probabilistic_scene_learner" pkg="asr_psm" type="learner" output="screen">
+    <!-- The list of basg files containing scene graphs that should be used for learning. -->
+    <rosparam param="bag_filenames_list">
+    - '/media/data_ext/data/gehrung/evaluation/P1V1/scenegraphs/SCENEGRAPH_buro.bag'
+    </rosparam>
+    <!-- That's how the scene should be called. -->
+    <param name="scene_model_name" value="advertisement"/>
+    <!-- The type of the scene that should be learned. -->
+    <param name="scene_model_type" value="ocm"/>
+    <!-- That's where the resulting model xml file should be stored. -->
+    <param name="scene_model_directory" value="/media/data_ext/data/gehrung/evaluation/"/>
+    <!-- The volume of the workspace we're working in in qubic meters. -->
+    <param name="workspace_volume" value="8.0"/>
+    <!-- Static break ratio for the tree generation. -->
+    <param name="static_break_ratio" value="1.01"/>
+    <!-- Together ratio for the tree generation. -->
+    <param name="together_ratio" value="0.90"/>
+    <!-- Set true to show intermediate results instead. -->
+    <param name="intermediate_results" value="false"/>
+    <!-- Set true to add timestamps to filename. -->
+    <param name="timestamps" value="false"/>
+    <!-- The minimal number of kernels. -->
+    <param name="kernels_min" value="1"/>
+    <!-- The maximal number of kernels. -->
+    <param name="kernels_max" value="1"/>
+    <!-- The number of runs per kernel. -->
+    <param name="runs_per_kernel" value="1"/>
+    <!-- The number of samples to gereate for every recorded sample. -->
+    <param name="synthetic_samples" value="0"/>
+    <!-- The position interval for the sample relaxiation (in meters). -->
+    <param name="interval_position" value="0.50"/>
+    <!-- The orientation interval for the sample relaxiation (in degrees). -->
+    <param name="interval_orientation" value="10"/>
+    <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
+    <param name="orientation_plot_path" value="UNDEFINED"/>
+    <!-- Max angle deviation for the tree generation. -->
+    <param name="max_angle_deviation" value="45"/>
+    <!--The name of the frame the objects should be transformed to. -->
+    <param name="base_frame_id" value="/PTU"/>
+    <!-- The visualization is pretty small, this scale factor enlarges it. -->
+    <param name="scale_factor" value="1.0"/>
+    <!-- This factor determines the multiple of the standard deviation. -->
+    <param name="sigma_multiplicator" value="3.0"/>
+  </node>
+</launch>

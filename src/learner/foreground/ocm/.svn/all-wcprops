@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm
+END
+SceneObjectLearner.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 155
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/SceneObjectLearner.cpp
+END
+OcmForegroundSceneLearner.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 162
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/OcmForegroundSceneLearner.cpp
+END

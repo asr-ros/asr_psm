@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/ocm
+END
+OcmSceneObjectLearner.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 162
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/ocm/OcmSceneObjectLearner.cpp
+END
+OcmTree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 148
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/ocm/OcmTree.cpp
+END
+OcmModel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 149
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/ocm/OcmModel.cpp
+END
+TermLearner.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 152
+/svn/ilcasRosPkg/!svn/ver/1789/branches/matthiasmayr/catkin_port/trunk/perception/scene_understanding/psm/src/learner/foreground/ocm/ocm/TermLearner.cpp
+END
