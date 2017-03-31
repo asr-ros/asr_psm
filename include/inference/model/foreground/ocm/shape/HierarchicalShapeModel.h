@@ -117,11 +117,12 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The chrildren of this node.
      */
-    std::vector<HierarchicalShapeModelNode> mChildren;
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> mChildren;
     
     /**
      * A copy of the visualizer that coordinates the secondary scene object visualizers.
      */
     boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mVisualizer;
   };
+
 }

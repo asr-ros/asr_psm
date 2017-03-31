@@ -1,0 +1,82 @@
+<!-- Launches the learner for probabilistic scene models. Incoming AsrScenGraph messages are collected and being used for model learning. -->
+<launch>
+  <node name="js_probabilistic_scene_learner_and_inference" pkg="asr_psm" type="learner" output="screen">
+    <!-- The list of basg files containing scene graphs that should be used for learning. -->
+    <rosparam param="bag_filenames_list">
+    - '/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/bagfiles/Laufzeitmessung/simple/scenegraphs/SCENEGRAPH_400_03.bag'
+    </rosparam>
+    <!-- That's how the scene should be called. -->
+    <param name="scene_model_name" value="advertisement_400_03"/>
+    <!-- The type of the scene that should be learned. -->
+    <param name="scene_model_type" value="ocm"/>
+    <!-- That's where the resulting model xml file should be stored. -->
+    <param name="scene_model_directory" value="/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/advertisements/simple"/>
+    <!-- The volume of the workspace we're working in in qubic meters. -->
+    <param name="workspace_volume" value="8.0"/>
+    <!-- Static break ratio for the tree generation. -->
+    <param name="static_break_ratio" value="1.01"/>
+    <!-- Together ratio for the tree generation. -->
+    <param name="together_ratio" value="0.90"/>
+    <!-- Set true to show intermediate results instead. -->
+    <param name="intermediate_results" value="false"/>
+    <!-- Set true to add timestamps to filename. -->
+    <param name="timestamps" value="false"/>
+    <!-- The minimal number of kernels. -->
+    <param name="kernels_min" value="1"/>
+    <!-- The maximal number of kernels. -->
+    <param name="kernels_max" value="1"/>
+    <!-- The number of runs per kernel. -->
+    <param name="runs_per_kernel" value="1"/>
+    <!-- The number of samples to gereate for every recorded sample. -->
+    <param name="synthetic_samples" value="0"/>
+    <!-- The position interval for the sample relaxiation (in meters). -->
+    <param name="interval_position" value="0.50"/>
+    <!-- The orientation interval for the sample relaxiation (in degrees). -->
+    <param name="interval_orientation" value="10"/>
+    <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
+    <!--param name="orientation_plot_path" value="/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/plots"/-->
+    <param name="orientation_plot_path" value="UNDEFINED"/>
+    <!-- Max angle deviation for the tree generation. -->
+    <param name="max_angle_deviation" value="45"/>
+    <!--The name of the frame the objects should be transformed to. -->
+    <param name="base_frame_id" value="/PTU"/>
+    <!-- The visualization is pretty small, this scale factor enlarges it. -->
+    <param name="scale_factor" value="1.0"/>
+    <!-- This factor determines the multiple of the standard deviation. -->
+    <param name="sigma_multiplicator" value="3.0"/>
+    
+    <!-- INFERENCE PARAMETERS: -->
+    <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
+    <param name="plot" value="true"/>
+    <!-- The topic to get the the AsrObject messages from. -->
+    <param name="object_topic" value="/stereo/objects"/>
+    <!-- The topic to get the the AsrSceneGraph messages from. -->
+    <param name="scene_graph_topic" value="/scene_graphs"/>
+    <!-- Path to the file containing the probabilistic scene model.-->
+    <!-- technically shared with learner, since this filename is just severeal of the learner parameters combined. -->
+    <param name="scene_model_filename" value="/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/advertisements/simple/advertisement_400_03.xml"/>
+    <!-- Path to the bag file that contains the learning data. -->
+    <!-- rosparam param="bag_filenames_list" shared with learner. -->
+    <!--The name of the frame the objects should be transformed to. -->
+    <!--param name="base_frame_id" value="/PTU"/ shared with learner. -->
+    <!-- The visualization is pretty small, this scale factor enlarges it. -->
+    <!-- param name="scale_factor" value="1.0"/ shared with learner. -->
+    <!-- This factor determines the multiple of the standard deviation. -->
+    <!-- param name="sigma_multiplicator" value="2.0"/ shared with learner, but with different values. -->
+    <!-- Set true, to overwrite the visualization of results and plot the target distributions instead. -->
+    <param name="targeting_help" value="false"/>
+    <!-- The timeout for object evidences in milliseconds. -->
+    <param name="evidence_timeout" value="100"/>
+    <!-- The name of the inference algorithm. There are 'powerset', 'summarized', 'multiplied' and 'maximum'. -->
+    <!-- Used in OcmForegroundSceneLearner.cpp -->
+    <param name="inference_algorithm" value="maximum"/>
+    <!-- The path to the directory that should hold the log files containing the runtimes of the different scenes. -->
+    <!-- To deactivate logging, remove this line from the launch file. Runtime will then be printed to console. -->
+    <!--<param name="runtime_log_path" value="/media/data_ext/data/gehrung/evaluation"/>-->
+    
+    <!-- The type of the relation tree trainer. There are "0" - Hierarchical tree with agglomerative clustering (old method), "1" - fully meshed topology, "2" - combinatorial optimization. -->
+    <param name="relation_tree_trainer_type" value="2"/>
+    <!--Load some parameters for the combinatorial optimization trainer. -->
+    <rosparam file="$(find asr_psm)/launch/combinatorial_optimization.yaml"/>
+  </node>
+</launch>

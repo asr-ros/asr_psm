@@ -27,10 +27,10 @@ namespace ProbabilisticSceneRecognition {
   {
   }
   
-  void GaussianMixtureModel::addKernel(const GaussianKernel& pKernel)
+  void GaussianMixtureModel::addKernel(const PSMLearner::GaussianKernel& pKernel)
   {
     // Check, if a kernel of this type already exists.
-    for(GaussianKernel kernel : mKernels)
+    for(PSMLearner::GaussianKernel kernel : mKernels)
       if(kernel.compare(pKernel))
     return;
     
@@ -58,7 +58,7 @@ namespace ProbabilisticSceneRecognition {
   
   void GaussianMixtureModel::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> mVisualizer)
   {
-    for(GaussianKernel kernel : mKernels)
+    for(PSMLearner::GaussianKernel kernel : mKernels)
       kernel.initializeVisualizer(mVisualizer);
   }
   
@@ -67,14 +67,14 @@ namespace ProbabilisticSceneRecognition {
     // Create a seperate tree for this gmm.
     boost::property_tree::ptree subtree;
     
-    BOOST_FOREACH(GaussianKernel kernel, mKernels)
+    BOOST_FOREACH(PSMLearner::GaussianKernel kernel, mKernels)
       kernel.save(subtree);
       
     // Add subtree to main tree.
     pPt.add_child(pNode, subtree);
   }
 
-  std::vector<GaussianKernel> GaussianMixtureModel::getKernels() const
+  std::vector<PSMLearner::GaussianKernel> GaussianMixtureModel::getKernels() const
   {
       return mKernels;
   }

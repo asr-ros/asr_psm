@@ -31,6 +31,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
+namespace PSMLearner {
+
   /**
    * This class is a wrapper for a single gaussian kernel.
    *
@@ -89,4 +91,5 @@ namespace ProbabilisticSceneRecognition {
      */
     boost::shared_ptr<Eigen::MatrixXd> mCovariance;
   };
+}
 }

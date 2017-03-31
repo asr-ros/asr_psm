@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
+Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -94,43 +94,18 @@ namespace ProbabilisticSceneRecognition {
     }
     
     ROS_INFO("Building relation tree.");
-    
 
-
-    std::vector<boost::shared_ptr<SceneModel::Relation>> relations;
-    unsigned int topologyType = 1;
-    switch(topologyType)
+    ros::NodeHandle nodeHandle("~");
+    int trainerType;
+    // Try to get the type of the relation tree trainer.
+    if(!nodeHandle.getParam("relation_tree_trainer_type", trainerType))
     {
-    case 0:
-    {
-        // Generate Fully Meshed topology FOR TESTING purposes:
-        for (std::string typeA: types)
-            for (std::string typeB: types)
-                if (typeA != typeB)
-                {
-                    boost::shared_ptr<SceneModel::Relation> newRelation(new SceneModel::Relation(typeA, typeB));
-                    relations.push_back(newRelation);
-                }
-        break;
-    }
-    case 1:
-    {
-        // Generate chain of relations:
-        for (unsigned int i = 0; i < types.size() - 1; i++)
-        {
-            boost::shared_ptr<SceneModel::Relation> newRelation(new SceneModel::Relation(types[i], types[i + 1]));
-            relations.push_back(newRelation);
-        }
-        break;
-    }
+       ROS_INFO_STREAM("Could not find ROS parameter relation_tree_trainer_type. Using standard method of hierarchical clustering (value=\"0\").");
+       trainerType = 0;     // for compatability with old launch files.
     }
 
     // Create the relation graph.
-    //SceneModel::PSMTrainer trainer(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
-    //SceneModel::FullyMeshedTrainer trainer;
-    //SceneModel::TopologyTreeTrainer trainer(relations);
     SceneModel::AbstractTrainer trainer;
-    unsigned int trainerType = 3;
     switch(trainerType)
     {
     case 0:     // Hierarchical tree, like before, without references.
@@ -147,56 +122,34 @@ namespace ProbabilisticSceneRecognition {
         trainer = fmtrainer;
         break;
     }
-    case 2:     // Transforms relations from above into tree with references.
+    case 2:     // combinatorial optimization
     {
-        SceneModel::TopologyTreeTrainer tttrainer(relations);
-        tttrainer.addSceneGraphMessages(mExamplesList);
-        trainer = tttrainer;
-        break;
-    }
-    case 3:     // Generates all connected topologies and transforms them into trees with references. Learns and prints results to console.
-    {
-        SceneModel::TopologyGenerator topgen(types, types.size() * types.size() + 1);   // maximum neighbour count higher than possible number of relations
-        std::vector<boost::shared_ptr<SceneModel::Topology>> topologies = topgen.generateAllConnectedTopologies();
-        for (unsigned int i = 0; i < topologies.size(); i++)
+        // Preparing learners for use in combinatorial optimization:
+        for (boost::shared_ptr<SceneObjectLearner> learner: mSceneObjectLearners)
         {
-            boost::shared_ptr<SceneModel::Topology> topology = topologies[i];
-            std::cout << "Generating tree from topology " << i + 1 << " (" << topology->mIdentifier << "):" << std::endl;
-            SceneModel::TopologyTreeTrainer tttrainer(topology->mRelations);
-            tttrainer.addSceneGraphMessages(mExamplesList);
-            // Do the same as below and print learning process to console
-            tttrainer.loadTrajectoriesAndBuildTree();
-
-            // Print tree.
-            ROS_INFO("PSM trainer successfully generated tree.");
-            std::cout << "------------- TREE:" << std::endl;
-            tttrainer.getTree()->printTreeToConsole(0);
-            std::cout << "---------------------" << std::endl;
-
-            std::cout << "===========================================================" << std::endl;
-            std::cout << "Starting to learn OCM foreground for this tree:" << std::endl;
-            std::cout << "===========================================================" << std::endl;
-
-            // Now just forward all examples for the scene to the scene object learners.
-            for (boost::shared_ptr<SceneObjectLearner> learner: mSceneObjectLearners)
-            {
-                learner->setClusteringParameters(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
-                learner->setVolumeOfWorkspace(mWorkspaceVolume);
-                learner->learn(mExamplesList, tttrainer.getTree());
-            }
-            std::cout << "===========================================================" << std::endl;
-            std::cout << "Learning complete." << std::endl;
-            std::cout << "===========================================================" << std::endl;
+            learner->setClusteringParameters(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
+            learner->setVolumeOfWorkspace(mWorkspaceVolume);
         }
-        std::vector<boost::shared_ptr<SceneModel::Relation>> allcrelations;
-        // for testing: set first topology as the one to be transformed into the tree to be used for the final result
-        if (!topologies.empty()) allcrelations = topologies[0]->mRelations;
-        else allcrelations = relations;     // if none available: default to the relations used above
-        SceneModel::TopologyTreeTrainer tttrainer(allcrelations);
-        tttrainer.addSceneGraphMessages(mExamplesList);
-        trainer = tttrainer;
+
+        boost::shared_ptr<CombinatorialTrainer> combinatorialTrainer(new CombinatorialTrainer(mSceneObjectLearners, types, mExamplesList));
+
+        // set the optimized topology as the one to be transformed into the tree to be used for the final result
+        boost::shared_ptr<SceneModel::Topology> optimizedTopology = combinatorialTrainer->runOptimization();
+
+        if (!optimizedTopology)
+            throw std::runtime_error("no valid topology was found.");
+        if (!optimizedTopology->mTree)
+            throw std::runtime_error("the topology selected through combinatorial optimization has no tree associated with it.");
+
+        boost::shared_ptr<SceneModel::TreeNode> optimizedTree = optimizedTopology->mTree;
+        while(optimizedTree->mParent)   // after rearrangement in learning, the pointer points to an inner node (through parent pointers, the whole tree is still intact)
+            optimizedTree = optimizedTree->mParent;
+        SceneModel::FixedTreeTrainer fttrainer(optimizedTree);
+        trainer = fttrainer;
+
         break;
     }
+    default: throw std::runtime_error("Trainer type " + boost::lexical_cast<std::string>(trainerType) + " is invalid. Valid types are 0-2.");
     }
 
     //trainer.addSceneGraphMessages(mExamplesList);

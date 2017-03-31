@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/foreground/ocm/shape/GaussianKernel.h"
 
 namespace ProbabilisticSceneRecognition {
+
+namespace PSMInference {
  
   GaussianKernel::GaussianKernel(unsigned int pDimension, boost::property_tree::ptree& pPt)
   : mDimension(pDimension)
@@ -76,4 +78,6 @@ namespace ProbabilisticSceneRecognition {
     return mWeight;
   }
   
+}
+
 }

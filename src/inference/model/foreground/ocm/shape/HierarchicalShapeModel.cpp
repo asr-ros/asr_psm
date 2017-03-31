@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
+Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -31,13 +31,51 @@ namespace ProbabilisticSceneRecognition {
   {
     // Load the volume of the space we're working in. It is required for the uniform distribution.
     mWorkspaceVolume = pPt.get<double>("shape.root.<xmlattr>.volume");
-    
+
+    unsigned int id = 1;
+    // this, the root, implicitly has id 0.
+
     // Load the childs of the root node.
-    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pPt.get_child("shape.root"))
+    for(boost::property_tree::ptree::value_type &v: pPt.get_child("shape.root"))
     {
       // Only access the 'child' child nodes.
       if(!std::strcmp(v.first.c_str(), "child"))
-	mChildren.push_back(HierarchicalShapeModelNode(v.second));
+    mChildren.push_back(boost::shared_ptr<HierarchicalShapeModelNode>(new HierarchicalShapeModelNode(v.second, id)));
+    }
+
+    // Assign references based on the IDs:
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> nodesToVisit;
+    for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
+        nodesToVisit.push_back(child);
+
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> references;
+    std::map<unsigned int, boost::shared_ptr<HierarchicalShapeModelNode>> nonReferencesById;
+    while(!nodesToVisit.empty())
+    {
+        // pop first node:
+        boost::shared_ptr<HierarchicalShapeModelNode> currentNode = nodesToVisit[0];
+        nodesToVisit.erase(nodesToVisit.begin());
+
+        unsigned int referenceTo;
+        bool isReference = currentNode->isReference(referenceTo);
+        if (!isReference)
+        {
+            nonReferencesById[referenceTo] = currentNode;
+            for (boost::shared_ptr<HierarchicalShapeModelNode> child: currentNode->getChildren())
+                nodesToVisit.push_back(child);
+        }
+        else
+        {
+            references.push_back(currentNode);
+        }
+    }
+
+    for (boost::shared_ptr<HierarchicalShapeModelNode> currentReference: references)
+    {
+        unsigned int referenceTo;
+        if (!currentReference->isReference(referenceTo)) throw std::runtime_error("Trying to make a non-reference node a reference.");
+
+        currentReference->setReferencedNode(nonReferencesById[referenceTo]);
     }
   }
   
@@ -61,7 +99,7 @@ namespace ProbabilisticSceneRecognition {
 	
 	// Forward scene graph to shape nodes.
 	for(unsigned int i = 0; i < mChildren.size(); i++)
-	  mChildren[i].handleSceneGraph(node, pSceneGraph);
+      mChildren[i]->handleSceneGraph(node, pSceneGraph);
 	
     // There's only one AsrNode per object in a single scene graph.
 	break;
@@ -76,11 +114,13 @@ namespace ProbabilisticSceneRecognition {
     
     // Forward visualizer to the child nodes representing the secondary scene objects.
     for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].initializeVisualizer(mSuperior);
+      mChildren[i]->initializeVisualizer(mSuperior);
   }
   
   double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
+      for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren) child->resetVisit();
+
     double result = 1.0;
 
     // If no part was assigned to the root node, we don't need to continue (because the model doesn't allow cases like this).
@@ -102,14 +142,14 @@ namespace ProbabilisticSceneRecognition {
       result *= 1.0 / (mWorkspaceVolume * 2.0 * pow(M_PI, 2.0));
       
       // Iterate over all children, assign the given evidence to them and evaluate
-      BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
+      for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
       {	
 	// Update the transformation from world coordinates to parent coordinates.
-	child.setAbsoluteParentPose(mAbsolutePose);
+    child->setAbsoluteParentPose(mAbsolutePose);
 	
 	// If zero-object was assigned to child, continue iterating down the tree to set the right slot id,
 	// but don't use the probabilities based on the occluded subtree.
-	result *= child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0);
+    result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0);
       }
       
       // Forward position of this primary scene object to visualizer.
@@ -140,13 +180,13 @@ namespace ProbabilisticSceneRecognition {
 	
 	// Forward the pose of this node as parent node pose to the child nodes.
 	for(unsigned int i = 0; i < mChildren.size(); i++)
-	  mChildren[i].setAbsoluteParentPose(mAbsolutePose);
+      mChildren[i]->setAbsoluteParentPose(mAbsolutePose);
       }
     }
     
     // Forward visualization command to the child nodes representing the secondary scene objects.
     for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].visualize(pEvidenceList);
+      mChildren[i]->visualize(pEvidenceList);
   }
   
   unsigned int HierarchicalShapeModel::getNumberOfNodes()
@@ -154,9 +194,9 @@ namespace ProbabilisticSceneRecognition {
     unsigned int result = 1;
     
     // Let the children of this node count their children.
-    BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
+    for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
     {
-      result += child.getNumberOfNodes();
+      result += child->getNumberOfNodes();
     }
     return result;
   }

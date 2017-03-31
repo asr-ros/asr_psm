@@ -46,7 +46,7 @@ namespace ProbabilisticSceneRecognition {
     
     // This factor determines the radii of the covariance ellipse.
     double sigmaMultiplicator;
-    
+
     // Try to get the clearance for plotting the scene probabilties.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/plot", showPlot))
       throw std::runtime_error("Please specify parameter " + std::string("plot") + " when starting this node.");
@@ -104,7 +104,7 @@ namespace ProbabilisticSceneRecognition {
     // Try to get the name of the inference algorithm.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/inference_algorithm", inferenceAlgorithm))
        throw std::runtime_error("Please specify parameter " + std::string("inference_algorithm") + " when starting this node.");
-    
+
     // Initialize the transformations of objects into the given frame.
     mObjectTransform.setBaseFrame(baseFrameId);
     
@@ -122,6 +122,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Read the learning data from bag file.
     readLearnerInputBags(mInputBagFilenames);
+
   }
   
   SceneInferenceEngine::~SceneInferenceEngine()
@@ -193,27 +194,7 @@ namespace ProbabilisticSceneRecognition {
     // Get the results and show them.
     std::vector<SceneIdentifier> pSceneList;
     mModel.getSceneListWithProbabilities(pSceneList);
-    
-    bool alreadySeen = false;
-    if (mSceneList.empty()) mSceneList = pSceneList;
-    else if (mSceneList.size() == pSceneList.size())
-    {
-        alreadySeen = true;
-        for (unsigned int i = 0; i < mSceneList.size(); i++)
-        {
-            SceneIdentifier oldSI = mSceneList[i];
-            SceneIdentifier newSI = pSceneList[i];
-            if ((oldSI.mDescription != newSI.mDescription) || (oldSI.mType != newSI.mType) || (oldSI.mLikelihood != newSI.mLikelihood) || (oldSI.mPriori != newSI.mPriori))
-            {
-                alreadySeen = false;
-                break;
-            }
-        }
-    }
 
-    if (!alreadySeen)
-    {
-        mSceneList = pSceneList;
     printf("===========================================");
     printf("This are the scene probabilities:\n");
     for(SceneIdentifier i : pSceneList)
@@ -235,7 +216,7 @@ namespace ProbabilisticSceneRecognition {
       mVisGnuplot.updateBarChartValues(currentData);
       mVisGnuplot.sendBarChartToGnuplot(true);
     }
-    }
+
     /********************************************************************
      * Visualize the scene.
      ********************************************************************/

@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -49,7 +49,7 @@ namespace ProbabilisticSceneRecognition {
     * 
     * @param pPt Data structure for performing XML operations.
     */
-    HierarchicalShapeModelNode(boost::property_tree::ptree& pPt);
+    HierarchicalShapeModelNode(boost::property_tree::ptree& pPt, unsigned int& pID);
     
     /**
     * Destructor.
@@ -61,7 +61,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pPt Data structure for performing XML operations.
      */
-    void load(boost::property_tree::ptree& pPt);
+    void load(boost::property_tree::ptree& pPt, unsigned int& pID);
     
     /**
      * Integrate the learning data in form of a AsrSceneGraph into the model.
@@ -107,7 +107,31 @@ namespace ProbabilisticSceneRecognition {
      * Return the number of nodes in the OCM.
      */
     unsigned int getNumberOfNodes();
-    
+
+    /**
+     * Return whether the node is a reference to another.
+     * @param pReferenceTo  the ID of the node this is a reference to or its own ID (non-reference nodes reference themselves).
+     * @return whether the node is a reference to another.
+     */
+    bool isReference(unsigned int& pReferenceTo);
+
+    /**
+     * Get the node's child nodes.
+     * @return the node's children.
+     */
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> getChildren();
+
+    /**
+     * set the actually referenced node.
+     * @param pReferencedNode   the node that this one actually references, if it is a reference.
+     */
+    void setReferencedNode(boost::shared_ptr<HierarchicalShapeModelNode> pReferencedNode);
+
+    /**
+     * set the node to unvisited.
+     */
+    void resetVisit();
+
   private:
     
     /**
@@ -148,14 +172,34 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The chrildren of this node.
      */
-    std::vector<HierarchicalShapeModelNode> mChildren;
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> mChildren;
     
     /**
      * Coordinates the secondary scene object visualizers.
      */
     boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> mVisualizer;
 
+    /**
+     * Whether this node is only a reference to another one.
+     */
     bool mIsReference;
+    /**
+     * The ID of the node this one is a reference to, if it is.
+     * If node is not a reference, ID of the node, which the references to it use
+     * (a non-reference references itself)
+     */
     unsigned int mReferenceTo;
+
+    /**
+     * The actual node this one is a reference to, if it is, null otherwise.
+     */
+    boost::shared_ptr<HierarchicalShapeModelNode> mReferencedNode;
+
+    /**
+     * Whether this node has already calculated its probability before.
+     */
+    bool mWasVisited;
+
   };
+
 }

@@ -1,0 +1,25 @@
+#Parameters for combinatorial optimization
+false_positives_weight: 5
+avg_recognition_time_weight: 1
+test_set_count: 10
+cost_function: WeightedSum                      #no other types available
+neighbourhood_function: TopologyManager         #no other types available
+optimization_algorithm: HillClimbing            #from "HillClimbing", "RecordHunt", "SimulatedAnnealing"
+starting_topologies_type: Random                #from "FastestStar" (for testing purposes), "Random"
+number_of_starting_topologies: 2
+xml_output: file                                #from "none", "screen", "file"
+xml_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/  #optional if xml_output is not set to "file"
+remove_relations: true
+swap_relations: true
+recognition_threshold: 0                        #currently gets overwritten by the program for testing purposes
+maximum_neighbour_count: 100                   
+object_missing_in_test_set_probability: 0       #set to <= 0 to have all objects appear in each test set
+hill_climbing_random_walk_probability: 0
+record_hunt_initial_acceptable_cost_delta: 0.02
+record_hunt_cost_delta_decrease_factor: 0.01
+simulated_annealing_start_temperature: 1
+simulated_annealing_end_temperature: 0.005
+simulated_annealing_repetitions_before_update: 8
+simulated_annealing_temperature_factor: 0.85
+optimization_history_output: file               #from "none", "screen", "file"
+optimization_history_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/ #optional if optimization_history_output is not set to "file"

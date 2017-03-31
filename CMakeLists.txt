@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   asr_psm_visualizations
   asr_relation_graph_generator
   asr_resources_for_psm
+  asr_lib_ism
 )
 
 find_package(cmake_modules)
@@ -97,10 +98,18 @@ add_executable(learner src/learner.cpp
 			     
 			     src/learner/foreground/ocm/ocm/occlusion/OcclusionTermLearner.cpp
 			     
-			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp src/helper/PlotHelper.cpp)
+			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
+			     
+			     src/learner/foreground/ocm/combinatorial_optimization/WeightedSum.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp)
 target_link_libraries(learner
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  psm_inference
+  ism
 )
 
 add_executable(learner_batch src/learner_batch.cpp
@@ -118,10 +127,18 @@ add_executable(learner_batch src/learner_batch.cpp
 			     
 			     src/learner/foreground/ocm/ocm/occlusion/OcclusionTermLearner.cpp
 			     
-			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp src/helper/PlotHelper.cpp)
+			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
+			     
+			     src/learner/foreground/ocm/combinatorial_optimization/WeightedSum.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp)
 target_link_libraries(learner_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  psm_inference
+  ism
 )
 
 add_executable(inference src/inference.cpp

@@ -37,6 +37,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "helper/SerializationHelper.h"
 
 namespace ProbabilisticSceneRecognition {
+
+namespace PSMInference {
   
   /**
    * This class implements a single 6D gaussian kernel. It stores a weight, mean vector and covariance matrix.
@@ -131,4 +133,5 @@ namespace ProbabilisticSceneRecognition {
      */
     boost::shared_ptr<Eigen::Matrix3d> mPositionCovariance;
   };
+}
 }
