@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
+Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -27,38 +27,21 @@ namespace ProbabilisticSceneRecognition {
   {
   }
 
-  void MathHelper::drawNormal(const Eigen::VectorXd& mean, const Eigen::MatrixXd& cov, unsigned int amount, std::vector<Eigen::VectorXd>& samples)
+  void MathHelper::copy(plFloatVector& pFrom, boost::shared_ptr<Eigen::VectorXd>& pTo)
   {
-      Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(cov);
-      Eigen::MatrixXd t = solver.eigenvectors() * solver.eigenvalues().cwiseSqrt().asDiagonal();
-      std::default_random_engine generator(0);  // set fixed seed so the same data gets plotted the same way every time
-      std::normal_distribution<double> distr;
-      samples.resize(amount);
-      for (unsigned int i = 0; i < amount; i++) {
-          Eigen::VectorXd randomvect(mean.size());
-          for (unsigned int i = 0; i < randomvect.size(); i++) randomvect[i] = distr(generator);
-          samples.at(i) = mean + t * randomvect;
-      }
+    pTo.reset(new Eigen::VectorXd(pFrom.size())); 
+    
+    for(unsigned int i = 0; i < pFrom.size(); i++)
+      (*pTo)[i] = pFrom[i];
   }
-
-  void MathHelper::calcHistogram(double lower, double upper, unsigned int buckets, std::vector<double> in, std::vector<std::pair<double, double>>& out)
+  
+  void MathHelper::copy(plFloatMatrix& pFrom, boost::shared_ptr<Eigen::MatrixXd>& pTo)
   {
-      out.resize(buckets);
-      double range = std::abs(lower) + std::abs(upper);
-      double bucketsize = range / buckets;
-
-      for (unsigned int i = 0; i < buckets; i++)
-      {
-          out.at(i).first = lower + (i * bucketsize);
-          out.at(i).second = 0;
-      }
-      for (double sample: in)
-      {
-          if (lower <= sample && sample <= upper) {
-              unsigned int bucket = ((double) (sample - lower)) / bucketsize;
-              if (0 <= bucket && bucket < buckets) out.at(bucket).second++;
-          }
-      }
+    pTo.reset(new Eigen::MatrixXd(pFrom.rows(), pFrom.cols())); 
+    
+    for(unsigned int y = 0; y < pFrom.rows(); y++)
+      for(unsigned int x = 0; x < pFrom.cols(); x++)
+      (*pTo)(y, x) = pFrom.at(y, x);
   }
   
 }

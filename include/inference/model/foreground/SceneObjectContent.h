@@ -25,10 +25,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdObject.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticPrimarySceneObjectVisualization.h>
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -70,14 +72,14 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    virtual void update(std::vector<asr_msgs::AsrObject> pEvidenceList) = 0;
+    virtual void update(std::vector<ISM::Object> pEvidenceList) = 0;
     
     /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
+     * Integrate the learning data in form of a PbdSceneGraph into the model.
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    virtual void update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph) = 0;
+    virtual void update(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph) = 0;
     
     /**
      * Returns the probability for the scene object modelled by this class.

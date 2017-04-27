@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
+Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,26 +24,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <chrono>
 
 // Package includes
+#include <pl.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <asr_msgs/AsrObject.h>
+#include <pbd_msgs/PbdObject.h>
 
 #include <Pose.h>
-
-#include <opencv2/opencv.hpp>
 
 // Local includes.
 #include "learner/foreground/ocm/ocm/shape/GaussianMixtureModel.h"
 
 #include "helper/MathHelper.h"
-#include "helper/PlotHelper.h"
 
 namespace ProbabilisticSceneRecognition {
-   
+  
+  /**
+   * Path to the temporary file used b ythe GMM leaner. It stores the learning data in CSV format.
+   */
+  static const std::string TEMP_FILE ="/tmp/gmm_learner.csv";
+  
   /**
    * This is a learner for gaussian mixture models (GMMs). It uses an EM algorithm to learn the mixture distribution. A maximumum likelihood process is used, so different numbers of kernels up to a maximal number are tried. The GMM with the highest likelihood is taken.
    * 
@@ -109,30 +113,20 @@ namespace ProbabilisticSceneRecognition {
     
     /**
      * Runs the EM algorithm for a given number of kernels.
-     * Uses OpenCV.
-     *
-     * @param data working data.
+     * 
+     * @param file Path to a temporary file used to store working data.
      * @param nc Number of kernels to do the EM algorithm for.
      * @param nparams Number of parameters as determined by the EM algorithm.
      * @param llk Log likelihood of the model evaluated under the learning data.
      * @param bic Bayesian Information Criterion score of the model evaluated under the learning data.
      * @param model Gaussian mixture model in form of a joind distribution.
-     * @return whether EM training was successfull.
      */
-    bool runExpectationMaximization(const std::vector<std::vector<double>> data,
-                    unsigned int nc,
-                    unsigned int& nparams,
-                    double& llk,
-                    double& bic,
-                    GaussianMixtureModel& model);
-
-    /**
-     * Writes the data to the gnuplot file with the given name and displays the gnuplot as a histogram
-     * @param filename  Name of the gnuplot file to write into.
-     * @param data      Data to be written. Interpreted as buckets over [-pi,pi].
-     * @param rotaxis   Name of the axis around which the orientation is given.
-     */
-    void plotOrientationHistogram(const std::string& filename, const std::vector<std::pair<double, double>> data, const std::string& rotaxis);
+    void runExpectationMaximization(const std::string& file,
+				    unsigned int nc,
+				    unsigned int& nparams,
+				    plFloat& llk,
+				    plFloat& bic,
+				    plJointDistribution& model);
     
     /**
      * The number of dimensions of the learning samples.
@@ -171,8 +165,8 @@ namespace ProbabilisticSceneRecognition {
     std::vector<std::vector<double> > mData;
     
     /**
-     * The learned GMM with the best BIC score from OpenCV.
+     * The learned GMM with the best BIC score.
      */
-    GaussianMixtureModel mBestGMM;
+    plJointDistribution mBestGMM;
   };
 }

@@ -22,15 +22,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 
 /**
- * asr_msgs namespace. ROS messages in this package are in that namespace by definition. Consequently helper code should be in it, too.
+ * pbd_msgs namespace. ROS messages in this package are in that namespace by definition. Consequently helper code should be in it, too.
  *
  * @author Pascal Meissner
  * @version See SVN
  */
-namespace asr_msgs {
+namespace pbd_msgs {
 
   /**
-   * topics namespace. Contains definitions of string valued identifiers for ros topics used to transfer information between the ros nodes in the asr toolchain.
+   * topics namespace. Contains definitions of string valued identifiers for ros topics used to transfer information between the ros nodes in the pbd toolchain.
    *
    * @author Pascal Meissner
    * @version See SVN

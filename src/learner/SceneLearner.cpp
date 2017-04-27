@@ -24,17 +24,24 @@ namespace ProbabilisticSceneRecognition {
   {
     
   }
-  
+
+  SceneLearner::SceneLearner()
+      : mSceneName()
+  {
+  }
+
   SceneLearner::~SceneLearner()
   {
   }
   
-  bool SceneLearner::isExampleForScene(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
+  bool SceneLearner::isExampleForScene(const ISM::ObjectSetPtr pExample)
   {
-    return mSceneName.compare(pExample->identifier) == 0;
+    //return true;
+      return (mSceneName.compare(pExample->mIdentifier) == 0);
+
   }
   
-  void SceneLearner::addExampleToScene(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
+  void SceneLearner::addExampleToScene(const ISM::ObjectSetPtr pExample)
   {
     mExamplesList.push_back(pExample);
   }

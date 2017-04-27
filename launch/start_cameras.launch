@@ -1,5 +1,5 @@
 <!-- Launches the whole system for probabilistic scene recognition. -->
 <launch>
-  <!-- Start Asr guppy head. -->
-  <include file="$(find asr_resources_for_vision)/launch/image_acquisition_pipelines/trunk/guppy_head_full_pbd.launch"/>
+  <!-- Start PbD guppy head. -->
+  <include file="$(find resources_for_vision)/launch/image_acquisition_pipelines/trunk/guppy_head_full_pbd.launch"/>
 </launch>

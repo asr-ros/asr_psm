@@ -32,7 +32,7 @@ namespace ProbabilisticSceneRecognition {
   {
   }
 
-  void ObjectEvidence::push(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject)
+  void ObjectEvidence::push(const boost::shared_ptr<const ISM::Object>& pObject)
   {
     mBuffer.push_back(*pObject);
   }
@@ -46,7 +46,7 @@ namespace ProbabilisticSceneRecognition {
   {
     // Iterate over all accumulated evidences and add each one to the list.
     // Also keep book about if a new object has been found.
-    BOOST_FOREACH(asr_msgs::AsrObject object, mBuffer)
+    BOOST_FOREACH(ISM::Object object, mBuffer)
     {
       // Create iterator for the outer index (object type).
       std::map<std::string, std::map<std::string, KalmanFilter> >::iterator it;
@@ -58,31 +58,31 @@ namespace ProbabilisticSceneRecognition {
 	std::map<std::string, KalmanFilter>::iterator it2;
 	
 	// Exists an entry with the given object instance name?
-	if((it2 = it->second.find(object.identifier)) != it->second.end())
+    if((it2 = it->second.find(object.observedId)) != it->second.end())
 	{
 	  // There exists an entry for type and instance, so we update the associated kalman filter.
 	  it2->second.update(object);
 	  
 	  // Status information for the user.
-	  ROS_DEBUG_STREAM("Object Evidence: replaced object (" << object.type << ", " << object.identifier << ").");
+      ROS_DEBUG_STREAM("Object Evidence: replaced object (" << object.type << ", " << object.observedId << ").");
 	} else {
 	  
 	  // Create a new kalman filter.
-	  it->second.insert(std::pair<std::string, KalmanFilter>(object.identifier, KalmanFilter(object)));
+      it->second.insert(std::pair<std::string, KalmanFilter>(object.observedId, KalmanFilter(object)));
 	  
 	  // Status information for the user.
-	  ROS_DEBUG_STREAM("Object Evidence: object with new identifier found (" << object.type << ", " << object.identifier << ").");
+      ROS_DEBUG_STREAM("Object Evidence: object with new identifier found (" << object.type << ", " << object.observedId << ").");
 	}
       } else {
 	// There was no entry for the given object type and instance.
 	// So we first add a map for the instance to the evidences and then an entry to this map.
 	std::map<std::string, KalmanFilter> entry;
-	entry.insert(std::pair<std::string, KalmanFilter>(object.identifier, KalmanFilter(object)));
+    entry.insert(std::pair<std::string, KalmanFilter>(object.observedId, KalmanFilter(object)));
 	mObjectEvidences.insert(std::pair<std::string, std::map<std::string, KalmanFilter> >(object.type, entry));
 	// THIS IS WHY MANY PEOPLE PREFER JAVA...! OR PYTHON ;D!
 	
 	// Status information for the user.
-	ROS_DEBUG_STREAM("Object Evidence: object with new type and identifier found (" << object.type << ", " << object.identifier << ").");
+    ROS_DEBUG_STREAM("Object Evidence: object with new type and identifier found (" << object.type << ", " << object.observedId << ").");
       }
     }
     
@@ -98,10 +98,10 @@ namespace ProbabilisticSceneRecognition {
 	// Remove timed out evidence.
 	if (it2->second.isTimedOut(mTimeout))
 	{
-      asr_msgs::AsrObject object = it2->second.getObject();
+      ISM::Object object = it2->second.getObject();
 	  
 	  it->second.erase(it2++);
-	  ROS_DEBUG_STREAM("Removed timed out evidence (" << object.type << ", " << object.identifier << ").");
+      ROS_DEBUG_STREAM("Removed timed out evidence (" << object.type << ", " << object.observedId << ").");
 	} else {
 	  ++it2;
 	}
@@ -112,7 +112,7 @@ namespace ProbabilisticSceneRecognition {
     mBuffer.clear();
   }
   
-  void ObjectEvidence::getEvidences(std::vector<asr_msgs::AsrObject>& pEvidences)
+  void ObjectEvidence::getEvidences(std::vector<ISM::Object>& pEvidences)
   {    
     // Erase old evidences from history *dramatic drum roll*.
     pEvidences.clear();

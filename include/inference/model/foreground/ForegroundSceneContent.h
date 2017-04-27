@@ -27,8 +27,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdObject.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
@@ -41,6 +41,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/foreground/MaximumForegroundInferenceAlgorithm.h"
 
 #include "inference/model/foreground/SceneObjectDescription.h"
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -90,14 +92,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    void update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger);
+    void update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
     
     /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
+     * Integrate the learning data in form of a PbdSceneGraph into the model.
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    void update(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
     
   protected:
     

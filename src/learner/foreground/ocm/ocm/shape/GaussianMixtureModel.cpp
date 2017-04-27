@@ -32,7 +32,7 @@ namespace ProbabilisticSceneRecognition {
     // Check, if a kernel of this type already exists.
     for(GaussianKernel kernel : mKernels)
       if(kernel.compare(pKernel))
-    return;
+	return;
     
     // Kernel not already in distribution? Take it!
     mKernels.push_back(pKernel);
@@ -72,11 +72,6 @@ namespace ProbabilisticSceneRecognition {
       
     // Add subtree to main tree.
     pPt.add_child(pNode, subtree);
-  }
-
-  std::vector<GaussianKernel> GaussianMixtureModel::getKernels() const
-  {
-      return mKernels;
   }
   
 }

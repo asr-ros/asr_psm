@@ -30,7 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
@@ -43,6 +43,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/OcmForegroundSceneLearner.h"
 
+#include "../../../lib_ism/libism/ISM/common_type/ObjectSet.hpp"
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -83,11 +84,11 @@ namespace ProbabilisticSceneRecognition {
     void initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticSceneModelVisualization> mSuperior);
     
     /**
-     * Adds a AsrSceneGraph message to the learner.
+     * Adds a PbdSceneGraph message to the learner.
      * 
-     * @param pExample AsrSceneGraph message containing an example for a scene.
+     * @param pExample PbdSceneGraph message containing an example for a scene.
      */
-    void addExample(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
+    void addExample(const ISM::ObjectSetPtr pExample);
     
     /**
      * Calculates the model parameters based on the collected evidence.
@@ -124,7 +125,7 @@ namespace ProbabilisticSceneRecognition {
     BackgroundSceneLearner mBackgroundSceneLearner;
     
     /**
-     * A list of all foreground scene learners. If an AsrSceneGraph message could not be associated with a learner in the list, a new scene learner is automatically added.
+     * A list of all foreground scene learners. If an PbdSceneGraph message could not be associated with a learner in the list, a new scene learner is automatically added.
      */
     std::vector<boost::shared_ptr<ForegroundSceneLearner> > mSceneLearners;
   };

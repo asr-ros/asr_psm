@@ -21,7 +21,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <Eigen/Dense>
 
-#include <asr_msgs/AsrObject.h>
+#include <pbd_msgs/PbdObject.h>
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
 	/**
@@ -31,7 +33,7 @@ namespace ProbabilisticSceneRecognition {
 	 * The bigger the expected output error is, the less likely the system is to change. And vice versa.
 	 *
 	 * @author Ralf Schleicher <mail@ralfschleicher.de>
-	 */
+     */;
 	class KalmanFilter {
 	private:
 		/**
@@ -48,7 +50,7 @@ namespace ProbabilisticSceneRecognition {
 		 * A multidimensional matrix.
 		 */
 		Eigen::MatrixXd mF;
-
+;
 		/**
 		 * A multidimensional matrix.
 		 */
@@ -80,16 +82,16 @@ namespace ProbabilisticSceneRecognition {
 		Eigen::VectorXd mZ;
 		
 		/**
-         * Instance of the current AsrObject.
+         * Instance of the current Object.
 		 */
-        asr_msgs::AsrObject mInstance;
+        ISM::Object mInstance;
 
 	public:
 		/**
 		 * Creates a kalman filter for given input matrices.
 		 * @param pObject The inintial measurement.
 		 */
-        KalmanFilter(asr_msgs::AsrObject pObject);
+        KalmanFilter(ISM::Object pObject);
 
 		/**
 		 * Destructor.
@@ -105,7 +107,7 @@ namespace ProbabilisticSceneRecognition {
 		 * Updates the current state of the system
 		 * @param pObject The new measurement to update the filter.
 		 */
-        void update(asr_msgs::AsrObject pObject);
+        void update(ISM::Object pObject);
 		
 		/**
 		 * Checks if the last update has been longer ago than the given threshold.
@@ -115,9 +117,9 @@ namespace ProbabilisticSceneRecognition {
 		bool isTimedOut(unsigned int threshold);
 		
 		/**
-         * Returns the AsrObject wrapped by the filter.
-         * @return The AsrObject wrapped by the filter.
+		 * Returns the PbdObject wrapped by the filter.
+		 * @return The PbdObject wrapped by the filter.
 		 */
-        asr_msgs::AsrObject getObject();
+        ISM::Object getObject();
 	};
 }

@@ -27,19 +27,19 @@ import time
 
 import subprocess
 
-roslib.load_manifest('asr_psm')
+roslib.load_manifest('psm')
 
-from asr_msgs.msg import AsrObject
+from pbd_msgs.msg import PbdObject
 from visualization_msgs.msg import Marker
 
 # NOTE: IN CASE THE SCENE_GRAPH_GENERATOR CANT TRANSFORM THE OBJECTS INTO THE RIGHT COORDINATE FRAME,
-#       DO THE FOLLOWING: roslaunch kinematic_chain_asr transformation_publishers_left.launch
+#       DO THE FOLLOWING: roslaunch kinematic_chain_pbd transformation_publishers_left.launch
 
 
 def publishPdbObjectMessage(pub, posX, posY, posZ, oriW, oriX, oriY, oriZ, objType):
   
   # build object ...
-  msg = AsrObject()
+  msg = PbdObject()
   msg.header.stamp = rospy.Time.now()
   msg.header.frame_id = '/PTU'
   msg.providedBy = 'textured'
@@ -58,7 +58,7 @@ def publishPdbObjectMessage(pub, posX, posY, posZ, oriW, oriX, oriY, oriZ, objTy
 def rosbagPdbObjectMessage(bag, posX, posY, posZ, oriW, oriX, oriY, oriZ, objType):
   
   # build object ...
-  msg = AsrObject()
+  msg = PbdObject()
   msg.header.stamp = rospy.Time.now()
   msg.header.frame_id = '/PTU'
   msg.providedBy = 'textured'
@@ -290,7 +290,7 @@ def runtimeEvaluateStandalonePSM(meshTexturedPath, pubObj, pubVis, pathToBags, s
 	os.makedirs(psmRuntimeLogFolder)
       
       # Execute the PSM inference in batch mode to get the runtime values.
-      subprocess.call(['rosrun', 'asr_psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
+      subprocess.call(['rosrun', 'psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
       
 def runtimeEvaluateStandalonePSMKickass(meshTexturedPath, pubObj, pubVis, pathToBags, sceneObjects):
   
@@ -310,7 +310,7 @@ def runtimeEvaluateStandalonePSMKickass(meshTexturedPath, pubObj, pubVis, pathTo
       os.makedirs(psmRuntimeLogFolder)
     
     # Execute the PSM inference in batch mode to get the runtime values.
-    subprocess.call(['rosrun', 'asr_psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
+    subprocess.call(['rosrun', 'psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
       
 def runtimeCreateSamplesComplex(meshTexturedPath, pubObj, pubVis, pathToBags, scenarios, sceneObjects, samplesOnEdge):
   
@@ -422,7 +422,7 @@ def runtimeEvaluatePSM(meshTexturedPath, pubObj, pubVis, pathToBags, scenarios, 
 	os.makedirs(psmRuntimeLogFolder)
       
       # Execute the PSM inference in batch mode to get the runtime values.
-      subprocess.call(['rosrun', 'asr_psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
+      subprocess.call(['rosrun', 'psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
       
 def runtimeEvaluatePSMStandalone(meshTexturedPath, pubObj, pubVis, pathToBags, scenarios, sceneObjects, samplesOnEdge):
   
@@ -448,7 +448,7 @@ def runtimeEvaluatePSMStandalone(meshTexturedPath, pubObj, pubVis, pathToBags, s
 	os.makedirs(psmRuntimeLogFolder)
       
       # Execute the PSM inference in batch mode to get the runtime values.
-      subprocess.call(['rosrun', 'asr_psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
+      subprocess.call(['rosrun', 'psm', 'inference_batch', '_plot:=false', '_object_topic:=/stereo/objects', '_scene_graph_topic:=/scene_graphs', '_scene_model_filename:=' + modelFilename, '_bag_filenames_list:=', '_base_frame_id:=/PTU', '_scale_factor:=1.0', '_sigma_multiplicator:=2.0', '_targeting_help:=false', '_inference_algorithm:=maximum', '_runtime_log_path:=' + psmRuntimeLogFolder, '_bag_path:=' + bagObjects])
       
 def runtimePrepareISM(meshTexturedPath, pubObj, pubVis, pathToBags, scenarios, sceneObjects, samplesOnEdge):
   
@@ -588,7 +588,7 @@ def main():
   rospy.init_node('measurement_simulator')
   
   # instantiate publishers
-  pubObj = rospy.Publisher('/stereo/objects', AsrObject)
+  pubObj = rospy.Publisher('/stereo/objects', PbdObject)
   pubVis = rospy.Publisher('/stereo/visualization_marker', Marker)
   
   # Run one of the various szenarios

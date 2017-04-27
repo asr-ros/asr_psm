@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.4.6)
-project(asr_psm)
+project(psm)
 
 # Set compiler flags to enable the C++11 standard.
 add_definitions("-std=c++0x")
@@ -9,13 +9,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosbag
   roslib
-  asr_msgs
+  probt
+  pbd_msgs
   std_msgs
   tf
   visualization_msgs
-  asr_psm_visualizations
-  asr_relation_graph_generator
-  asr_resources_for_psm
+  psm_visualizations
+  relation_graph_generator
+  resources_for_psm
+  lib_ism
 )
 
 find_package(cmake_modules)
@@ -27,6 +29,9 @@ find_package(Boost REQUIRED COMPONENTS
   system
   filesystem
 )
+
+
+
 
 
 add_library(psm_inference  src/inference.cpp
@@ -58,12 +63,13 @@ add_library(psm_inference  src/inference.cpp
 target_link_libraries(psm_inference  
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
   )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES psm_inference
-  CATKIN_DEPENDS rospy roscpp rosbag roslib asr_msgs std_msgs tf visualization_msgs asr_psm_visualizations asr_relation_graph_generator asr_resources_for_psm
+  CATKIN_DEPENDS rospy roscpp rosbag roslib probt pbd_msgs std_msgs tf visualization_msgs psm_visualizations relation_graph_generator resources_for_psm
   DEPENDS Eigen Boost
 )
 
@@ -73,10 +79,8 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  
 )
-
-
-
 
 ############################################################
 # ROS Nodes that are using the Probabilistic Scene Model.
@@ -97,10 +101,11 @@ add_executable(learner src/learner.cpp
 			     
 			     src/learner/foreground/ocm/ocm/occlusion/OcclusionTermLearner.cpp
 			     
-			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp src/helper/PlotHelper.cpp)
+			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp)
 target_link_libraries(learner
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(learner_batch src/learner_batch.cpp
@@ -118,10 +123,11 @@ add_executable(learner_batch src/learner_batch.cpp
 			     
 			     src/learner/foreground/ocm/ocm/occlusion/OcclusionTermLearner.cpp
 			     
-			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp src/helper/PlotHelper.cpp)
+			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp)
 target_link_libraries(learner_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(inference src/inference.cpp
@@ -153,6 +159,7 @@ add_executable(inference src/inference.cpp
 target_link_libraries(inference 
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(inference_batch src/inference_batch.cpp
@@ -182,4 +189,5 @@ add_executable(inference_batch src/inference_batch.cpp
 target_link_libraries(inference_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}  
+  
 )

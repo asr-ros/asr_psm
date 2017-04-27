@@ -36,7 +36,7 @@ namespace ProbabilisticSceneRecognition {
     mTable.reset(new ProbabilityTable(pPt.get_child("occlusion")));
   }
   
-  void OcclusionTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  void OcclusionTermEvaluator::handleSceneGraph(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph)
   {
     // Scene graph is no of interest here.
   }
@@ -46,7 +46,7 @@ namespace ProbabilisticSceneRecognition {
     // Here is no visualization required.
   }
   
-  double OcclusionTermEvaluator::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  double OcclusionTermEvaluator::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
     /**************************************************************************************************
      * Build an entry of the conditional joint distribution P(h) bases on the given hypothesis
@@ -84,7 +84,7 @@ namespace ProbabilisticSceneRecognition {
     return result;
   }
   
-  void OcclusionTermEvaluator::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void OcclusionTermEvaluator::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     // No visualization to update.
   }

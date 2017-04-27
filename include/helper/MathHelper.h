@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
+Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,15 +22,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 
 // Package includes
+#include <pl.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <Eigen/Eigenvalues>
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <asr_msgs/AsrNode.h>
-#include <asr_msgs/AsrObject.h>
+#include <pbd_msgs/PbdNode.h>
+#include <pbd_msgs/PbdObject.h>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -51,24 +52,20 @@ namespace ProbabilisticSceneRecognition {
     ~MathHelper();
 
     /**
-     * Draws a sample from a multivariate normal distribution represented by a mean and a covariance matrix
-     *
-     * @param mean      The mean of the distribution
-     * @param cov       The diagonal covariance matrix of the distribution
-     * @param amount    The amount of samples to draw
-     * @param sample    The Eigen vector to draw the sample into
+     * Copies the content of a vector from ProBT to Eigen.
+     * 
+     * @param pFrom The ProBt vector to copy from.
+     * @param pTo The Eigen vector to copy to.
      */
-    static void drawNormal(const Eigen::VectorXd& mean, const Eigen::MatrixXd& cov, unsigned int amount, std::vector<Eigen::VectorXd>& samples);
+    static void copy(plFloatVector& pFrom, boost::shared_ptr<Eigen::VectorXd>& pTo);
 
     /**
-     * Calculate Histogram
-     * @param lower     Lower bound of the values
-     * @param upper     Upper bound of the values
-     * @param buckets   Number of buckets
-     * @param in        Input samples
-     * @param out       Output vector
+     * Copies the content of a matrix from ProBT to Eigen.
+     * 
+     * @param pFrom The ProBt matrix to copy from.
+     * @param pTo The Eigen matrix to copy to.
      */
-    static void calcHistogram(double lower, double upper, unsigned int buckets, std::vector<double> in, std::vector<std::pair<double, double>>& out);
-
+    static void copy(plFloatMatrix& pFrom, boost::shared_ptr<Eigen::MatrixXd>& pTo);
+    
   };
 }

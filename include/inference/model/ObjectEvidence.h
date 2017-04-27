@@ -27,9 +27,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/foreach.hpp>
 
 // Package includes
-#include <asr_msgs/AsrObject.h>
+#include <pbd_msgs/PbdObject.h>
 
 #include "inference/model/KalmanFilter.h"
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -57,9 +59,9 @@ namespace ProbabilisticSceneRecognition {
     /**
      * Adds an object evidence to the buffer.
      * 
-     * @param pObject AsrObject message containing information about the evidence.
+     * @param pObject PbDObject message containing information about the evidence.
      */
-    void push(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject);
+    void push(const boost::shared_ptr<const ISM::Object>& pObject);
     
     /**
      * Checks, if new evidence has been added since the last model update.
@@ -79,7 +81,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidences A vector containing all evidences.
      */
-    void getEvidences(std::vector<asr_msgs::AsrObject>& pEvidences);
+    void getEvidences(std::vector<ISM::Object>& pEvidences);
     
   private:
     
@@ -91,7 +93,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * A temporary buffer for accumulating evidences.
      */
-    std::vector<asr_msgs::AsrObject> mBuffer;
+    std::vector<ISM::Object> mBuffer;
     
     /**
      * A map for storing the object evidences, indexed by the object type and identifier.

@@ -1,5 +1,5 @@
 <!-- Launches camera and recognition system. -->
 <launch>
-  <include file="$(find asr_psm)/launch/start_cameras.launch"/>
-  <include file="$(find asr_psm)/launch/start_recognition_launch.launch"/>
+  <include file="$(find psm)/launch/start_cameras.launch"/>
+  <include file="$(find psm)/launch/start_recognition_launch.launch"/>
 </launch>

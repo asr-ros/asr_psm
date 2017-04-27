@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #pragma once
 
 // Package includes
+#include <pl.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 

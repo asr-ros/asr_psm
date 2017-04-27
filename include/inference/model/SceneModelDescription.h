@@ -30,7 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-#include <asr_msgs/AsrObject.h>
+#include <pbd_msgs/PbdObject.h>
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
@@ -38,6 +38,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/ObjectEvidence.h"
 #include "inference/model/SceneIdentifier.h"
 #include "inference/model/SceneDescription.h"
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -79,16 +81,16 @@ namespace ProbabilisticSceneRecognition {
      * Integrated evidence abound objects found by the detection systems into the model.
      * Evidences are accumulated until an update is requested.
      * 
-     * @param pObject AsrObject message containing data about the evidence.
+     * @param pObject PbDObject message containing data about the evidence.
      */
-    void integrateEvidence(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject);
+    void integrateEvidence(const boost::shared_ptr<const ISM::Object>& pObject);
     
     /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
+     * Integrate the learning data in form of a PbdSceneGraph into the model.
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void integrateSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    void integrateSceneGraph(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
     
     /**
      * Update the model based on the accumulated evidence.
@@ -113,7 +115,7 @@ namespace ProbabilisticSceneRecognition {
      * Used for forwarding the evidences.
      * Put this here so we don't need to build a new one every time we got new evidence.
      */
-    std::vector<asr_msgs::AsrObject> mEvidenceList;
+    std::vector<ISM::Object> mEvidenceList;
     
     /**
      * A list containing the background and foreground elements.

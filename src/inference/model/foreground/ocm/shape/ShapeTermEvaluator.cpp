@@ -34,7 +34,7 @@ namespace ProbabilisticSceneRecognition {
     mHsm.load(pPt);
   }
   
-  void ShapeTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  void ShapeTermEvaluator::handleSceneGraph(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph)
   {
     mHsm.handleSceneGraph(pSceneGraph);
   }
@@ -45,12 +45,12 @@ namespace ProbabilisticSceneRecognition {
     mHsm.initializeVisualizer(mSuperior);
   }
   
-  double ShapeTermEvaluator::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  double ShapeTermEvaluator::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
     return mHsm.calculateProbabilityForHypothesis(pEvidenceList, pAssignments);
   }
   
-  void ShapeTermEvaluator::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void ShapeTermEvaluator::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     mHsm.visualize(pEvidenceList);
   }

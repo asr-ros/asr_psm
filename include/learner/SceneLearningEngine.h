@@ -28,12 +28,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
+
 // Local includes
 #include "learner/SceneModelLearner.h"
+#include "../../../lib_ism/libism/ISM/utility/TableHelper.hpp"
+#include "../../../lib_ism/libism/ISM/common_type/RecordedPattern.hpp"
+
 
 namespace ProbabilisticSceneRecognition {
   
@@ -49,7 +53,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * Constructor.
      * 
-     * @param pPbdSceneGraphTopic Name of the topic AsrSceneGraph messages were published.
+     * @param pPbdSceneGraphTopic Name of the topic PbdSceneGraph messages were published.
      */
     SceneLearningEngine(const std::string& pPbdSceneGraphTopic);
 
@@ -59,25 +63,25 @@ namespace ProbabilisticSceneRecognition {
     ~SceneLearningEngine();
 
     /**
-     * Extract AsrSceneGraph messages from all rosbag files given as CLI parameters.
+     * Extract PbdSceneGraph messages from all rosbag files given as CLI parameters.
      * Transfer all measurements for each scene into distribution parameter learners.
      */
     void readLearnerInputBags();
     
     /**
-     * Open rosbag file and extract AsrSceneGraph messages on input topic (which has been set before).
+     * Open rosbag file and extract PbdSceneGraph messages on input topic (which has been set before).
      * All scene graph that the rosbag file contains, are transfered to the distribution parameter learners.
      * 
-     * @param pPbdSceneGraphsBagPath Path of file to be parsed for AsrSceneGraph messages.
+     * @param pPbdSceneGraphsBagPath Path of file to be parsed for PbdSceneGraph messages.
      */
-    void extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath);
+    void extractTracksFromDbFile(const std::string& dbFileName);
     
     /**
-     * Adds all recorded scene data in a AsrSceneGraph to a system that learns parameters of distributions in the decomposition of the joint distribution in a scene model.
+     * Adds all recorded scene data in a PbdSceneGraph to a system that learns parameters of distributions in the decomposition of the joint distribution in a scene model.
      *
      * @param pSceneGraph Features of all objects in a scene localized over a certain period of time.
      */
-    void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    void newSceneGraphCallback(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
 
     /**
      * All learnt information is transfered into a scene model description. 
@@ -93,6 +97,10 @@ namespace ProbabilisticSceneRecognition {
      * All distributions in the decomposition of the scene model and the learning data are plotted.
      */
     void visualizeSceneModel();
+    /**
+     * Learn recorded pattern and pass it to mSampleList.
+     */
+    void learn();
     
   private:
     
@@ -126,15 +134,14 @@ namespace ProbabilisticSceneRecognition {
     ros::NodeHandle mPrivateNamespaceHandle;
         
     /**
-     * Listener for AsrSceneGraph messages.
+     * Listener for PbdSceneGraph messages.
      */
     ros::Subscriber mPbdSceneGraphListener;
     
     /**
-     * A list of paths to rosbag files containing AsrSceneGraph messages.
-     * The latter can be used for model parameter learning.
+     * TableHelper to extract Objects from ".sqlite"-file.
      */
-    XmlRpc::XmlRpcValue mInputBagFilenames;
+    boost::shared_ptr<ISM::TableHelper> tableHelper;
         
     /************************************
      * Scene model
@@ -184,7 +191,16 @@ namespace ProbabilisticSceneRecognition {
      * Path to the directory the XML file containing the model is stored after learning.
      */
     std::string mSceneModelDirectory;
-    
+
+    /**
+     * Path to the directory the .sqlite file containing the training data.
+     */
+    std::string mInputDbFilename;
+
+    /**
+     * Recorded Pattern Pointer
+     */
+    ISM::RecordedPatternPtr recordedPattern;
     /**
      * The learner for the probabilistic scene model.
      */

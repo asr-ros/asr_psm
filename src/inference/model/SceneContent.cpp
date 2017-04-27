@@ -46,7 +46,7 @@ namespace ProbabilisticSceneRecognition {
     mAlgorithm->load(pPt);
   }
   
-  void SceneContent::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  void SceneContent::doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     // Check, if there was a description specified.
     if(!mAlgorithm)

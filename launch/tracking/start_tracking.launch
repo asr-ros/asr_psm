@@ -2,15 +2,15 @@
 <launch>
 
   <!-- Start FoB. -->
-  <include file="$(asr_flock_of_birds)/launch/flock_of_birds_remote.sh"/>
+  <include file="$(flock_of_birds)/launch/flock_of_birds_remote.sh"/>
 
   <!-- Start tracking of the glove. -->
-  <node name = "ptu_tracker" pkg = "asr_flock_of_birds_tracking" type = "asr_flock_of_birds_tracking" output = "screen">
+  <node name = "ptu_tracker" pkg = "tracking_of_fob" type = "ptu_tracking" output = "screen">
     <param name = "ptu_calibration" value = "false"/>
-    <rosparam file = "$(find asr_flock_of_birds_tracking)/launch/tracker_left_glove_settings.yaml"/>
+    <rosparam file = "$(find tracking_of_fob)/launch/tracker_left_glove_settings.yaml"/>
   </node>
 </launch>
 
  
  
- file:///data/joachimgehrung/ilcasRosPkg/trunk/control/asr_flock_of_birds_tracking
+ file:///data/joachimgehrung/ilcasRosPkg/trunk/control/tracking_of_fob

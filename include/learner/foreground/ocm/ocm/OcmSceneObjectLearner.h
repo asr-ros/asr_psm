@@ -27,7 +27,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <trainer/TreeNode.h>
 
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 #include <visualization/psm/ProbabilisticPrimarySceneObjectVisualization.h>
@@ -87,7 +87,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pExamplesList A list of all examples for the scene this scene object belongs to.
      * @param pTree The relation tree.
      */
-   void learn(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > pExamplesList,
+   void learn(std::vector<ISM::ObjectSetPtr> pExamplesList,
      boost::shared_ptr<SceneModel::TreeNode> pTree);
    
   private:

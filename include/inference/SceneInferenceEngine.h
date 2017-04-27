@@ -24,8 +24,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ros/ros.h>
 #include <rosbag/view.h>
 
-#include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdObject.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/gnuplot/GnuplotVisualization.h>
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
@@ -35,6 +35,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "inference/model/SceneIdentifier.h"
 #include "inference/model/SceneModelDescription.h"
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -66,11 +68,11 @@ namespace ProbabilisticSceneRecognition {
     void executeInStackMode(); 
     
    /**
-     * Collects evidences in form of AsrObject and forwards them to the inference model.
+     * Collects evidences in form of PbdObject and forwards them to the inference model.
      *
      * @param pObject An observation result for a potential scene element coming from an arbitrary sensor data processing system.
      */
-    void newObservationCallback(const boost::shared_ptr<asr_msgs::AsrObject>& pObject);
+    void newObservationCallback(const boost::shared_ptr<ISM::Object>& pObject);
     
    /**
      * Returns the model.
@@ -89,14 +91,14 @@ namespace ProbabilisticSceneRecognition {
     void loadSceneModel(const std::string pSceneModelFileName, const std::string pInferenceAlgorithm);
     
     /**
-     * Extract AsrSceneGraph messages from all rosbag files given as CLI parameters.
+     * Extract PbdSceneGraph messages from all rosbag files given as CLI parameters.
      * 
      * @param pInputBagFilenames A list of the bag files that contain the learning data.
      */
     void readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames);
     
     /**
-     * Open rosbag file and extract AsrSceneGraph messages on input topic (which has been set before).
+     * Open rosbag file and extract PbdSceneGraph messages on input topic (which has been set before).
      * 
      * @param pPbdSceneGraphsBagPath Path of file to be parsed for PbdSceneGraph messages.
      */
@@ -112,11 +114,11 @@ namespace ProbabilisticSceneRecognition {
     void initializeVisualizationChain(const double pScale, const float pSigmaMultiplicator, const std::string pFrameId);
 
     /**
-     * Collects scene examples in form of AsrSceneGraph messages and forwards them to the visualization.
+     * Collects scene examples in form of PbdSceneGraph messages and forwards them to the visualization.
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    void newSceneGraphCallback(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
     
   private:
     
@@ -148,12 +150,12 @@ namespace ProbabilisticSceneRecognition {
     /**
      * A buffer for storing evidences.
      */
-    std::queue<boost::shared_ptr<asr_msgs::AsrObject> > mEvidenceBuffer;
+    std::queue<boost::shared_ptr<ISM::Object> > mEvidenceBuffer;
     
     /**
      * A buffer for storing scene graphs.
      */
-    std::queue<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mSceneGraphBuffer;
+    std::queue<boost::shared_ptr<const pbd_msgs::PbdSceneGraph> > mSceneGraphBuffer;
     
     /**
      * A transformer for objects into the target coordinate frame.

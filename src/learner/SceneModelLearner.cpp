@@ -38,7 +38,7 @@ namespace ProbabilisticSceneRecognition {
 	learner->initializeVisualizer(mSuperior);
   }
    
-  void SceneModelLearner::addExample(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
+  void SceneModelLearner::addExample(const ISM::ObjectSetPtr pExample)
   {
     // Add every example to background model.
     mBackgroundSceneLearner.addExampleToScene(pExample);

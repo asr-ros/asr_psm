@@ -24,12 +24,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 
 // Package includes
+#include <pl.h>
+
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+#include <pbd_msgs/PbdObject.h>
+#include <pbd_msgs/PbdSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticPrimarySceneObjectVisualization.h>
 
@@ -69,11 +71,11 @@ namespace ProbabilisticSceneRecognition {
     void load(boost::property_tree::ptree& pPt);
     
     /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
+     * Integrate the learning data in form of a PbdSceneGraph into the model.
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    void handleSceneGraph(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
     
     /**
      * Initializes the visualization mechanism.
@@ -89,14 +91,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pAssignments Assignments of parts to slots.
      * @return Probability as determinded by the appearance term.
      */
-    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments);
+    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments);
     
     /**
      * Update the visualizers based on the evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
+    void visualize(std::vector<ISM::Object> pEvidenceList);
     
     /**
      * Returns the number of slots of the OCM (equals the number of distributions).

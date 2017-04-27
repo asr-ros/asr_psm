@@ -21,6 +21,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 
 // Package includes
+#include <pl.h>
+
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -83,12 +85,6 @@ namespace ProbabilisticSceneRecognition {
      * @param pNode The name of the XML node that should contain the distribution.
      */
     void save(boost::property_tree::ptree& pPt, std::string pNode);
-
-    /**
-     * returns the kernels of the GMM
-     * @return  The kernels of the GMM
-     */
-    std::vector<GaussianKernel> getKernels() const;
 
   private:
     

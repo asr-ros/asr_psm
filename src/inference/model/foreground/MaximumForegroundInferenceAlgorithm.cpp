@@ -29,7 +29,7 @@ namespace ProbabilisticSceneRecognition {
   {
   }
   
-  void MaximumForegroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  void MaximumForegroundInferenceAlgorithm::doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     ROS_INFO_STREAM("Calculating scene probability.");
     
