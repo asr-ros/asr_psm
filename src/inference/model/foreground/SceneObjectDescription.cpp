@@ -97,7 +97,7 @@ namespace ProbabilisticSceneRecognition {
       pRuntimeLogger << mDescription << "," << std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() << "\n";
       pRuntimeLogger.flush();
     } else {
-      ROS_INFO_STREAM("Evaluating scene object'" << mDescription << "' took " << std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() << " milliseconds.");
+      ROS_INFO_STREAM("Evaluating scene object '" << mDescription << "' took " << std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() << " milliseconds.");
     }
   }
   

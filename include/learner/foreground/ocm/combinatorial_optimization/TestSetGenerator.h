@@ -23,6 +23,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 
+#include <ISM/utility/TableHelper.hpp>
+#include <ISM/common_type/ObjectSet.hpp>
+
 #include <topology_generator/TopologyGenerator.h>
 
 #include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
@@ -94,6 +97,21 @@ private:
     void setPoseOfObjectRelativeToReference(asr_msgs::AsrObject& pObject, const asr_msgs::AsrObject& pReference);
 
     /**
+     * Load test sets from database file.
+     * @param filename  of the database file.
+     * @return the test sets loaded from the file.
+     */
+    std::vector<std::vector<asr_msgs::AsrObject>> loadTestSetFromFile(const std::string& filename);
+
+    /**
+     * Print a divider to ros info stream to divide and mark selected output.
+     */
+    void printDivider()
+    {
+        ROS_INFO_STREAM("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    }
+
+    /**
      * Evaluator used to validate test sets.
      */
     boost::shared_ptr<Evaluator> mEvaluator;
@@ -109,6 +127,10 @@ private:
      * Probability with which an object is missing from a test set.
      */
     double mObjectMissingInTestSetProbability;
+    /**
+     * ID of the scene to be learned.
+     */
+    std::string mSceneId;
 };
 
 }

@@ -39,16 +39,21 @@ public:
      * @param maxAverageRecognitionRuntime  Maximum average recognition runtime for normalization.
      * @param alpha                         Weight of the normalized number of false positives.
      * @param beta                          Weight of the normalized average recognition runtime.
+     * @param gamma                         Weight of the normalized number of false negatives.
      */
     WeightedSum(unsigned int minFalsePositives, unsigned int maxFalsePositives,
+                unsigned int minFalseNegatives, unsigned int maxFalseNegatives,
             double minAverageRecognitionRuntime, double maxAverageRecognitionRuntime,
-            double alpha, double beta)
+            double alpha, double beta, double gamma)
         : mMinFalsePositives(minFalsePositives)
         , mMaxFalsePositives(maxFalsePositives)
+        , mMinFalseNegatives(minFalseNegatives)
+        , mMaxFalseNegatives(maxFalseNegatives)
         , mMinAverageRecognitionRuntime(minAverageRecognitionRuntime)
         , mMaxAverageRecognitionRuntime(maxAverageRecognitionRuntime)
         , mAlpha(alpha)
         , mBeta(beta)
+        , mGamma(gamma)
     {}
 
     /**
@@ -75,6 +80,16 @@ private:
     unsigned int mMaxFalsePositives;
 
     /**
+     * Minimum number of false negatives for normalization.
+     */
+    unsigned int mMinFalseNegatives;
+
+    /**
+     * Maximum number of false negatives for normalization.
+     */
+    unsigned int mMaxFalseNegatives;
+
+    /**
      * Minimum average recognition runtime for normalization.
      */
     double mMinAverageRecognitionRuntime;
@@ -91,6 +106,10 @@ private:
      * Weight of the normalized average recognition runtime.
      */
     double mBeta;
+    /**
+     * Weight of the normalized number of false negatives.
+     */
+    double mGamma;
 
     /**
      * Normalize number of false positives.
@@ -98,12 +117,21 @@ private:
      * @return the normalized number of false positives.
      */
     double getNormalisedFalsePositives(unsigned int falsePositives);
+
+    /**
+     * Normalize number of false negatives.
+     * @param falsePositives    the number of false negatives.
+     * @return the normalized number of false negatives.
+     */
+    double getNormalisedFalseNegatives(unsigned int falseNegatives);
+
     /**
      * Normalize average recognition runtime.
      * @param averageRecognitionRuntime    the average recognition runtime.
      * @return the normalized average recognition runtime.
      */
     double getNormalisedAverageRecognitionRuntime(double averageRecognitionRuntime);
+
 };
 
 }

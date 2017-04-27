@@ -27,31 +27,23 @@ double WeightedSum::calculateCost(boost::shared_ptr<SceneModel::Topology> instan
     if (instance->mCostValid) fromEarlier = " (from earlier)";
     else
     {
-        //std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-        //std::cout << "false positives: [" << mMinFalsePositives << "," << mMaxFalsePositives << "]. avg runtime: [" << mMinAverageRecognitionRuntime << "," << mMaxAverageRecognitionRuntime << "]." << std::endl;
-
         double normalisedFalsePositives = getNormalisedFalsePositives(instance->mFalsePositives);
         double normalisedAverageRecognitionRuntime = getNormalisedAverageRecognitionRuntime(instance->mAverageRecognitionRuntime);
-
-        //std::cout << "Normalised false positives: " << normalisedFalsePositives << " (" << instance->mFalsePositives << ")" << std::endl;
-        //std::cout << "Normalised recognition runtime: " << normalisedAverageRecognitionRuntime << " (" << instance->mAverageRecognitionRuntime << ")" << std::endl;
+        double normalisedFalseNegatives = getNormalisedFalseNegatives(instance->mFalseNegatives);
 
         double cost;
-        //std::cout << "cost";
-        if (normalisedFalsePositives < 0 || normalisedAverageRecognitionRuntime < 0)
+        if (normalisedFalsePositives < 0 || normalisedFalseNegatives < 0 || normalisedAverageRecognitionRuntime < 0)
         {
             cost = std::numeric_limits<double>::infinity();
         }
         else
         {
-            //std::cout << " = " << mAlpha << " * " << normalisedFalsePositives << " + " << mBeta << " * " << normalisedAverageRecognitionRuntime;
-            cost = mAlpha * normalisedFalsePositives + mBeta * normalisedAverageRecognitionRuntime;
+            cost = mAlpha * normalisedFalsePositives + mBeta * normalisedAverageRecognitionRuntime + mGamma * normalisedFalseNegatives;
         }
 
         instance->mCost = cost;
         instance->mCostValid = true;
     }
-    //std::cout << " = " << instance->mCost << std::endl;
     ROS_INFO_STREAM("Cost of topology " << instance->mIdentifier << " is " << instance->mCost << fromEarlier);
 
     return instance->mCost;
@@ -71,6 +63,21 @@ double WeightedSum::getNormalisedFalsePositives(unsigned int falsePositives)
     }
 
     return ((double) (falsePositives - mMinFalsePositives)) / ((double) (mMaxFalsePositives - mMinFalsePositives));
+}
+
+double WeightedSum::getNormalisedFalseNegatives(unsigned int falseNegatives)
+{
+    if (falseNegatives > mMaxFalseNegatives)
+    {
+        return -1;
+    }
+
+    if (mMaxFalseNegatives == mMinFalseNegatives)
+    {
+        return 0;
+    }
+
+    return ((double) (falseNegatives - mMinFalseNegatives)) / ((double) (mMaxFalseNegatives - mMinFalseNegatives));
 }
 
 

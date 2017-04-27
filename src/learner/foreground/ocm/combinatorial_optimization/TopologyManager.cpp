@@ -20,11 +20,28 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 namespace ProbabilisticSceneRecognition {
 
 TopologyManager::TopologyManager(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+                const std::vector<std::string>& pObjectTypes,
                 boost::shared_ptr<SceneModel::TopologyGenerator> pTopologyGenerator,
-                boost::shared_ptr<Evaluator> pEvaluator,
-                std::string pHistoryOutput, std::string pHistoryFilePath):
-    mEvaluator(pEvaluator), mTopologyGenerator(pTopologyGenerator), mExamplesList(pExamplesList), mHistoryIndex(0), mHistoryOutput(pHistoryOutput), mHistoryFilePath(pHistoryFilePath)
-{ }
+                boost::shared_ptr<Evaluator> pEvaluator):
+    mEvaluator(pEvaluator), mTopologyGenerator(pTopologyGenerator), mExamplesList(pExamplesList), mObjectTypes(pObjectTypes), mHistoryIndex(0)
+{
+    ros::NodeHandle nodeHandle("~");
+
+    // Try to get output target for the optimization history; from "none", "screen", "file".
+    if(!nodeHandle.getParam("optimization_history_output", mHistoryOutput))
+        throw std::runtime_error("Please specify parameter optimization_history_output when starting this node.");
+
+    // Try to get the start temperature.
+    if(!nodeHandle.getParam("optimization_history_file_path", mHistoryFilePath))
+        throw std::runtime_error("Please specify parameter optimization_history_file_path when starting this node.");
+
+    if (mHistoryOutput == "svg") mSVGHelper.reset(new ISM::SVGHelper(mHistoryFilePath));
+}
+
+TopologyManager::~TopologyManager()
+{
+    if (mHistoryOutput == "svg") mSVGHelper->writeResult();
+}
 
 boost::shared_ptr<SceneModel::Topology> TopologyManager::getNextNeighbour()
 {
@@ -131,9 +148,9 @@ boost::shared_ptr<SceneModel::Topology> TopologyManager::getRandomTopology()
 
 void TopologyManager::makeTree(boost::shared_ptr<SceneModel::Topology> pTopology)
 {
-    ROS_INFO_STREAM("===========================================================");
+    printDivider();
     ROS_INFO_STREAM("Generating tree from topology " << pTopology->mIdentifier);
-    ROS_INFO_STREAM("===========================================================");
+    printDivider();
     SceneModel::TopologyTreeTrainer tttrainer(pTopology->mRelations);
     tttrainer.addSceneGraphMessages(mExamplesList);
 
@@ -162,67 +179,115 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
 {
     if (mHistoryOutput != "none")
     {
-        std::stringstream documentation;
-
-        // Print History:
-        documentation << "===========================================================" << std::endl;
-        documentation << "History of optimization run " << pRunNumber << ":" << std::endl;
-        documentation << "===========================================================" << std::endl;
-
+        std::pair<unsigned int, unsigned int> bestCostIndices;
         double overallBestCost = std::numeric_limits<double>::max();
 
+        // find and mark best topology:
         for (unsigned int i = 0; i < mHistory.size(); i++)
         {
-            documentation << "====================== step " << i << ": ============================" << std::endl;
             std::vector<std::pair<boost::shared_ptr<SceneModel::Topology>, bool>> step = mHistory[i];
 
-            double bestCost = std::numeric_limits<double>::max();
-
-            // find best cost of this step:
-            for (unsigned int i = 0; i < step.size(); i++)
-                if (step[i].first->mCostValid && step[i].first->mCost < bestCost)
-                    bestCost = step[i].first->mCost;
-            if (bestCost < overallBestCost) overallBestCost = bestCost;
-
-            for (std::pair<boost::shared_ptr<SceneModel::Topology>, bool> topologyPair: step)
+            for (unsigned int j = 0; j < step.size(); j++)
             {
-                boost::shared_ptr<SceneModel::Topology> topology = topologyPair.first;
-                documentation << topology->mIdentifier << ": ";
-                if (topology->mEvaluated)
+                if (step[j].first->mCostValid && step[j].first->mCost < overallBestCost)
                 {
-                    documentation << topology->mFalsePositives << " false positives, " << topology->mAverageRecognitionRuntime << "s average recognition runtime.";
-                    if (topology->mCostValid)
-                    {
-                        documentation << " cost: " << topology->mCost;
-                        if (topology->mCost == overallBestCost) documentation << " (best so far)";
-                        else if (topology->mCost == bestCost) documentation << " (best of step)";
-                        if (topologyPair.second) documentation << "[selected]";
-                    }
+                    overallBestCost = step[j].first->mCost;
+                    bestCostIndices.first = i;
+                    bestCostIndices.second = j;
                 }
-                else documentation << " - ";
-                documentation << std::endl;
             }
         }
-        documentation << "===========================================================" << std::endl;
-        documentation << "best cost overall: " << overallBestCost << std::endl;
 
-        documentation << "===========================================================" << std::endl;
-
-        if (mHistoryOutput == "screen") // print to console:
-            std::cout << documentation.str();
-        else if (mHistoryOutput == "file")
+        if (mHistoryOutput == "svg")
         {
-            std::string filename = mHistoryFilePath + "history_of_run_" + boost::lexical_cast<std::string>(pRunNumber) + ".txt";
-            std::ofstream file;
-            file.open(filename);
-            if (file.is_open())
+            // Adapt history to ISM requirements:
+            std::vector<std::vector<std::pair<ISM::TopologyPtr, unsigned int>>> history;
+            std::string sceneId = mExamplesList[0]->identifier; // Assuming all scene graphs are examples for the same scene.
+            boost::shared_ptr<TopologyAdapter> topologyAdapter(new TopologyAdapter(mObjectTypes, sceneId));
+
+            for (std::vector<std::pair<boost::shared_ptr<SceneModel::Topology>, bool>> psmstep: mHistory)
             {
-                file << documentation.str();
-                file.close();
+                std::vector<std::pair<ISM::TopologyPtr, unsigned int>> ismstep;
+                for (std::pair<boost::shared_ptr<SceneModel::Topology>, bool> psmtop: psmstep)
+                {
+                    ISM::TopologyPtr ismtop = topologyAdapter->psmToIsm(psmtop.first);
+                    // ISM has no false negatives, so SVGHelper doesn't normally output them.
+                    // Here, they are added to the false positives, so the output of them instead becomes the output of the number of recognition failures.
+                    ismtop->evaluationResult.falsePositives += ismtop->evaluationResult.falseNegatives;
+                    unsigned int selected;
+                    if (psmtop.second) selected = 1;
+                    else selected = 0;
+                    ismstep.push_back(std::pair<ISM::TopologyPtr, unsigned int>(ismtop, selected));
+                }
+                history.push_back(ismstep);
             }
-            else throw std::runtime_error("Could not open file " + filename);
+
+            // mark best topology:
+            history[bestCostIndices.first][bestCostIndices.second].second = 4;
+
+            ISM::CostFunctionPtr<ISM::TopologyPtr> globalCostFunction(new TopologyAdapter::CostFunction());
+            mSVGHelper->processHistory(history, globalCostFunction, sceneId);
+            // result gets written after all runs are completed.
         }
-        else throw std::runtime_error("Invalid history output type " + mHistoryOutput);
+        else
+        {
+            std::stringstream documentation;
+            std::string title = " step 000: ";
+            std::string thirddivider = "";  // a third of a divider
+            for (unsigned int i = 0; i < title.length(); i++) thirddivider += "=";
+            std::stringstream divider;
+            divider << thirddivider << thirddivider << thirddivider << std::endl;
+
+            // Print History:
+            documentation << divider.str() << "History of optimization run " << pRunNumber << ":" << std::endl << divider.str();
+
+            for (unsigned int i = 0; i < mHistory.size(); i++)
+            {
+                std::string padding = "";
+                if (i < 10) padding += "0";
+                if (i < 100) padding += "0";
+                std::string title = " step " + padding + std::to_string(i) + ": ";
+                documentation << thirddivider << title << thirddivider << std::endl;
+
+                std::vector<std::pair<boost::shared_ptr<SceneModel::Topology>, bool>> step = mHistory[i];
+
+                for (unsigned int j = 0; j < step.size(); j++)
+                {
+                    std::pair<boost::shared_ptr<SceneModel::Topology>, bool> topologyPair = step[j];
+                    boost::shared_ptr<SceneModel::Topology> topology = topologyPair.first;
+                    documentation << topology->mIdentifier << ": ";
+                    if (topology->mEvaluated)
+                    {
+                        documentation << topology->mFalsePositives << " false positives, " << topology->mFalseNegatives << " false negatives, " <<  topology->mAverageRecognitionRuntime << "s average recognition runtime.";
+                        if (topology->mCostValid)
+                        {
+                            documentation << " cost: " << topology->mCost;
+                            if (topologyPair.second) documentation << "[selected]";
+                            if (i == bestCostIndices.first && j == bestCostIndices.second) documentation << "(best)";
+                        }
+                    }
+                    else documentation << " - ";
+                    documentation << std::endl;
+                }
+            }
+            documentation << divider.str() << "best cost overall: " << overallBestCost  << std::endl << divider.str();
+
+            if (mHistoryOutput == "screen") // print to console:
+                std::cout << documentation.str();
+            else if (mHistoryOutput == "txt")
+            {
+                std::string filename = mHistoryFilePath + "history_of_run_" + boost::lexical_cast<std::string>(pRunNumber) + ".txt";
+                std::ofstream file;
+                file.open(filename);
+                if (file.is_open())
+                {
+                    file << documentation.str();
+                    file.close();
+                }
+                else throw std::runtime_error("Could not open file " + filename);
+            }
+            else throw std::runtime_error("Invalid history output type " + mHistoryOutput);
+        }
     }
     // If mHistoryOutput == none: do nothing.
 }

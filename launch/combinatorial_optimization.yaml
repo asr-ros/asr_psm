@@ -1,25 +1,57 @@
-#Parameters for combinatorial optimization
-false_positives_weight: 5
-avg_recognition_time_weight: 1
-test_set_count: 10
-cost_function: WeightedSum                      #no other types available
-neighbourhood_function: TopologyManager         #no other types available
-optimization_algorithm: HillClimbing            #from "HillClimbing", "RecordHunt", "SimulatedAnnealing"
-starting_topologies_type: Random                #from "FastestStar" (for testing purposes), "Random"
-number_of_starting_topologies: 2
-xml_output: file                                #from "none", "screen", "file"
-xml_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/  #optional if xml_output is not set to "file"
-remove_relations: true
-swap_relations: true
-recognition_threshold: 0                        #currently gets overwritten by the program for testing purposes
-maximum_neighbour_count: 100                   
-object_missing_in_test_set_probability: 0       #set to <= 0 to have all objects appear in each test set
-hill_climbing_random_walk_probability: 0
-record_hunt_initial_acceptable_cost_delta: 0.02
-record_hunt_cost_delta_decrease_factor: 0.01
-simulated_annealing_start_temperature: 1
-simulated_annealing_end_temperature: 0.005
-simulated_annealing_repetitions_before_update: 8
-simulated_annealing_temperature_factor: 0.85
-optimization_history_output: file               #from "none", "screen", "file"
-optimization_history_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/ #optional if optimization_history_output is not set to "file"
+#Parameters for combinatorial optimization used in generating scene object relation graphs.
+
+#optimization parameters:
+optimization_algorithm: HillClimbing #type of optimization algorithm to use. from "HillClimbing", "RecordHunt", "SimulatedAnnealing"
+starting_topologies_type: Random #type of starting topology to use. from "BestStarOrFullyMeshed", "Random"
+number_of_starting_topologies: 2 #number of topologies to start separate optimization runs from.
+
+#neighbourhood function parameters:
+neighbourhood_function: TopologyManager #type of the neighbourhood function to use. no other types available
+remove_relations: true #whether to use removal of relations as operation in neighbour generation.		
+swap_relations: true #whether to use swapping of relations as operation in neighbour generation.
+maximum_neighbour_count: 100 #maximum number of neighbours to select in each step.
+
+#cost function parameters:
+cost_function: WeightedSum #type of the cost function to use. no other types available.
+false_positives_weight: 5 #the weight to give the number of false positives in the weighted sum.
+avg_recognition_time_weight: 1 #the weight to give the average recognition runtime in the weighted sum.
+false_negatives_weight: 5 #the weight to give the number of false negatives in the weighted sum.
+
+#test set generator parameters:
+test_set_count: 10 #number of test sets to use to validate topologies with.
+object_missing_in_test_set_probability: 0 #probability with which an object does not appear in a test set. set to <= 0 to have all objects appear in each test set
+recognition_threshold: 0.01 #threshold above which a relation is considered fulfilled. scene threshold, above which scenes are recognized: pow(recognition_threshold,objects) 
+#not properly implemented yet:
+valid_test_set_db_filename: ''
+#database file to load the valid test sets from. New test sets are created if this is set to ''. LOADING NOT IMPLEMENTED YET.
+invalid_test_set_db_filename: ''
+#database file to load the invalid test sets from. New test sets are created if this is set to ''. LOADING NOT IMPLEMENTED YET.
+
+#miscellaneous parameters:
+conditional_probability_algorithm: minimum #algorithm used to determine probabilities depending on multiple parents.#from "minimum", "multiplied", "root_of_multiplied", "average"  
+
+#hill climbing parameters, optional if other optimization algorithm is used:
+hill_climbing_random_walk_probability: 0 #probability with which a random walk is performed.
+hill_climbing_random_restart_probability: 0 #probability with which a random restart is performed.
+
+#record hunt parameters, optional if other optimization algorithm is used:
+record_hunt_initial_acceptable_cost_delta: 0.02 #initial delta for acceptable cost.
+record_hunt_cost_delta_decrease_factor: 0.01 #factor to decrease the acceptance delta by.
+
+#simulated annealing parameters, optional if other optimization algorithm is used:
+simulated_annealing_start_temperature: 1 #temperature to start at.
+simulated_annealing_end_temperature: 0.005 #temperature to terminate at.
+simulated_annealing_repetitions_before_update: 8 #repetitions of comparison before decreasing temperature.
+simulated_annealing_temperature_factor: 0.85 #factor by which the temperature changes.
+
+#output parameters:
+xml_output: file #output target for the partial PSMs learned on intermediate topologies. from "none", "screen", "file"
+xml_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/  #path to write models to. optional if xml_output is not set to "file"
+optimization_history_output: svg #output target for the history of the last optimization run. from "none", "screen", "txt", "svg"
+optimization_history_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/ #path to write the history file to. optional if optimization_history_output is not set to "file"
+create_runtime_log: true #whether to write a log of the runtimes to file
+log_file_name: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/runtime_log.csv #full name of the .csv file to write log to. optional if create_runtime_log is false.
+visualize_inference: false #whether to visualize intermediate inference runs
+
+
+

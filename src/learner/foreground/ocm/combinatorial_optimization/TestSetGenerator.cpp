@@ -22,17 +22,33 @@ namespace ProbabilisticSceneRecognition {
 void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
                                         unsigned int pTestSetCount)
 {
-    validateSets(generateRandomSets(pExamplesList, pTestSetCount));
+    ros::NodeHandle nodeHandle("~");
+    std::string validTestSetDbFilename, invalidTestSetDbFilename;
+    // Try to get the valid test set database filename:
+    if(!nodeHandle.getParam("valid_test_set_db_filename", validTestSetDbFilename))
+        throw std::runtime_error("Please specifiy parameter valid_test_set_db_filename when starting this node.");
+    // Try to get the invalid test set database filename:
+    if(!nodeHandle.getParam("invalid_test_set_db_filename", invalidTestSetDbFilename))
+        throw std::runtime_error("Please specifiy parameter invalid_test_set_db_filename when starting this node.");
+
+    // if the file names are empty: generate new test sets.
+    if (validTestSetDbFilename == "" || invalidTestSetDbFilename == "")
+        validateSets(generateRandomSets(pExamplesList, pTestSetCount));
+    else // get the test sets from the databases
+    {
+        mSceneId = pExamplesList[0]->identifier;
+        mValidTestSets = loadTestSetFromFile(validTestSetDbFilename);
+        mInvalidTestSets = loadTestSetFromFile(invalidTestSetDbFilename);
+
+        throw std::runtime_error("Cannot load test sets from file yet.");
+    }
 }
 
 std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList, unsigned int pTestSetCount)
 {
-    ROS_INFO_STREAM("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    printDivider();
     ROS_INFO_STREAM("Generating " << pTestSetCount << " random test sets.");
-    ROS_INFO_STREAM("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    //std::cout << "Generating random test sets for object types ";
-    //for (std::string type: mTypes) std::cout << " " << type;
-    //std::cout << std::endl;
+    printDivider();
     std::random_device rd;
     boost::mt19937  eng;    // Mersenne Twister
     eng.seed(rd());
@@ -53,17 +69,14 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
         boost::shared_ptr<const asr_msgs::AsrSceneGraph> currentSceneGraph = pExamplesList[i];
         for (unsigned int j = 0; j < testSetsPerSceneGraph; j++)     // generate a certain number of test sets for each available scene graph for the scene
         {
-            // compare bachelor thesis of Fabian Hanselmann
             std::vector<asr_msgs::AsrObject> testSet;
             unsigned int randomTrackIndex = gen() % currentSceneGraph->scene_elements.size();
             asr_msgs::AsrNode randomTrack = currentSceneGraph->scene_elements[randomTrackIndex];
             unsigned int randomPoseIndex = gen() % randomTrack.track.size();    // Select random scene observation, assuming all tracks have the same length.
             asr_msgs::AsrObject referenceObject = makeAsrObject(randomTrack.track[randomPoseIndex]);  // Pick random pose on trajectory
-            //testSet.push_back(referenceObject);   // currently gets pushed like any other object, in transformed form.
 
             for (asr_msgs::AsrNode trajectory: currentSceneGraph->scene_elements)   // since each object can only appear once, iterate over all trajectories
             {
-                //std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
                 unsigned int occurs;
                 if (mObjectMissingInTestSetProbability > 1) throw std::runtime_error("parameter object_missing_in_test_set_probability should not be larger than 1.");
                 if (mObjectMissingInTestSetProbability > 0)
@@ -74,33 +87,15 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
                     asr_msgs::AsrObservations observation = trajectory.track[randomPoseIndex];  // Pick random pose on trajectory
                     asr_msgs::AsrObject object = makeAsrObject(observation);
 
-                    /*std::cout << "Took observation with type " << object.type << " from random index " << randomPoseIndex << " in trajectory." << std::endl;
-                    for (geometry_msgs::PoseWithCovariance pwc: object.sampledPoses)
-                    {
-                        std::cout << "position = (" << pwc.pose.position.x << ", " << pwc.pose.position.y << ", " << pwc.pose.position.z << ")" << std::endl;
-                        std::cout << "orientation = (" << pwc.pose.orientation.w << pwc.pose.orientation.x << ", " << pwc.pose.orientation.y << ", " << pwc.pose.orientation.z << ")" << std::endl;
-                    }*/
-
                     setPoseOfObjectRelativeToReference(object, referenceObject);
-                    /*std::cout << "Relative to reference object:" << std::endl;
-                    for (geometry_msgs::PoseWithCovariance pwc: object.sampledPoses)
-                    {
-                        std::cout << "position = (" << pwc.pose.position.x << ", " << pwc.pose.position.y << ", " << pwc.pose.position.z << ")" << std::endl;
-                        std::cout << "orientation = (" << pwc.pose.orientation.w << ", " << pwc.pose.orientation.x << ", " << pwc.pose.orientation.y << ", " << pwc.pose.orientation.z << ")" << std::endl;
-                    }*/
-
-                    //if (referenceObject.type == trajectory.track[randomPoseIndex].type) std::cout << "(Was reference object)" << std::endl;
-                    testSet.push_back(object);  // probabliy add "else" in front of this statement, so that transformed reference doesn't get pushed.
+                    testSet.push_back(object);
 
                 }
-                //else std::cout << "Did not take observation." << std::endl;
             }
             testSets.push_back(testSet);
 
         }
     }
-    /*std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;*/
 
     return testSets;
 }
@@ -112,6 +107,7 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
     // set all tests as valid (so that fully meshed topology, which cannot have false positives, gets its evaluation result set already)
     mEvaluator->setValidTestSets(pTestSets);
     mEvaluator->setInvalidTestSets(std::vector<std::vector<asr_msgs::AsrObject>>());
+    double recognitionThreshold = mEvaluator->getRecognitionThreshold();    // save actual recognition threshold.
     mEvaluator->setRecognitionThreshold(-1);    // so every test set gets recognized
 
     ROS_INFO_STREAM("Recognizing test sets with fully meshed topology.");
@@ -130,12 +126,10 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
         else if (probability < minProbability) minProbability = probability;    // set lowest non-zero probability as new minimum
     }
 
-    double recognitionThreshold = ((maxProbability - minProbability) / 2) + minProbability;  // for testing: set recognition threshold to the middle of the probability range.
-    //mRecognitionThreshold = minProbability;    // for testing: all probabilities greater than the minimum probability are valid.
-    //mRecognitionThreshold = 0;      // for testing: considers all scenes with any probability greater than zero as recognized.
+    double middle = ((maxProbability - minProbability) / 2) + minProbability;  // for testing: the middle of the probability range.
 
     std::vector<std::vector<asr_msgs::AsrObject>> validTestSets;
-    std::vector<std::vector<asr_msgs::AsrObject>> invalidTestSets;
+    std::vector<std::vector<asr_msgs::AsrObject>> invalidTestSets;    
 
     for (unsigned int i = 0; i < testSetProbabilities.size(); i++)
     {
@@ -144,18 +138,19 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
         else invalidTestSets.push_back(pTestSets[i]);
     }
 
-    ROS_INFO_STREAM("===========================================================");
+    printDivider();
     ROS_INFO_STREAM("Test set creation complete.");
     ROS_INFO_STREAM("Maximum probability: " << maxProbability);
     ROS_INFO_STREAM("Minimum probability greater than zero: " << minProbability);
     ROS_INFO_STREAM("Recognition threshold: " << recognitionThreshold);
+    ROS_INFO_STREAM("Middle: " << middle);
     ROS_INFO_STREAM("Found " << validTestSets.size() << " valid and " << invalidTestSets.size() << " invalid test sets.");
     ROS_INFO_STREAM(zeroSets << " test sets have probability 0.");
-    ROS_INFO_STREAM("===========================================================");
+    printDivider();
 
     mEvaluator->setValidTestSets(validTestSets);    // update with newfound valid test sets
     mEvaluator->setInvalidTestSets(invalidTestSets);    // initialize properly
-    mEvaluator->setRecognitionThreshold(recognitionThreshold);
+    mEvaluator->setRecognitionThreshold(recognitionThreshold);  // set actual recognition threshold again
 
     mValidTestSets = validTestSets;
     mInvalidTestSets = invalidTestSets;
@@ -210,7 +205,24 @@ void TestSetGenerator::setPoseOfObjectRelativeToReference(asr_msgs::AsrObject& p
     }
 
     pObject.sampledPoses = newPoses;
-    //std::cout << "+++++++++++++++++++++++++++++" << std::endl;
+}
+
+std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::loadTestSetFromFile(const std::string& filename)
+{
+    // compare ISM CombinatorialTrainer
+    ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(filename));
+    std::vector<std::string> patternNames = localTableHelper->getRecordedPatternNames();
+    if (std::find(patternNames.begin(), patternNames.end(), mSceneId) == patternNames.end())
+        throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + filename + "): scene id " + mSceneId + " is not a valid pattern in the database.");
+
+    std::vector<ISM::ObjectSetPtr> loadedTestSet;
+
+    loadedTestSet = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
+
+    // transformation not properly implemented yet:
+    std::vector<std::vector<asr_msgs::AsrObject>> testSet;
+
+    return testSet;
 }
 
 }

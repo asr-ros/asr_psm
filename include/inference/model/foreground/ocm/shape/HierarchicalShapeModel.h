@@ -38,6 +38,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Local includes
 #include "inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.h"
 
+// Algorithms to combine conditional probabilities with of multiple parents:
+#include "inference/model/foreground/ocm/shape/MinimumConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/MultipliedConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/RootOfMultipliedConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/AverageConditionalProbability.h"
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -123,6 +129,13 @@ namespace ProbabilisticSceneRecognition {
      * A copy of the visualizer that coordinates the secondary scene object visualizers.
      */
     boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mVisualizer;
+
+    /**
+     * The type of algorithm used to handle the conditional probabilities depending on several parents.
+     * "single_parent" - forbid more than one parent and throw std::runtime_error if more are used.
+     * "minimum" - use the minimum of the conditional probabilities depending on each parent alone.
+     */
+    std::string mConditionalProbabilityAlgorithm;
   };
 
 }

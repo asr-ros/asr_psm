@@ -35,6 +35,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Local includes
 #include "inference/model/foreground/ocm/shape/GaussianMixtureDistribution.h"
+#include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
 
 namespace ProbabilisticSceneRecognition {
   
@@ -92,9 +93,11 @@ namespace ProbabilisticSceneRecognition {
      * @param pAssignments Assignments of parts to slots.
      * @param pSlotId The id of the slot this node is associated with.
      * @param pCut True, if a zero-object was assigned to a direct parent node.
+     * @param pConditionalProbabilities List of conditional probabilities associated with each slot.
      * @return Probability as determined by this subtree the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut);
+    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
+                                             std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities);
     
     /**
      * Update the visualizers based on the evidence.
@@ -131,6 +134,12 @@ namespace ProbabilisticSceneRecognition {
      * set the node to unvisited.
      */
     void resetVisit();
+
+    /**
+     * get the type of the object that is represented by this node.
+     * @return  the type of the object that is represented by this node.
+     */
+    std::string getSceneObjectType() { return mSceneObject; }
 
   private:
     

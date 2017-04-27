@@ -69,7 +69,7 @@ namespace ProbabilisticSceneRecognition {
      * We create a scene object learner for every unique object in the scene. Objects ARE ONLY IDENTIFIED BY THEIR TYPE,
      * NOT THEIR INSTANCE. That is because at the time of implementation, no instance information was available!
      *****************************************************************************************************************/
-    std::vector<std::string> types; // FOR TESTING
+    std::vector<std::string> types;
     // First we iterate over all examples for this scene.
     BOOST_FOREACH(boost::shared_ptr<const asr_msgs::AsrSceneGraph> example, mExamplesList)
     {
@@ -87,7 +87,7 @@ namespace ProbabilisticSceneRecognition {
 	// If no learner was found, create a new one.
 	if(!isExisting) {
 	  mSceneObjectLearners.push_back(boost::shared_ptr<SceneObjectLearner>(new OcmSceneObjectLearner(type)));
-      types.push_back(type); // FOR TESTING
+      types.push_back(type);
 	  ROS_INFO_STREAM("Found a new scene object of type '" << type << "' in scene '" << mSceneName << "'.");
 	}
       }
@@ -96,43 +96,39 @@ namespace ProbabilisticSceneRecognition {
     ROS_INFO("Building relation tree.");
 
     ros::NodeHandle nodeHandle("~");
-    int trainerType;
+    std::string trainerType;
     // Try to get the type of the relation tree trainer.
     if(!nodeHandle.getParam("relation_tree_trainer_type", trainerType))
     {
-       ROS_INFO_STREAM("Could not find ROS parameter relation_tree_trainer_type. Using standard method of hierarchical clustering (value=\"0\").");
-       trainerType = 0;     // for compatability with old launch files.
+       ROS_INFO_STREAM("Could not find ROS parameter relation_tree_trainer_type. Using standard method of hierarchical clustering (value=\"tree\").");
+       trainerType = "tree";     // for compatability with old launch files.
     }
 
     // Create the relation graph.
     SceneModel::AbstractTrainer trainer;
-    switch(trainerType)
-    {
-    case 0:     // Hierarchical tree, like before, without references.
+    if (trainerType == "tree")      // Hierarchical tree, like before, without references.
     {
         SceneModel::PSMTrainer psmtrainer(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
         psmtrainer.addSceneGraphMessages(mExamplesList);
         trainer = psmtrainer;
-        break;
     }
-    case 1:     // Fully meshed topology -> tree with references.
+    else if (trainerType == "fullymeshed")     // Fully meshed topology -> tree with references.
     {
         SceneModel::FullyMeshedTrainer fmtrainer;
         fmtrainer.addSceneGraphMessages(mExamplesList);
         trainer = fmtrainer;
-        break;
     }
-    case 2:     // combinatorial optimization
+    else if (trainerType == "combinatorial_optimization")     // combinatorial optimization
     {
-        // Preparing learners for use in combinatorial optimization:
+        // Preparing learners for use in combinatorial optimization, compare below:
         for (boost::shared_ptr<SceneObjectLearner> learner: mSceneObjectLearners)
         {
             learner->setClusteringParameters(mStaticBreakRatio, mTogetherRatio, mMaxAngleDeviation);
             learner->setVolumeOfWorkspace(mWorkspaceVolume);
+            learner->setPriori(1.0);
         }
 
         boost::shared_ptr<CombinatorialTrainer> combinatorialTrainer(new CombinatorialTrainer(mSceneObjectLearners, types, mExamplesList));
-
         // set the optimized topology as the one to be transformed into the tree to be used for the final result
         boost::shared_ptr<SceneModel::Topology> optimizedTopology = combinatorialTrainer->runOptimization();
 
@@ -146,11 +142,8 @@ namespace ProbabilisticSceneRecognition {
             optimizedTree = optimizedTree->mParent;
         SceneModel::FixedTreeTrainer fttrainer(optimizedTree);
         trainer = fttrainer;
-
-        break;
     }
-    default: throw std::runtime_error("Trainer type " + boost::lexical_cast<std::string>(trainerType) + " is invalid. Valid types are 0-2.");
-    }
+    else throw std::runtime_error("Trainer type " + trainerType + " is invalid. Valid types are tree, fullymeshed, combinatorial_optimization.");
 
     //trainer.addSceneGraphMessages(mExamplesList);
     trainer.loadTrajectoriesAndBuildTree();

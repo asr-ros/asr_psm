@@ -47,6 +47,22 @@ private:
     std::string mSceneId;
 public:
     /**
+     * Returns the cost of a topology which has already been set before.
+     */
+    class CostFunction: public ISM::CostFunction<ISM::TopologyPtr> {
+    public:
+        /**
+         * return the cost of the instance.
+         * @param instance  to return the cost of
+         * @return          the cost of the instance
+         */
+        double calculateCost(ISM::TopologyPtr instance)
+        {
+            return instance->cost;
+        }
+    };
+
+    /**
      * Constructor.
      */
     TopologyAdapter(std::vector<std::string> pObjectTypes, std::string pSceneId):  mPSMTopologyIndex(0), mISMTopologyIndex(0), mSceneId(pSceneId)
@@ -59,7 +75,8 @@ public:
     /**
      * Destructor.
      */
-    ~TopologyAdapter();
+    ~TopologyAdapter()
+    { }
 
     ISM::TopologyPtr psmToIsm(boost::shared_ptr<SceneModel::Topology> pPsmTopology)
     {
@@ -73,10 +90,12 @@ public:
         else throw std::runtime_error("In TopologyAdapter: Cannot transform PSM Topology with invalid cost to ISM Topology.");
 
         // It is unknown whether an ism tree created for this topology would be valid.
-        // Validity of the psm relation tree use instead.
+        /* Validity of the psm relation tree use instead.
         if (pPsmTopology->mTree)
             ismTopology->isValid = true;
-        else ismTopology->isValid = false;
+        else*/
+        // always assumed to be invalid.
+        ismTopology->isValid = false;
 
         ismTopology->identifier = pPsmTopology->mIdentifier;
 
@@ -135,6 +154,10 @@ public:
             psmTopology->mRelations.push_back(psmRelation);
         }
     }
+
+
+
+
 };
 
 }

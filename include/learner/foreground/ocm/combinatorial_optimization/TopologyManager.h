@@ -21,8 +21,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <topology_generator/TopologyGenerator.h>
 
 #include <ISM/combinatorial_optimization/NeighbourhoodFunction.hpp>
+#include <ISM/utility/SVGHelper.hpp>
 
 #include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.h"
 
 namespace ProbabilisticSceneRecognition {
 
@@ -41,14 +43,14 @@ public:
      * @param pEvaluator            Evaluator to evaluate the topologies.
      */
     TopologyManager(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+                    const std::vector<std::string>& pObjectTypes,
                     boost::shared_ptr<SceneModel::TopologyGenerator> pTopologyGenerator,
-                    boost::shared_ptr<Evaluator> pEvaluator,
-                    std::string pHistoryOutput, std::string pHistoryFilePath);
+                    boost::shared_ptr<Evaluator> pEvaluator);
 
     /**
      * Desctructor.
      */
-    ~TopologyManager() { }
+    ~TopologyManager();
 
     /**
      * Get the next neighbour of the current reference topology.
@@ -102,6 +104,14 @@ public:
 private:
 
     /**
+     * Print a divider to ros info stream to divide and mark selected output.
+     */
+    void printDivider()
+    {
+        ROS_INFO_STREAM("###########################################################");
+    }
+
+    /**
      * List of all unvisited neighbours of current reference topology.
      */
     std::vector<boost::shared_ptr<SceneModel::Topology>> mNeighbours;
@@ -124,7 +134,12 @@ private:
     std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> mExamplesList;
 
     /**
-     * The history of topolgy access and thus optimization.
+     * List of different object types in the examples list.
+     */
+    std::vector<std::string> mObjectTypes;
+
+    /**
+     * The history of topology access and thus optimization.
      * The boolean in the pair indicates whether the topology was selected for use as reference in the next step.
      */
     std::vector<std::vector<std::pair<boost::shared_ptr<SceneModel::Topology>, bool>>> mHistory;
@@ -144,6 +159,11 @@ private:
      * Path to the files to write the histories into if mHistoryOutput is set to "file".
      */
     std::string mHistoryFilePath;
+
+    /**
+     * Helps to write history to svg file if output is set to "svg".
+     */
+    ISM::SVGHelperPtr mSVGHelper;
 };
 
 }

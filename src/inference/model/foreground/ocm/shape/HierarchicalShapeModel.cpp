@@ -21,6 +21,13 @@ namespace ProbabilisticSceneRecognition {
  
   HierarchicalShapeModel::HierarchicalShapeModel()
   {
+      ros::NodeHandle nodeHandle("~");
+      // Try to get the type of the conditional probability algorithm.
+      if(!nodeHandle.getParam("conditional_probability_algorithm", mConditionalProbabilityAlgorithm))
+      {
+         ROS_INFO_STREAM("Could not find ROS parameter conditional_probability_algorithm. Using standard method of using the minimum (value=\"minimum\").");
+         mConditionalProbabilityAlgorithm = "minimum";     // for compatability with old launch files.
+      }
   }
   
   HierarchicalShapeModel::~HierarchicalShapeModel()
@@ -139,8 +146,30 @@ namespace ProbabilisticSceneRecognition {
       // Evaluate evidence for root node under uniform distribution (FOR EVERY DIMENSION. Could only be done, it a root object was assigned to the root node.
       // THIS IS NECESSARY! When we have only one object, a scene containing it and a background scene,
       // then the probabilities MUST BE 50/50 (of course assumed that both scenes only consider shape)!
-      result *= 1.0 / (mWorkspaceVolume * 2.0 * pow(M_PI, 2.0));
+      double rootResult = 1.0 / (mWorkspaceVolume * 2.0 * pow(M_PI, 2.0));
+      result *= rootResult;
       
+      // vector to hold the conditional probability of each slot:
+      std::vector<boost::shared_ptr<ConditionalProbability>> conditionalProbabilities(pAssignments.size());
+      // initialize conditional probabilites:
+      if (mConditionalProbabilityAlgorithm == "minimum")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new MinimumConditionalProbability());
+      else if (mConditionalProbabilityAlgorithm == "multiplied")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new MultipliedConditionalProbability());
+      else if (mConditionalProbabilityAlgorithm == "root_of_multiplied")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new RootOfMultipliedConditionalProbability());
+      else if (mConditionalProbabilityAlgorithm == "average")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new AverageConditionalProbability());
+      else throw std::runtime_error("In HierarchicalShapeModel::calculateProbabilityForHypothesis(): conditional probability algorithm type "
+                                    + mConditionalProbabilityAlgorithm + " is invalid. Valid types are minimum.");
+
+      // set probability of reference object (represented by this class):
+      conditionalProbabilities[0]->addProbability(rootResult);
+
       // Iterate over all children, assign the given evidence to them and evaluate
       for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
       {	
@@ -149,8 +178,17 @@ namespace ProbabilisticSceneRecognition {
 	
 	// If zero-object was assigned to child, continue iterating down the tree to set the right slot id,
 	// but don't use the probabilities based on the occluded subtree.
-    result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0);
+    //result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0);
+    result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0, conditionalProbabilities);
       }
+
+      double slotProduct = 1.0;
+      for (boost::shared_ptr<ConditionalProbability> cP: conditionalProbabilities)
+          slotProduct *= cP->getProbability();
+      // keeping the old result around for comparison:
+      /*if (slotProduct != result) std::cout << slotProduct << " (min), " << result << " (mul)" << std::endl;
+      else std::cout << slotProduct << "(min&mul)" << std::endl;*/
+      result = slotProduct; // overwriting it for output.
       
       // Forward position of this primary scene object to visualizer.
       mVisualizer->setBestPoseCandidate(mAbsolutePose);
@@ -158,6 +196,7 @@ namespace ProbabilisticSceneRecognition {
       // A hypothesis without an assigned root object is invalid and will therefore be scored with the impossible event.
       result = 0.0;
     }
+
     return result;
   }
   

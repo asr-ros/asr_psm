@@ -146,7 +146,8 @@ namespace ProbabilisticSceneRecognition {
     mAbsoluteParentPose = pPose;
   }
   
-  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut)
+  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
+                                                                       std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities)
   {
     double result = 1.0;
     
@@ -159,9 +160,10 @@ namespace ProbabilisticSceneRecognition {
     // Subtree already cut?
     if(pCut || pAssignments[pSlotId] == 0)
     {
+        pConditionalProbabilities[pSlotId]->addProbability(1.0);
       // Continue moving down the tree to increment the slot id.
       for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
-    child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true);
+    child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true, pConditionalProbabilities);
     } else if (!mWasVisited) {
         mWasVisited = true;
 
@@ -174,6 +176,8 @@ namespace ProbabilisticSceneRecognition {
       double scorePos = mGaussianMixtureDistributionPosition->evaluate(mRelativePose);
       double scoreOri = mGaussianMixtureDistributionOrientation->evaluate(mRelativePose);
       double score = scorePos * scoreOri;
+
+      pConditionalProbabilities[pSlotId]->addProbability(score);
       
 //       ROS_DEBUG_STREAM("Pose fitting report for scene object '" << mSceneObject <<"'. Position is " << scorePos << ", orientation is " << scoreOri << ". Total is " << score << ".");
       // Add score to global result.
@@ -196,7 +200,7 @@ namespace ProbabilisticSceneRecognition {
 	
 	// If zero-object was assigned to child, continue iterating down the tree to INCREMENT THE SLOT ID.
 	// The returned probability will be one, so it has no influence at all.
-    result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, false);
+    result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, false, pConditionalProbabilities);
       }
       // Forward position of this primary scene object to visualizer.
       mVisualizer->setBestCandidatePose(mAbsolutePose);
@@ -280,6 +284,8 @@ namespace ProbabilisticSceneRecognition {
 
   void HierarchicalShapeModelNode::setReferencedNode(boost::shared_ptr<HierarchicalShapeModelNode> pReferencedNode)
   {
+    if (mSceneObject != pReferencedNode->getSceneObjectType())
+        throw std::runtime_error("Node with type " + mSceneObject + " is trying to reference a node of different type " + pReferencedNode->getSceneObjectType());
     mReferencedNode = pReferencedNode;
   }
 

@@ -37,20 +37,17 @@ public:
 
     /**
      * Constructor.
-     * @param pInferenceAlgorithm   algorithm to be used to combine inference results.
      * @param pExamplesList         list of object observations (evidences) to train on.
      * @param pLearners             learners to learn models to test.
-     * @param pRecognitionThreshold threshold above which (>) a probability is seen as high enough to represent a scene has been recognized.
-     * @param pXmlOutput            type of output of the learned model in xml format: "none", "screen", "file"
-     * @param pXmlFilePath          if pXmlOutput is "file", the path where to store the files.
+     * @param pRecognitionThreshold the threshold above (>) which a scene is considered recognized.
      */
-    Evaluator(const std::string pInferenceAlgorithm, std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
-              std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold, const std::string& pXmlOutput, const std::string& pXmlFilePath);
+    Evaluator(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+              std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold);
 
     /**
      * Desctuctor.
      */
-    ~Evaluator() { }
+    ~Evaluator();
 
     /**
      * Evaluate model learned on topology against test sets, write results to topology.
@@ -91,6 +88,15 @@ public:
         mRecognitionThreshold = pRecognitionThreshold;
     }
 
+    /**
+     * Get recognition threshold.
+     * @return the recognition threshold.
+     */
+    double getRecognitionThreshold()
+    {
+        return mRecognitionThreshold;
+    }
+
 private:
     /**
      * Returns the probability whether the given evidence represents the scene represented by the last learned model.
@@ -107,10 +113,17 @@ private:
 
     /**
      * Output model in xml format.
-     * @param pFalsePositives   number of false positives to be output.
-     * @param pAvgRuntime       average recognition runtime to beo output.
+     * @param pTopology     the topology underlying the model to write and containing its evalution results.
      */
-    void xmlOutput(double pFalsePositives, double pAvgRuntime);
+    void xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology);
+
+    /**
+     * Print a divider to ros info stream to divide and mark selected output.
+     */
+    void printDivider()
+    {
+        ROS_INFO_STREAM("-----------------------------------------------------------");
+    }
 
     /**
      * The test sets which represent the considered scene.
@@ -132,9 +145,9 @@ private:
     double mRecognitionThreshold;
 
     /**
-     * A logger for runs.
+     * A logger for the runtimes for the scene objects.
      */
-    std::ofstream mRuntimeLogger;   // NOT PROPERLY USED
+    std::ofstream mRuntimeLogger;
 
     /**
      * Used to do inference on the learned model.
@@ -172,6 +185,38 @@ private:
      * xml property tree describing the partial model learned on the current topoloy.
      */
     boost::property_tree::ptree mModel;
+
+    /**
+     * Whether to create a runtime log.
+     */
+    bool mCreateRuntimeLog;
+
+    // Visualization parameters:
+    /**
+     * Whether to visualize intermediate inference runs in rviz.
+     */
+    bool mVisualize;
+    /**
+     * Set true, to overwrite the visualization of results of intermediate inference runs and plot the target distributions instead.
+     */
+    bool mTargetingHelp;
+    /**
+     * The name of the frame the objects should be transformed to.
+     */
+    std::string mFrameId;
+    /**
+     * The visualization is pretty small, this scale factor enlarges it.
+     */
+    double mScaleFactor;
+    /**
+     * This factor determines the multiple of the standard deviation.
+     */
+    double mSigmaMultiplier;
+
+    /**
+     * Visualizer for the ForegroundSceneContent.
+     */
+    boost::shared_ptr<Visualization::ProbabilisticSceneVisualization> mVisualizer;
 };
 
 }

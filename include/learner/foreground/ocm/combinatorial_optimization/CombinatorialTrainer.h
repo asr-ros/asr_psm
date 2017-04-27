@@ -27,7 +27,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/combinatorial_optimization/SimulatedAnnealingAlgorithm.hpp>
 #include <ISM/combinatorial_optimization/ExponentialCoolingSchedule.hpp>
 
-
 #include "learner/foreground/ocm/combinatorial_optimization/WeightedSum.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TopologyManager.h"
@@ -76,8 +75,10 @@ private:
 
     /**
      * Initialize starting topologies to perform optimization from.
+     * @param pNumberOfStartingTopologies   number of starting topologies to initialize.
+     * @param pStartingTopologiesType       type of algorithm to use to generate starting topologies.
      */
-    void initStartingTopologies();
+    void initStartingTopologies(unsigned int pNumberOfStartingTopologies, const std::string& pStartingTopologiesType);
 
     /**
      * Initialize the cost function used to judge topologies.
@@ -96,6 +97,26 @@ private:
      * @param pType type of the optimization algorithm to be used: from "HillClimbing", "RecordHunt", "SimulatedAnnealing".
      */
     void initOptimizationAlgorithm(const std::string& pType);
+
+    /**
+     * optimize from the given topology. Sets new mBestOptimizedTopology if a better one has been found.
+     * @param pStartingTopology         to optimize from.
+     * @param pStartingTopologyNumber   the number of the starting topology, for output.
+     */
+    void optimize(boost::shared_ptr<SceneModel::Topology> pStartingTopology, unsigned int pStartingTopologyNumber);
+
+    /**
+     * Print a divider to ros info stream to divide and mark selected output.
+     */
+    void printDivider()
+    {
+        ROS_INFO_STREAM("===========================================================");
+    }
+
+    /**
+     * Handle to ros node for parameter access.
+     */
+    ros::NodeHandle mNodeHandle;
 
     /**
      * list of all star topologies for the given object types.
@@ -147,6 +168,12 @@ private:
      * All topologies with more can be replaced with a star topology, which will be faster.
      */
     unsigned int mMaxFalsePositives;        // set in initStar
+
+    /**
+     * Maximum number of false negatives.
+     * All topologies with more can be replaced with a star topology, which will be faster.
+     */
+    unsigned int mMaxFalseNegatives;        // set in initStar
     /**
      * Minimum average recognition runtime.
      */
@@ -156,77 +183,24 @@ private:
      */
     unsigned int mMinFalsePositives;        // set in ctor
     /**
-     * The factor to weigh the number of false positives with in cost function WeightedSum.
+     * Minimum number of false negatives. Set to 0.
      */
-    double mFalsePositivesFactor;           // from ROS parameter server
-    /**
-     * The factor to weigh the average recognition runtime with in cost function WeightedSum.
-     */
-    double mAvgRecognitionTimeFactor;       // from ROS parameter server
+    unsigned int mMinFalseNegatives;        // set in ctor
+
     /**
      * Whether the maxima and minima have been properly initialized yet.
      */
-    bool mMaxTimeInitialized, mMinTimeInitialized, mMaxFPInitialized, mMinFPInitialized;
+    bool mMaxTimeInitialized, mMinTimeInitialized, mMaxFPInitialized, mMinFPInitialized, mMaxFNInitialized, mMinFNInitialized;
 
     /**
-     * The type of the algorithm used to select starting topologies: "Random".
+     * The best topology considered so far.
      */
-    std::string mStartingTopologiesType;    // from ROS parameter server
-    /**
-     * Number of starting topologies to use.
-     * For each, optimization will be run separately,
-     * results will be compared and best (lowest) will be seleced.
-     */
-    unsigned int mNumberOfStartingTopologies;   // from ROS parameter server
-
-    // for HillClimbing:
-    /**
-     * The probability that HillClimbing, if it is selected as the optimization algorithm
-     * in initOptimizationAlgorithm(), will perform a random walk during optimization,
-     * i.e. randomly accept a worse topology.
-     */
-    double mHillClimbingRandomWalkProbability;     // from ROS parameter server
+    boost::shared_ptr<SceneModel::Topology> mBestOptimizedTopology;
 
     /**
-     * All possible object types appearing in the relation graphs (once each).
+     * Probability that, in HillClimbing, a random restart is performed. Set to 0 for all other algorithms.
      */
-    std::vector<std::string> mObjectTypes;  // could be retrieved from examples list, but this would lead to an unneccessary additional loop over that list
-
-    // for RecordHunt:
-    /**
-     * The initial cost acceptance delta for RecordHunt.
-     */
-    double mInitialAcceptabeCostDelta;
-    /**
-     * The cost delta decrease factor for RecordHunt.
-     */
-    double mCostDeltaDecreaseFactor;
-
-    // for SimulatedAnnealing:
-    /**
-     * The start temperature for SimulatedAnnealing.
-     */
-    double mStartTemperature;
-    /**
-     * The end temperature for SimulatedAnnealing.
-     */
-    double mEndTemperature;
-    /**
-     * The number of repetitions before temperature update in SimulatedAnnealing.
-     */
-    unsigned int mRepetitionsBeforeUpdate;
-    /**
-     * The factor by which the temperature changes in SimulatedAnnealing.
-     */
-    double mTemperatureFactor;
-
-    //for testing:
-    /**
-     * A pointer to the star topology with the shortest average recognition runtime
-     * to possibly be used as starting topology.
-     */
-    boost::shared_ptr<SceneModel::Topology> mFastestStar;
-
+    double mRandomRestartProbability;
 };
 
 }
