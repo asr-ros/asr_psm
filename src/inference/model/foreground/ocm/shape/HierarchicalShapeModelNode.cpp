@@ -51,15 +51,15 @@ namespace ProbabilisticSceneRecognition {
     }
   }
   
-  void HierarchicalShapeModelNode::handleSceneGraph(pbd_msgs::PbdNode& pParent, const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph)
+  void HierarchicalShapeModelNode::handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
-    // Determine the PbdNode that contains observations for this scene object.
-    for(pbd_msgs::PbdNode node : pSceneGraph->scene_elements)
+    // Determine the AsrNode that contains observations for this scene object.
+    for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
     {	
       // Get the type of the first observation (we assume here that all obserations are of the same type).
       std::string type = node.track[0].type;
       
-      // Check, if this PbdNode contains observations for this scene object.
+      // Check, if this AsrNode contains observations for this scene object.
       if(mSceneObject.compare(type) == 0)
       {
 	// Debug message.
@@ -81,7 +81,7 @@ namespace ProbabilisticSceneRecognition {
 // 	  boost::shared_ptr<ResourcesForPsm::Pose> childPose;
 // 	  boost::shared_ptr<ResourcesForPsm::Pose> relativePose;
 // 	  
-// 	  // Extract the poses of the parent and child PbdObservation.
+// 	  // Extract the poses of the parent and child AsrObservation.
 // 	  parentPose.reset(new ResourcesForPsm::Pose(pParent.track[i].transform));
 // 	  childPose.reset(new ResourcesForPsm::Pose(node.track[i].transform));
 // 	  
@@ -101,7 +101,7 @@ namespace ProbabilisticSceneRecognition {
 	for(unsigned int i = 0; i < mChildren.size(); i++)
 	  mChildren[i].handleSceneGraph(node, pSceneGraph);
 	
-	// There's only one PbdNode per object in a single scene graph.
+    // There's only one AsrNode per object in a single scene graph.
 	break;
       }
     }
@@ -126,12 +126,12 @@ namespace ProbabilisticSceneRecognition {
       mChildren[i].initializeVisualizer(mSuperior);
   }
   
-  void HierarchicalShapeModelNode::setAbsoluteParentPose(boost::shared_ptr<ISM::Pose> pPose)
+  void HierarchicalShapeModelNode::setAbsoluteParentPose(boost::shared_ptr<ResourcesForPsm::Pose> pPose)
   {
     mAbsoluteParentPose = pPose;
   }
   
-  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut)
+  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut)
   {
     double result = 1.0;
     
@@ -146,7 +146,7 @@ namespace ProbabilisticSceneRecognition {
 	child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true);
     } else {
       // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[pSlotId] - 1].pose));
+      mAbsolutePose.reset(new ResourcesForPsm::Pose(pEvidenceList[pAssignments[pSlotId] - 1]));
       mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
       
       // Evaluate the relative pose under the the probability distribution describing the scene shape.
@@ -182,20 +182,20 @@ namespace ProbabilisticSceneRecognition {
     return result;
   }
   
-  void HierarchicalShapeModelNode::visualize(std::vector<ISM::Object> pEvidenceList)
+  void HierarchicalShapeModelNode::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
   {
     // Try to find evidence for this scene object.
     for(unsigned int i = 0; i < pEvidenceList.size(); i++)
     {
       // Get the object.
-      ISM::Object object = pEvidenceList[i];
+      asr_msgs::AsrObject object = pEvidenceList[i];
       
       // Is this evidence for this scene object (assumed that there is no detection uncertainty)?
       // If yes and the parent node was also detected, then update the position.
       if(mSceneObject.compare(object.type) == 0 && mAbsoluteParentPose)
       {
 	// Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-    mAbsolutePose.reset(new ISM::Pose(*object.pose));
+	mAbsolutePose.reset(new ResourcesForPsm::Pose(object));
 	mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
 	
 	/********************************************************

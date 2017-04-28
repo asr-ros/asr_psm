@@ -2,7 +2,7 @@
 
 namespace ProbabilisticSceneRecognition {
   
-  ForegroundSceneLearner::ForegroundSceneLearner(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pExample)
+  ForegroundSceneLearner::ForegroundSceneLearner(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
   : SceneLearner(pExample->identifier)
   {
     addExampleToScene(pExample);

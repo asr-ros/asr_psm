@@ -20,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/KalmanFilter.h"
 
 namespace ProbabilisticSceneRecognition {
-    KalmanFilter::KalmanFilter(ISM::Object pObject) :
+    KalmanFilter::KalmanFilter(asr_msgs::AsrObject pObject) :
 			mReset(true)
 	{
 	  	mF = Eigen::MatrixXd::Identity(7, 7);
@@ -42,8 +42,8 @@ namespace ProbabilisticSceneRecognition {
 		mReset = true;
 	}
 
-    void KalmanFilter::update(ISM::Object pObject) {
-      /*
+    void KalmanFilter::update(asr_msgs::AsrObject pObject) {
+	  
 		// Bring last update time uptodate.
 		lastUpdate = std::chrono::high_resolution_clock::now();
 	  
@@ -52,7 +52,7 @@ namespace ProbabilisticSceneRecognition {
 
 
 		if(!pObject.sampledPoses.size()){
-		  std::cerr << "Got a PbdObject without poses." << std::endl;
+          std::cerr << "Got a AsrObject without poses." << std::endl;
 		  std::exit(1);    
 		}
 
@@ -87,8 +87,8 @@ namespace ProbabilisticSceneRecognition {
 		mX = xNew;
 		mZ = mH * mX;
 		
-		// Save instance of PbD::PbdObject.
-        mInstance = pObject;*/
+        // Save instance of Asr::AsrObject.
+		mInstance = pObject;
 	}
 	
 	bool KalmanFilter::isTimedOut(unsigned int threshold)
@@ -96,8 +96,8 @@ namespace ProbabilisticSceneRecognition {
 	  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - lastUpdate).count() > threshold;
 	}
 	
-    ISM::Object KalmanFilter::getObject()
-    {
+    asr_msgs::AsrObject KalmanFilter::getObject()
+	{
 	  // Write the pose maintained by the kalman-filter back into the object.
       geometry_msgs::Pose current_pose;
       current_pose.position.x = mZ(0);
@@ -108,10 +108,10 @@ namespace ProbabilisticSceneRecognition {
       current_pose.orientation.y = mZ(5);
       current_pose.orientation.z = mZ(6);
 
-      //mInstance.sampledPoses.pop_back();
+      mInstance.sampledPoses.pop_back();
       geometry_msgs::PoseWithCovariance current_pose_with_c;
       current_pose_with_c.pose = current_pose;
-     // mInstance.sampledPoses.push_back(current_pose_with_c);
+      mInstance.sampledPoses.push_back(current_pose_with_c);
 	  // Return the instance updated by the kalman filter.
 	  return mInstance;
 	}

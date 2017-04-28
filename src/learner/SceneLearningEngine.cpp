@@ -17,18 +17,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/SceneLearningEngine.h"
 
-
-#include "../../../lib_ism/libism/ISM/common_type/RecordedPattern.hpp"
-#include "../../../lib_ism/libism/ISM/utility/TableHelper.hpp"
-
 namespace ProbabilisticSceneRecognition {
-
-
-
+  
   SceneLearningEngine::SceneLearningEngine(const std::string& pPbdSceneGraphTopic)
   : mPrivateNamespaceHandle("~")
   {
-
     // Volume of the workspace the scene takes place in.
     double workspaceVolume;
     
@@ -54,11 +47,26 @@ namespace ProbabilisticSceneRecognition {
     ss << boost::local_time::local_sec_clock::local_time(zone_GMT1);
     mDateTime = ss.str();
     
-    // Try to get names of bag files with PbdSceneGraph message input, if any exist.
-    if(!mPrivateNamespaceHandle.getParam("input_db_file", mInputDbFilename))
+    // Try to get names of bag files with AsrSceneGraph message input, if any exist.
+    if(mPrivateNamespaceHandle.getParam("bag_filenames_list", mInputBagFilenames))
     {
-        throw std::runtime_error("Please specify parameter " + std::string("input_db_file") + " when starting this node.");
-
+      // Either one string or a list of strings is accepted as input.
+      if(mInputBagFilenames.getType() == XmlRpc::XmlRpcValue::TypeString)
+      {
+	// When not called directly from CLI, we can used a list as input.
+      } else {
+	// Check whether parameter loaded is really a list of values.
+	if(mInputBagFilenames.getType() != XmlRpc::XmlRpcValue::TypeArray)
+	  throw std::invalid_argument("CLI option \"bag_filenames_list\" not set with an array.");
+	
+    // Go through all potential filenames of AsrSceneGraph rosbag files.
+	for(int i = 0; i < mInputBagFilenames.size(); i++)
+	{
+	  // Check whether parameter list element is really a filename. 
+	  if(mInputBagFilenames[i].getType() != XmlRpc::XmlRpcValue::TypeString)
+	    throw std::invalid_argument("Bag file path no. " + boost::lexical_cast<std::string>(i) + "is no valid string.");
+	}
+      }
     }
     
     // Try to get the volume of the workspace where the scene takes place.
@@ -100,65 +108,96 @@ namespace ProbabilisticSceneRecognition {
     // Initialize the scene model.
     initializeSceneModel(workspaceVolume, staticBreakRatio, togetherRatio, maxAngleDeviation);
     
-    // Subscribe to the PbdSceneGraph messages pulled from the bag file(s).
+    // Subscribe to the AsrSceneGraph messages pulled from the bag file(s).
     mPbdSceneGraphListener = mGeneratorHandle.subscribe(pPbdSceneGraphTopic, 5, &SceneLearningEngine::newSceneGraphCallback, this);
   }
   
   SceneLearningEngine::~SceneLearningEngine()
   {
-
+    
   }
   
   void SceneLearningEngine::readLearnerInputBags()
   {
     // If only one string is given to node, just use this as path to scene graphs.
     // Otherwise load a bunch of files and process input as it was one file.
-
-      extractTracksFromDbFile(static_cast<std::string>(mInputDbFilename));
-
-
+    if(mInputBagFilenames.getType() == XmlRpc::XmlRpcValue::TypeString) {
+      extractPbdSceneGraphsFromBag(static_cast<std::string>(mInputBagFilenames));
+    } else {
+      
+      // Go through all paths to AsrSceneGraph rosbag files passed to ros node via cli.
+      // Extract all AsrSceneGraph messages from rosbag file currently taken into account.
+      for(int i = 0; i < mInputBagFilenames.size(); i++) {
+	extractPbdSceneGraphsFromBag(static_cast<std::string>(mInputBagFilenames[i]));
+      }
+    }
   }
-
-
-  void SceneLearningEngine::extractTracksFromDbFile(const std::string& dbFileName)
-  {
-
-      ROS_INFO_STREAM("Pulling Objects from database " << dbFileName.c_str());
-      tableHelper = ISM::TableHelperPtr(new ISM::TableHelper(dbFileName));
-
-        for(auto patternName : tableHelper->getRecordedPatternNames())
-        {
-            ISM::RecordedPatternPtr pattern = tableHelper->getRecordedPattern(patternName);
-            for(ISM::ObjectSetPtr objectSet : pattern->objectSets)
-            {
-                objectSet->mIdentifier = pattern->name;
-                mSceneModelLearner->addExample(objectSet);
-            }
-        }
-
-
-
-  }
-
   
-  void SceneLearningEngine::newSceneGraphCallback(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph)
+  void SceneLearningEngine::extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath)
+  {
+    ROS_INFO_STREAM("Scene model learner: Extracting AsrSceneGraph messages from rosbag file: " << pPbdSceneGraphsBagPath);
+
+    // Check whether topic name for scene graph has been set before trying to parse rosbag files.
+    if(!mPbdSceneGraphListener)
+      throw std::logic_error("Cannot parse bag file with AsrSceneGraphs without knowing on which topic they were sent.");
+    
+    // Set topic representation. When parsing rosbag files this is required for extracting the messages which are representing scene graphs.
+    rosbag::TopicQuery pbdSceneGraphIdentifier(mPbdSceneGraphListener.getTopic());
+
+    // Create file handler for rosbag file to be read.
+    rosbag::Bag pbdSceneGraphsBag;
+
+    // Get read-only access to messages in given rosbag file, create access infrastructure.
+    try {
+      pbdSceneGraphsBag.open(pPbdSceneGraphsBagPath, rosbag::bagmode::Read);
+    } catch(rosbag::BagIOException& exception) {
+      // ROS_ERROR does not work here.
+      std::cerr << "Trying to extract AsrSceneGraph messages aborted because of: " << exception.what() << std::endl;
+      // Quit this function as no data is to be processed.
+      return;
+    }
+
+    // Create interface to extract only scene graph messages in given bag file from a previously defined topic.
+    rosbag::View pbdSceneGraphView(pbdSceneGraphsBag, pbdSceneGraphIdentifier);
+
+    // Check whether there is any raw data from a scene on the topic where we expect them.
+    if(!pbdSceneGraphView.size())
+      ROS_WARN_STREAM("No AsrSceneGraph messages exist in " << pPbdSceneGraphsBagPath << " on topic " << mPbdSceneGraphListener.getTopic() << ".");
+
+    // Get access to all scene graphs in bag file to transfer them to parameter learner for scene model.
+    for(rosbag::View::iterator sceneGraphIterator = pbdSceneGraphView.begin(); sceneGraphIterator != pbdSceneGraphView.end(); sceneGraphIterator++) {
+
+      // Get interface compliant to AsrSceneGraph message on rosbag item currently taken into account.
+      asr_msgs::AsrSceneGraph::ConstPtr currentSceneGraph = sceneGraphIterator->instantiate<asr_msgs::AsrSceneGraph>();
+
+      // Success check for extraction.
+      if(currentSceneGraph != NULL)
+      // And add all object measurements in scene graph to parameter learners.
+	newSceneGraphCallback(currentSceneGraph);
+    }
+
+    // Clean up.
+    pbdSceneGraphsBag.close();
+  }
+  
+  void SceneLearningEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Some error checking
     if(!pSceneGraph)
-      throw std::invalid_argument("Cannot read from an non existing PbdSceneGraph message.");
+      throw std::invalid_argument("Cannot read from an non existing AsrSceneGraph message.");
     
     if(!mSceneModelLearner)
       throw std::logic_error("Cannot add data to non existing instance of the scene model.");
 
     // Status information
-    ROS_INFO_STREAM("Scene model learner: Receiving PbdSceneGraph message with scene type " << pSceneGraph->identifier << ".");
+    ROS_INFO_STREAM("Scene model learner: Receiving AsrSceneGraph message with scene type " << pSceneGraph->identifier << ".");
 
     // Check whether scene graph input is conform to scenes definition.
     try {
-    //  mSceneModelLearner->addExample(pSceneGraph);
+      mSceneModelLearner->addExample(pSceneGraph);
     } catch (std::domain_error& domainError) {
       // Being here should see, we got a scene as input to learn, that is not mentioned in the definition of scenes this scene model should learn.
-      std::cerr << "Warning - PbdSceneGraph ignored: " << domainError.what() << std::endl;
+      std::cerr << "Warning - AsrSceneGraph ignored: " << domainError.what() << std::endl;
       // Do nothing more than ignoring this scene.
     } catch (std::exception& exception) {
       // ROS_ERROR does not work here.   

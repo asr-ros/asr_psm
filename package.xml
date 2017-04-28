@@ -1,5 +1,5 @@
 <package>
-  <name>psm</name>
+  <name>asr_psm</name>
   <version>1.0.0</version>
   <description> 
     This package contains a system to recognize scenes called the Probabilistic Scene Model (PSM).
@@ -7,7 +7,7 @@
     The system consists of a training subsystem that trains new scenes and a scene inference subsystem that calculates scene probabilities of previously trained scenes. 
   </description>
   <author>Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal</author>
-  <maintainer email="pascal.meissner@posteo.de">Meißner Pascal</maintainer>
+  <maintainer email="asr-ros@lists.kit.edue">Meißner Pascal</maintainer>
   <license>BSD</license>
   
   <buildtool_depend>catkin</buildtool_depend>
@@ -15,31 +15,31 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rosbag</build_depend>
   <build_depend>roslib</build_depend>
-  <build_depend>probt</build_depend>
-  <build_depend>pbd_msgs</build_depend>
+  <build_depend>asr_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>visualization_msgs</build_depend>
-  <build_depend>psm_visualizations</build_depend>
-  <build_depend>relation_graph_generator</build_depend>
-  <build_depend>resources_for_psm</build_depend>
+  <build_depend>asr_psm_visualizations</build_depend>
+  <build_depend>asr_relation_graph_generator</build_depend>
+  <build_depend>asr_resources_for_psm</build_depend>
   <build_depend>Eigen</build_depend>
   <build_depend>Boost</build_depend>
   <build_depend>cmake_modules</build_depend>
+  <build_depend>opencv2</build_depend>
   
   <run_depend>cmake_modules</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>probt</run_depend>
-  <run_depend>pbd_msgs</run_depend>
+  <run_depend>asr_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>visualization_msgs</run_depend>
-  <run_depend>psm_visualizations</run_depend>
-  <run_depend>relation_graph_generator</run_depend>
-  <run_depend>resources_for_psm</run_depend>
+  <run_depend>asr_psm_visualizations</run_depend>
+  <run_depend>asr_relation_graph_generator</run_depend>
+  <run_depend>asr_resources_for_psm</run_depend>
   <run_depend>Eigen</run_depend>
   <run_depend>Boost</run_depend>
+  <run_depend>opencv2</run_depend>
  </package>

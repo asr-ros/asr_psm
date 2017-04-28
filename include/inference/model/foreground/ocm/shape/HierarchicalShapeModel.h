@@ -21,8 +21,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 
 // Package includes
-#include <pl.h>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -30,8 +28,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <pbd_msgs/PbdObject.h>
-#include <pbd_msgs/PbdSceneGraph.h>
+#include <asr_msgs/AsrObject.h>
+#include <asr_msgs/AsrSceneGraph.h>
 
 #include <Pose.h>
 
@@ -39,9 +37,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Local includes
 #include "inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.h"
-
-#include <ISM/common_type/Object.hpp>
-#include <ISM/common_type/Pose.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -73,11 +68,11 @@ namespace ProbabilisticSceneRecognition {
     void load(boost::property_tree::ptree& pPt);
     
     /**
-     * Integrate the learning data in form of a PbdSceneGraph into the model.
+     * Integrate the learning data in form of a AsrSceneGraph into the model.
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void handleSceneGraph(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
+    void handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
     /**
      * Initializes the visualization mechanism.
@@ -93,14 +88,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pAssignments Assignments of parts to slots.
      * @return Probability as determined by the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments);
+    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments);
     
     /**
      * Update the visualizers based on the evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<ISM::Object> pEvidenceList);
+    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
     
     /**
      * Return the number of nodes in the OCM.
@@ -117,7 +112,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The pose of the root object in absolute coordinates. This variable is used during inference and reused in the visualization.
      */
-    boost::shared_ptr<ISM::Pose> mAbsolutePose;
+    boost::shared_ptr<ResourcesForPsm::Pose> mAbsolutePose;
     
     /**
      * The chrildren of this node.

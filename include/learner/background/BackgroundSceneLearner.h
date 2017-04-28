@@ -26,15 +26,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <pbd_msgs/PbdSceneGraph.h>
-#include <pbd_msgs/PbdNode.h>
+#include <asr_msgs/AsrSceneGraph.h>
+#include <asr_msgs/AsrNode.h>
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
 // Local includes
 #include "learner/SceneLearner.h"
-#include "../../../lib_ism/libism/ISM/common_type/Tracks.hpp"
-#include "../../../lib_ism/libism/ISM/common_type/Track.hpp"
 
 namespace ProbabilisticSceneRecognition {
   

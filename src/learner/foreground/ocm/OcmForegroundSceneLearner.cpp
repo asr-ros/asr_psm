@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-  OcmForegroundSceneLearner::OcmForegroundSceneLearner(const ISM::ObjectSetPtr pExample)
+  OcmForegroundSceneLearner::OcmForegroundSceneLearner(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
   : ForegroundSceneLearner(pExample)
   {
   }
@@ -71,11 +71,13 @@ namespace ProbabilisticSceneRecognition {
      *****************************************************************************************************************/
     
     // First we iterate over all examples for this scene.
-      ISM::TracksPtr alltracks(new ISM::Tracks(mExamplesList));
-      // Iterate over all examples for all scenes.
-      for (auto &track : alltracks->tracks){
+    BOOST_FOREACH(boost::shared_ptr<const asr_msgs::AsrSceneGraph> example, mExamplesList)
+    {
+      // For every example, we iterate over the all objects in it.
+      BOOST_FOREACH(asr_msgs::AsrNode node, example->scene_elements)
+      {	
 	// Get the type of the first observation (we assume here that all obserations are of the same type).
-    std::string type = track->type;
+	std::string type = node.track[0].type;
 	
 	// Evalute if there already exists an object with the given type.
 	bool isExisting = false;
@@ -88,7 +90,7 @@ namespace ProbabilisticSceneRecognition {
 	  
 	  ROS_INFO_STREAM("Found a new scene object of type '" << type << "' in scene '" << mSceneName << "'.");
 	}
-
+      }
     }
     
     ROS_INFO("Building relation tree.");
@@ -113,7 +115,7 @@ namespace ProbabilisticSceneRecognition {
     }
     
     // DEPRECATED could be removed!
-    // Same problem as in the occurence learner. We don't have tracking, so we don't know anything about the frequency of an object appearing.
+    // Same problem as in the occurence learner. We don't have tracking, so we don't anything about the frequency of an object appearing.
     // We assume an equal distribution over all objects.
     BOOST_FOREACH(boost::shared_ptr<SceneObjectLearner> learner, mSceneObjectLearners)
       learner->setPriori(1.0);

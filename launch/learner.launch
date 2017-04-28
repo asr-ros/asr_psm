@@ -1,16 +1,16 @@
-<!-- Launches the learner for probabilistic scene models. Incoming PbdScenGraph messages are collected and being used for model learning. -->
+<!-- Launches the learner for probabilistic scene models. Incoming AsrScenGraph messages are collected and being used for model learning. -->
 <launch>
-  <node name="js_probabilistic_scene_learner" pkg="psm" type="learner" output="screen">
+  <node name="js_probabilistic_scene_learner" pkg="asr_psm" type="learner" output="screen">
     <!-- The list of basg files containing scene graphs that should be used for learning. -->
-    <rosparam param="input_db_file">
-    /home/SMBAD/students/link/Downloads/experiment_1/experiment_1/experiment_2_part_1_and_2.sqlite
+    <rosparam param="bag_filenames_list">
+    - '/media/data_ext/data/gehrung/evaluation/P1V1/scenegraphs/SCENEGRAPH_buro.bag'
     </rosparam>
     <!-- That's how the scene should be called. -->
     <param name="scene_model_name" value="advertisement"/>
     <!-- The type of the scene that should be learned. -->
     <param name="scene_model_type" value="ocm"/>
     <!-- That's where the resulting model xml file should be stored. -->
-    <param name="scene_model_directory" value="$(find psm)/data"/>
+    <param name="scene_model_directory" value="/media/data_ext/data/gehrung/evaluation/"/>
     <!-- The volume of the workspace we're working in in qubic meters. -->
     <param name="workspace_volume" value="8.0"/>
     <!-- Static break ratio for the tree generation. -->

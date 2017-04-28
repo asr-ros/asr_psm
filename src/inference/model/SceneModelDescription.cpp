@@ -61,13 +61,13 @@ namespace ProbabilisticSceneRecognition {
 	scene->initializeVisualizer(mSuperior);
   }
   
-  void SceneModelDescription::integrateEvidence(const boost::shared_ptr<const ISM::Object>& pObject)
+  void SceneModelDescription::integrateEvidence(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject)
   {
     // Add the evidence found to the buffer.
     mObjectEvidence.push(pObject);
   }
   
-  void SceneModelDescription::integrateSceneGraph(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph)
+  void SceneModelDescription::integrateSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Forward the scene graph to the scenes.
     BOOST_FOREACH(boost::shared_ptr<SceneDescription> scene, mScenes)

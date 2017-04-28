@@ -18,8 +18,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #pragma once
 
 // Package includes
-#include <pl.h>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -27,8 +25,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <pbd_msgs/PbdObject.h>
-#include <pbd_msgs/PbdSceneGraph.h>
+#include <asr_msgs/AsrObject.h>
+#include <asr_msgs/AsrSceneGraph.h>
 
 #include <Pose.h>
 
@@ -37,8 +35,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Local includes
 #include "inference/model/foreground/ocm/shape/GaussianMixtureDistribution.h"
-#include <ISM/common_type/Pose.hpp>
-#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -68,12 +64,12 @@ namespace ProbabilisticSceneRecognition {
     void load(boost::property_tree::ptree& pPt);
     
     /**
-     * Integrate the learning data in form of a PbdSceneGraph into the model.
+     * Integrate the learning data in form of a AsrSceneGraph into the model.
      *
-     * @param pParent The PbdNode that acts as parent for this node.
+     * @param pParent The AsrNode that acts as parent for this node.
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void handleSceneGraph(pbd_msgs::PbdNode& pParent, const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph);
+    void handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
     /**
      * Initializes the visualization mechanism.
@@ -87,7 +83,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pPose The absolute pose.
      */
-    void setAbsoluteParentPose(boost::shared_ptr<ISM::Pose> pPose);
+    void setAbsoluteParentPose(boost::shared_ptr<ResourcesForPsm::Pose> pPose);
     
     /**
      * Calculates the probability for a hypothesis with the given assignments.
@@ -98,14 +94,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pCut True, if a zero-object was assigned to a direct parent node.
      * @return Probability as determined by this subtree the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut);
+    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut);
     
     /**
      * Update the visualizers based on the evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<ISM::Object> pEvidenceList);
+    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
     
     /**
      * Return the number of nodes in the OCM.
@@ -122,17 +118,17 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The pose of this object in absolute coordinates. This variable is used during inference and reused in the visualization.
      */
-    boost::shared_ptr<ISM::Pose> mAbsolutePose;
+    boost::shared_ptr<ResourcesForPsm::Pose> mAbsolutePose;
     
     /**
      * The pose of this object in coordinates relative to the parent frame. This variable is used during inference and reused in the visualization.
      */
-    boost::shared_ptr<ISM::Pose> mRelativePose;
+    boost::shared_ptr<ResourcesForPsm::Pose> mRelativePose;
     
     /**
      * The pose of the parent object in absolute coordinates.
      */
-    boost::shared_ptr<ISM::Pose> mAbsoluteParentPose;
+    boost::shared_ptr<ResourcesForPsm::Pose> mAbsoluteParentPose;
     
     /**
      * The gaussian mixture distribution representing the position part of the shape.

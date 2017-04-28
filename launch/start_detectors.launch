@@ -1,11 +1,11 @@
 <!-- Launches the whole system for probabilistic scene recognition. -->
 <launch>
   <!-- Start PTU. -->
-  <include file="$(find ptu_driver)/launch/ptu_left.launch"/>
+  <include file="$(find asr_flir_ptu_driver)/launch/ptu_left.launch"/>
   
   <!-- Start kinematic chain. -->
-  <!--<include file="$(find tracking_of_fob)/launch/transformation_publishers_left.launch"/>
-  <include file="$(find tracking_of_fob)/launch/consolidation_transforms_left.launch"/>-->
+  <!--<include file="$(find asr_flock_of_birds_tracking)/launch/transformation_publishers_left.launch"/>
+  <include file="$(find asr_flock_of_birds_tracking)/launch/consolidation_transforms_left.launch"/>-->
   <include file="$(find kinematic_chain_pbd)/launch/transformation_publishers_left.launch"/>
 
   <!-- Start stereo object localization systems from Pedram.-->
@@ -15,5 +15,5 @@
   <!--<include file="$(find aruco_marker_recognition)/launch/aruco_marker_recognition.launch"/>-->
   
   <!-- Start marker mapper for mapping markers to objects.-->
-  <include file="$(find psm)/launch/marker_mapper.launch"/>
+  <include file="$(find asr_psm)/launch/marker_mapper.launch"/>
 </launch>

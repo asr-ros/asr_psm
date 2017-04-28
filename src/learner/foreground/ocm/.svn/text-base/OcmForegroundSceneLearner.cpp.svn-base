@@ -2,7 +2,7 @@
 
 namespace ProbabilisticSceneRecognition {
 
-  OcmForegroundSceneLearner::OcmForegroundSceneLearner(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pExample)
+  OcmForegroundSceneLearner::OcmForegroundSceneLearner(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
   : ForegroundSceneLearner(pExample)
   {
   }
@@ -54,10 +54,10 @@ namespace ProbabilisticSceneRecognition {
      *****************************************************************************************************************/
     
     // First we iterate over all examples for this scene.
-    BOOST_FOREACH(boost::shared_ptr<const pbd_msgs::PbdSceneGraph> example, mExamplesList)
+    BOOST_FOREACH(boost::shared_ptr<const asr_msgs::AsrSceneGraph> example, mExamplesList)
     {
       // For every example, we iterate over the all objects in it.
-      BOOST_FOREACH(pbd_msgs::PbdNode node, example->scene_elements)
+      BOOST_FOREACH(asr_msgs::AsrNode node, example->scene_elements)
       {	
 	// Get the type of the first observation (we assume here that all obserations are of the same type).
 	std::string type = node.track[0].type;

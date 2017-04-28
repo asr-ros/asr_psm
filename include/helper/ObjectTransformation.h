@@ -26,16 +26,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <boost/shared_ptr.hpp>
 
-#include <pbd_msgs/PbdObject.h>
+#include <asr_msgs/AsrObject.h>
 
 #include <tf/transform_listener.h>
-
-#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
   /**
-   * This class transforms PbdObjects into a destination frame.
+   * This class transforms AsrObjects into a destination frame.
    *
    */
   class ObjectTransformation {
@@ -52,7 +50,7 @@ namespace ProbabilisticSceneRecognition {
     ~ObjectTransformation();
     
     /**
-     * Sets the base frame to convert the PbdObject messages to.
+     * Sets the base frame to convert the AsrObject messages to.
      * 
      * @param pBaseFrame The base coordinate frame to transform the objects to.
      */
@@ -61,7 +59,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * Transforms an object into the given destination frame.
      */
-    void transform(const boost::shared_ptr<ISM::Object>& pObject);
+    void transform(const boost::shared_ptr<asr_msgs::AsrObject>& pObject);
     
   private:
     

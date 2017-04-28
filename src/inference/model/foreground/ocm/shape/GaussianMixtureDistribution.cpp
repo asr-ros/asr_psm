@@ -55,7 +55,7 @@ namespace ProbabilisticSceneRecognition {
       kernel.initializeVisualizer(pVisualizer);
   }
   
-  double GaussianMixtureDistribution::evaluate(boost::shared_ptr<ISM::Pose> pPose)
+  double GaussianMixtureDistribution::evaluate(boost::shared_ptr<ResourcesForPsm::Pose> pPose)
   {
     double result = 0.0;
     
@@ -72,7 +72,7 @@ namespace ProbabilisticSceneRecognition {
   }
   
   void GaussianMixtureDistribution::visualize(boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> mVisualizer,
-                          boost::shared_ptr<ISM::Pose> pPose)
+					      boost::shared_ptr<ResourcesForPsm::Pose> pPose)
   {
     // Reset the certainty to zero, so that we can use the value from the best fitting kernel.
     mVisualizer->resetCertainty();
@@ -82,18 +82,18 @@ namespace ProbabilisticSceneRecognition {
       kernel.visualize(mVisualizer, getVectorFromObject(pPose));
   }
   
-  Eigen::VectorXd GaussianMixtureDistribution::getVectorFromObject(boost::shared_ptr<ISM::Pose> pPose)
+  Eigen::VectorXd GaussianMixtureDistribution::getVectorFromObject(boost::shared_ptr<ResourcesForPsm::Pose> pPose)
   {
     Eigen::VectorXd evidence(mDimension);
     
     if(mDimension == 3)
     {
-      Eigen::Vector3d position = pPose->point->getEigen();
+      Eigen::Vector3d position = pPose->getPosition();
       evidence[0] = position[0];
       evidence[1] = position[1];
       evidence[2] = position[2];
     } else if (mDimension == 4) {
-      Eigen::Quaternion<double> orientation = pPose->quat->getEigen();
+      Eigen::Quaternion<double> orientation = pPose->getOrientation();
       evidence[0] = orientation.w();
       evidence[1] = orientation.x();
       evidence[2] = orientation.y();

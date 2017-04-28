@@ -58,11 +58,11 @@ namespace ProbabilisticSceneRecognition {
   void ShapeTermLearner::learnNodePose(boost::shared_ptr<OcmTree> pParent, boost::shared_ptr<OcmTree> pChild)
   {
     // Gets the length of the parent observation trajectory.
-    unsigned int trajectoryLength = pParent->mObjectSet->objects.size();
+    unsigned int trajectoryLength = pParent->mObjectSet->mObjects.size();
     
     // Check that both observation trajectories have the same length.
     // If that's not the case, something went wrong in the Scene Graph Generator.
-    if(trajectoryLength != pChild->mObjectSet->objects.size())
+    if(trajectoryLength != pChild->mObjectSet->mObjects.size())
       throw std::runtime_error("Shape term learner: the observation trajectories of child and parent node don't have the same length. This indicates a bug in the scene_graph_generator.");
     
     // Try to get the minmal number of kernels.
@@ -103,19 +103,18 @@ namespace ProbabilisticSceneRecognition {
     for(unsigned int i = 0; i < trajectoryLength; i++)
     {
       // Extract the positions of child and parent.
-      boost::shared_ptr<ISM::Pose> childPose(pChild->mObjectSet->objects[i]->pose);
-      boost::shared_ptr<ISM::Pose> parentPose(pParent->mObjectSet->objects[i]->pose);
+      boost::shared_ptr<ResourcesForPsm::Pose> childPose(new ResourcesForPsm::Pose(pChild->mObjectSet->mObjects[i]));
+      boost::shared_ptr<ResourcesForPsm::Pose> parentPose(new ResourcesForPsm::Pose(pParent->mObjectSet->mObjects[i]));
       
       // Calculate the relative pose between child and parent.
-      boost::shared_ptr<ISM::Pose> relativePoseToParent;
+      boost::shared_ptr<ResourcesForPsm::Pose> relativePoseToParent;
       childPose->convertPoseIntoFrame(parentPose, relativePoseToParent);
       
       // Add the datum to the learner.
-      learnerPosition.addDatum(relativePoseToParent->point->getEigen());
-      learnerOrientation.addDatum(relativePoseToParent->quat->getEigen());
+      learnerPosition.addDatum(relativePoseToParent->getPosition());
+      learnerOrientation.addDatum(relativePoseToParent->getOrientation());
     }
     
-
     // Learn GMM over position and add model to child node.
     ROS_INFO("Learning gaussian mixture model over position.");
     learnerPosition.learn();

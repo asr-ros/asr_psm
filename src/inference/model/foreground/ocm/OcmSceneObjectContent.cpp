@@ -23,7 +23,7 @@ namespace ProbabilisticSceneRecognition {
   : SceneObjectContent()
   , mProbability(0.0)
   {
-    mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new ShapeTermEvaluator()));
+    mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new ShapeTermEvaluator));
     mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new AppearanceTermEvaluator()));
     mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new OcclusionTermEvaluator));
   }
@@ -64,7 +64,7 @@ namespace ProbabilisticSceneRecognition {
       mEvaluators[i]->initializeVisualizer(mSuperior);
   }
   
-  void OcmSceneObjectContent::update(std::vector<ISM::Object> pEvidenceList)
+  void OcmSceneObjectContent::update(std::vector<asr_msgs::AsrObject> pEvidenceList)
   {
     // Generate object list for debug message
     std::stringstream objs;
@@ -226,7 +226,7 @@ namespace ProbabilisticSceneRecognition {
     ROS_DEBUG_STREAM("Probability for scene object before applying priori is " << mProbability << ".");
   }
   
-  void OcmSceneObjectContent::update(const boost::shared_ptr<const pbd_msgs::PbdSceneGraph>& pSceneGraph)
+  void OcmSceneObjectContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Forward scene graph to the term evaluators.
     for(unsigned int i = 0; i < mEvaluators.size(); i++)

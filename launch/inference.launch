@@ -1,14 +1,14 @@
-<!-- Launches the inference engine for probabilistic scene recognition. Incoming PbdObject messages are being processed and the results used for scene recognition. -->
+<!-- Launches the inference engine for probabilistic scene recognition. Incoming AsrObject messages are being processed and the results used for scene recognition. -->
 <launch>
-  <node name="js_probabilistic_scene_inference_engine" pkg="psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
+  <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
     <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
     <param name="plot" value="true"/>
-    <!-- The topic to get the the PbdObject messages from. -->
+    <!-- The topic to get the the AsrObject messages from. -->
     <param name="object_topic" value="/stereo/objects"/>
-    <!-- The topic to get the the PbdSceneGraph messages from. -->
+    <!-- The topic to get the the AsrSceneGraph messages from. -->
     <param name="scene_graph_topic" value="/scene_graphs"/>
     <!-- Path to the file containing the probabilistic scene model.-->
-    <param name="scene_model_filename" value="/home/SMBAD/students/link/ilcasRosFull/src/perception/scene_recognition/psm/data/advertisement.xml"/>
+    <param name="scene_model_filename" value="/home/SMBAD/gehrung/home/Data/P1V2/psm_models/breakfast.xml"/>
     <!-- Path to the bag file that contains the learning data. -->
     <rosparam param="bag_filenames_list">
     - '/home/SMBAD/gehrung/home/Data/P1V2/scenegraphs/SCENEGRAPH_falsepositive.bag'

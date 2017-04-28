@@ -41,10 +41,10 @@ namespace ProbabilisticSceneRecognition {
     std::vector<std::string> index;
 
     // Iterate over all examples for all scenes.
-    BOOST_FOREACH(boost::shared_ptr<const pbd_msgs::PbdSceneGraph> example, mExamplesList)
+    BOOST_FOREACH(boost::shared_ptr<const asr_msgs::AsrSceneGraph> example, mExamplesList)
     {
-      // Iterate over all PbdNodes in the scene (a node represent an object).
-      BOOST_FOREACH(pbd_msgs::PbdNode node, example->scene_elements)
+      // Iterate over all AsrNodes in the scene (a node represent an object).
+      BOOST_FOREACH(asr_msgs::AsrNode node, example->scene_elements)
       {	
 	// Extract the object type from the first observation.
 	std::string type = node.track[0].type;

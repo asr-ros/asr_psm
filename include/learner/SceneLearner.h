@@ -25,12 +25,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <pbd_msgs/PbdSceneGraph.h>
+#include <asr_msgs/AsrSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
-
-//local includes
-#include "../../../lib_ism/libism/ISM/common_type/ObjectSet.hpp"
 
 namespace ProbabilisticSceneRecognition {
   
@@ -50,12 +47,6 @@ namespace ProbabilisticSceneRecognition {
      */
     SceneLearner(std::string pSceneName);
     
-    /**
-     * Constructor.
-     *
-     */
-    SceneLearner();
-
     /**
      * Destructor.
      */
@@ -81,18 +72,18 @@ namespace ProbabilisticSceneRecognition {
     virtual void learn() = 0;
     
     /**
-     * Checks, if the given PbdSceneGraph message contains an example for this scene.
+     * Checks, if the given AsrSceneGraph message contains an example for this scene.
      * 
      * @return True, if the message contains an example for this scene.
      */
-    bool isExampleForScene(const ISM::ObjectSetPtr pExample);
+    bool isExampleForScene(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
     
     /**
-     * Adds a PbdSceneGraph message to the learner.
+     * Adds a AsrSceneGraph message to the learner.
      * 
-     * @param pExample PbdSceneGraph message containing an example for the given scene.
+     * @param pExample AsrSceneGraph message containing an example for the given scene.
      */
-    void addExampleToScene(const ISM::ObjectSetPtr pExample);
+    void addExampleToScene(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
     
     /**
      * Sets the volume of the workspace.
@@ -122,13 +113,13 @@ namespace ProbabilisticSceneRecognition {
     double mWorkspaceVolume;
     
     /**
-     * The name of the scene. It is required for filtering PbdSceneGraph messages and the export to file.
+     * The name of the scene. It is required for filtering AsrSceneGraph messages and the export to file.
      */
     std::string mSceneName;
     
     /**
      * A list of all examples provided for this scene.
      */
-    std::vector<ISM::ObjectSetPtr> mExamplesList;
+    std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mExamplesList;
   };
 }

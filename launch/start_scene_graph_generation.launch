@@ -1,4 +1,4 @@
-<!-- Please take into account that recognition_for_grasping does not set PbDObject identifier yet. Therefore all measured object locations of the same object type are accumulated into one trajectory even for multiple objects. -->
+<!-- Please take into account that recognition_for_grasping does not set AsrObject identifier yet. Therefore all measured object locations of the same object type are accumulated into one trajectory even for multiple objects. -->
 <launch>
   <!-- Start the generator with some dummy parameters. Intermediate functionality has not been tested yet. If using it remind to alter tf chain. -->
   <node name="scene_graph_generator" pkg="scene_graph_generator" type="scene_graph_generator" output="screen">
