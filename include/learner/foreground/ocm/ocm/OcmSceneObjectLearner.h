@@ -87,8 +87,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pExamplesList A list of all examples for the scene this scene object belongs to.
      * @param pTree The relation tree.
      */
-   void learn(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > pExamplesList,
-     boost::shared_ptr<SceneModel::TreeNode> pTree);
+   void learn(std::vector<ISM::ObjectSetPtr> pExamplesList, boost::shared_ptr<SceneModel::TreeNode> pTree);
    
   private:
     

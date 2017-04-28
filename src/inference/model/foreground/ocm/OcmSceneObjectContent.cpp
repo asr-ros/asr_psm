@@ -23,7 +23,7 @@ namespace ProbabilisticSceneRecognition {
   : SceneObjectContent()
   , mProbability(0.0)
   {
-    mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new ShapeTermEvaluator));
+    mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new ShapeTermEvaluator()));
     mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new AppearanceTermEvaluator()));
     mEvaluators.push_back(boost::shared_ptr<TermEvaluator>(new OcclusionTermEvaluator));
   }
@@ -63,7 +63,7 @@ namespace ProbabilisticSceneRecognition {
     for(unsigned int i = 0; i < mEvaluators.size(); i++)
       mEvaluators[i]->initializeVisualizer(mSuperior);
   }
-  
+
   void OcmSceneObjectContent::update(std::vector<asr_msgs::AsrObject> pEvidenceList)
   {
     // Generate object list for debug message

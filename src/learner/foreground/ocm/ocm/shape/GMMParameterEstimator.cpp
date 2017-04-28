@@ -139,21 +139,21 @@ namespace ProbabilisticSceneRecognition {
       // generate 100 models and pick the best.
       for(unsigned int run = 0; run < mNumberOfRuns; run++)
       {
-    ROS_INFO_STREAM("Learning run " << run + 1 << ".");
 
-    // Repeat this calculation as long as runExpectationMaximization() returns false,
-    // but maximal 100 times.
-    for(int timer = 100; timer > 0; timer--)
-    {
-      unsigned int offset  = i * mNumberOfRuns + run;
+	ROS_INFO_STREAM("Learning run " << run + 1 << ".");
+	
+	// Repeat this calculation as long as ProBT throws a "degenerated distribution" error,
+	// but maximal 100 times.
+	for(int timer = 100; timer > 0; timer--)
+	{
+	  try {
+	    unsigned int offset  = i * mNumberOfRuns + run;
 
-      if(runExpectationMaximization(mData,mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset]))
-      {
-        learningCycleCompleted = true;
-        break;
-      }
-      else
-      {
+        if(runExpectationMaximization(TEMP_FILE, mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset]))
+	    learningCycleCompleted = true;
+	    break;
+	  } catch (plError e) {
+
         std::cout << "OpenCV training unsuccessful. Repeating cycle." << std::endl;
       }
     }

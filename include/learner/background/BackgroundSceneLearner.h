@@ -33,6 +33,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Local includes
 #include "learner/SceneLearner.h"
+#include "../../../lib_ism/libism/ISM/common_type/Tracks.hpp"
+#include "../../../lib_ism/libism/ISM/common_type/Track.hpp"
 
 namespace ProbabilisticSceneRecognition {
   

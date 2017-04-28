@@ -31,6 +31,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <trainer/PSMTrainer.h>
 
+//local includes
+#include "../../../lib_ism/libism/ISM/common_type/ObjectSet.hpp"
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -73,8 +76,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param mExamplesList A list of all examples for the scene this scene object belongs to.
      */
-    virtual void learn(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mExamplesList,
-      boost::shared_ptr<SceneModel::TreeNode> tree) = 0;
+    virtual void learn(std::vector<ISM::ObjectSetPtr> pExamplesList, boost::shared_ptr<SceneModel::TreeNode> tree) = 0;
    
     /**
       * Checks, if this scene object has the given type.

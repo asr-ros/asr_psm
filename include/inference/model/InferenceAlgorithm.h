@@ -29,6 +29,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -63,7 +65,11 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
+<<<<<<< HEAD
     virtual void doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
+=======
+    virtual void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
+>>>>>>> master
     
     /**
      * Returns the probability calculated by the inference process.

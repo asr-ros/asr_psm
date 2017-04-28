@@ -30,6 +30,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <visualization/psm/ProbabilisticPrimarySceneObjectVisualization.h>
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -70,7 +72,11 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidenceList A list containing all evidences.
      */
+<<<<<<< HEAD
     virtual void update(std::vector<asr_msgs::AsrObject> pEvidenceList) = 0;
+=======
+    virtual void update(std::vector<ISM::Object> pEvidenceList) = 0;
+>>>>>>> master
     
     /**
      * Integrate the learning data in form of a AsrSceneGraph into the model.

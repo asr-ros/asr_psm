@@ -38,6 +38,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Local includes
 #include "inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.h"
 
+#include <ISM/common_type/Object.hpp>
+#include <ISM/common_type/Pose.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -112,7 +115,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The pose of the root object in absolute coordinates. This variable is used during inference and reused in the visualization.
      */
-    boost::shared_ptr<ResourcesForPsm::Pose> mAbsolutePose;
+    boost::shared_ptr<ISM::Pose> mAbsolutePose;
     
     /**
      * The chrildren of this node.

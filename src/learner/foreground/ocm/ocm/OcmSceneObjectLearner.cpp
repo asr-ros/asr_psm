@@ -64,8 +64,8 @@ namespace ProbabilisticSceneRecognition {
     pPt.add_child("object", subtree);
   }
   
-  void OcmSceneObjectLearner::learn(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > pExamplesList,
-    boost::shared_ptr<SceneModel::TreeNode> pTree)
+
+  void OcmSceneObjectLearner::learn(std::vector<ISM::ObjectSetPtr> pExamplesList, boost::shared_ptr<SceneModel::TreeNode> pTree)
   {
     if(!pTree)
       throw std::runtime_error("FATAL ERROR: Relation graph generator wasn't able to provide a tree.");
@@ -76,7 +76,7 @@ namespace ProbabilisticSceneRecognition {
     pTree = pTree->setNewRootNodeByType(mSceneObjectType);
     
     // Print tree.
-    ROS_INFO_STREAM("Tree rearranged for object of type" << mSceneObjectType << ".");
+    ROS_INFO_STREAM("Tree rearranged for object of type " << mSceneObjectType << ".");
     std::cout << "------------- TREE:" << std::endl;
     pTree->printTreeToConsole(0);
     std::cout << "---------------------" << std::endl;

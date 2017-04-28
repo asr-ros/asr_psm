@@ -29,7 +29,11 @@ namespace ProbabilisticSceneRecognition {
   {
   }
   
+<<<<<<< HEAD
   void SummarizedBackgroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+=======
+  void SummarizedBackgroundInferenceAlgorithm::doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
+>>>>>>> master
   {
     /**************************************************************************************
     * What we do here:

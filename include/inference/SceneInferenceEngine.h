@@ -36,6 +36,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/SceneIdentifier.h"
 #include "inference/model/SceneModelDescription.h"
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -149,7 +151,6 @@ namespace ProbabilisticSceneRecognition {
      * A buffer for storing evidences.
      */
     std::queue<boost::shared_ptr<asr_msgs::AsrObject> > mEvidenceBuffer;
-    
     /**
      * A buffer for storing scene graphs.
      */

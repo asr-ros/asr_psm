@@ -29,6 +29,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
+//local includes
+#include "../../../lib_ism/libism/ISM/common_type/ObjectSet.hpp"
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -47,6 +50,12 @@ namespace ProbabilisticSceneRecognition {
      */
     SceneLearner(std::string pSceneName);
     
+    /**
+     * Constructor.
+     *
+     */
+    SceneLearner();
+
     /**
      * Destructor.
      */
@@ -76,15 +85,15 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @return True, if the message contains an example for this scene.
      */
-    bool isExampleForScene(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
+    bool isExampleForScene(const ISM::ObjectSetPtr pExample);
     
     /**
      * Adds a AsrSceneGraph message to the learner.
      * 
      * @param pExample AsrSceneGraph message containing an example for the given scene.
      */
-    void addExampleToScene(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
-    
+    void addExampleToScene(const ISM::ObjectSetPtr pExample);
+
     /**
      * Sets the volume of the workspace.
      * 
@@ -120,6 +129,6 @@ namespace ProbabilisticSceneRecognition {
     /**
      * A list of all examples provided for this scene.
      */
-    std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mExamplesList;
+    std::vector<ISM::ObjectSetPtr> mExamplesList;
   };
 }

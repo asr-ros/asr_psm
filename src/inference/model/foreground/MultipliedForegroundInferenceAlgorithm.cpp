@@ -28,8 +28,9 @@ namespace ProbabilisticSceneRecognition {
   MultipliedForegroundInferenceAlgorithm::~MultipliedForegroundInferenceAlgorithm()
   {
   }
-  
+
   void MultipliedForegroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+
   {
     // Reset the scene probability. We MARGINALZE here, so we set it to ZERO.
     mProbability = 1.0;

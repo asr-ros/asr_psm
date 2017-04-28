@@ -39,6 +39,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/SceneIdentifier.h"
 #include "inference/model/SceneDescription.h"
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**

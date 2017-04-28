@@ -48,7 +48,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pExample A AsrSceneGraph message containing object observation trajectories.
      */
-    ForegroundSceneLearner(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
+    ForegroundSceneLearner(const ISM::ObjectSetPtr pExample);
     
     /**
      * Destructor.

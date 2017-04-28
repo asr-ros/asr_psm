@@ -35,6 +35,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Local includes
 #include "inference/model/foreground/ocm/shape/GaussianMixtureDistribution.h"
+#include <ISM/common_type/Pose.hpp>
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -83,7 +85,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pPose The absolute pose.
      */
-    void setAbsoluteParentPose(boost::shared_ptr<ResourcesForPsm::Pose> pPose);
+    void setAbsoluteParentPose(boost::shared_ptr<ISM::Pose> pPose);
     
     /**
      * Calculates the probability for a hypothesis with the given assignments.
@@ -118,17 +120,17 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The pose of this object in absolute coordinates. This variable is used during inference and reused in the visualization.
      */
-    boost::shared_ptr<ResourcesForPsm::Pose> mAbsolutePose;
+    boost::shared_ptr<ISM::Pose> mAbsolutePose;
     
     /**
      * The pose of this object in coordinates relative to the parent frame. This variable is used during inference and reused in the visualization.
      */
-    boost::shared_ptr<ResourcesForPsm::Pose> mRelativePose;
+    boost::shared_ptr<ISM::Pose> mRelativePose;
     
     /**
      * The pose of the parent object in absolute coordinates.
      */
-    boost::shared_ptr<ResourcesForPsm::Pose> mAbsoluteParentPose;
+    boost::shared_ptr<ISM::Pose> mAbsoluteParentPose;
     
     /**
      * The gaussian mixture distribution representing the position part of the shape.

@@ -26,10 +26,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Local includes
 #include "learner/SceneLearningEngine.h"
 
+
 using namespace ProbabilisticSceneRecognition;
+
 
 int main(int argc, char* argv[])
 {
+
   ros::init(argc, argv, "js_probabilistic_scene_learner");
   
   // Declaration of the learner for the scene model.

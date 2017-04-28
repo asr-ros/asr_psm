@@ -13,9 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   visualization_msgs
+
   asr_psm_visualizations
   asr_relation_graph_generator
   asr_resources_for_psm
+  asr_lib_ism
 )
 
 find_package(cmake_modules)
@@ -58,6 +60,7 @@ add_library(psm_inference  src/inference.cpp
 target_link_libraries(psm_inference  
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
   )
 
 catkin_package(
@@ -73,10 +76,8 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  
 )
-
-
-
 
 ############################################################
 # ROS Nodes that are using the Probabilistic Scene Model.
@@ -101,6 +102,7 @@ add_executable(learner src/learner.cpp
 target_link_libraries(learner
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(learner_batch src/learner_batch.cpp
@@ -122,6 +124,7 @@ add_executable(learner_batch src/learner_batch.cpp
 target_link_libraries(learner_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(inference src/inference.cpp
@@ -153,6 +156,7 @@ add_executable(inference src/inference.cpp
 target_link_libraries(inference 
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(inference_batch src/inference_batch.cpp
@@ -182,4 +186,5 @@ add_executable(inference_batch src/inference_batch.cpp
 target_link_libraries(inference_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}  
+  
 )

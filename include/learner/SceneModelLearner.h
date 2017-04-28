@@ -43,6 +43,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/OcmForegroundSceneLearner.h"
 
+#include "../../../lib_ism/libism/ISM/common_type/ObjectSet.hpp"
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -87,7 +88,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pExample AsrSceneGraph message containing an example for a scene.
      */
-    void addExample(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
+    void addExample(const ISM::ObjectSetPtr pExample);
     
     /**
      * Calculates the model parameters based on the collected evidence.
