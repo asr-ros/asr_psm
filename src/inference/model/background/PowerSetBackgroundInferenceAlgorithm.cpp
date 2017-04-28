@@ -28,12 +28,8 @@ namespace ProbabilisticSceneRecognition {
   PowerSetBackgroundInferenceAlgorithm::~PowerSetBackgroundInferenceAlgorithm()
   {
   }
-  
-<<<<<<< HEAD
+
   void PowerSetBackgroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
-=======
-  void PowerSetBackgroundInferenceAlgorithm::doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
->>>>>>> master
   {
     /**************************************************************************************
     * What we do here:

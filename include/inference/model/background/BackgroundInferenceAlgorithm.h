@@ -70,11 +70,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-<<<<<<< HEAD
     virtual void doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
-=======
-    //virtual void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
->>>>>>> master
     
     /**
      * Returns the probability calculated by the inference process.
