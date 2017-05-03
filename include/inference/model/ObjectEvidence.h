@@ -31,6 +31,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "inference/model/KalmanFilter.h"
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**

@@ -92,8 +92,9 @@ namespace ProbabilisticSceneRecognition {
     if(mContent)
       mContent->initializeVisualizer(mVisualizer);
   }
-  
+
   void SceneDescription::update(std::vector<asr_msgs::AsrObject> pEvidenceList)
+
   {
     // Debug message.
     ROS_INFO_STREAM("Evaluating scene '" << mIdentifier->mDescription << "'.");

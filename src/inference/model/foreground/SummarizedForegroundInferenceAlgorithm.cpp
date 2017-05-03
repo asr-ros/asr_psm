@@ -28,7 +28,7 @@ namespace ProbabilisticSceneRecognition {
   SummarizedForegroundInferenceAlgorithm::~SummarizedForegroundInferenceAlgorithm()
   {
   }
-  
+
   void SummarizedForegroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     // Reset the scene probability. We MARGINALZE here, so we set it to ZERO.

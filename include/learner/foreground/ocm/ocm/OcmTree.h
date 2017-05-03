@@ -39,6 +39,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "helper/MathHelper.h"
 
+#include <ISM/common_type/ObjectSet.hpp>
+#include <ISM/common_type/Object.hpp>
+#include <ISM/common_type/Pose.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -102,7 +106,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * An object trajectory containing all observations of a single object over time.
      */
-    boost::shared_ptr<SceneModel::ObjectSet> mObjectSet;
+    boost::shared_ptr<ISM::ObjectSet> mObjectSet;
         
     /**
      * A list of child nodes.

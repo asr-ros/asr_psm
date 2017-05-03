@@ -32,6 +32,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Local includes
 #include "inference/model/foreground/ocm/shape/GaussianKernel.h"
 
+#include <ISM/common_type/Pose.hpp>
+
 namespace ProbabilisticSceneRecognition {
 
   /**
@@ -74,14 +76,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pPose The pose to evaluate the gaussian mixture distribution with.
      */
     void visualize(boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> pVisualizer,
-		   boost::shared_ptr<ResourcesForPsm::Pose> pPose);
+           boost::shared_ptr<ISM::Pose> pPose);
     
     /**
      * Evaluate the gaussian mixture distribution with the given pose.
      * 
      * @param pPose The pose to evaluate the gaussian mixture distribution with.
      */
-    double evaluate(boost::shared_ptr<ResourcesForPsm::Pose> pPose);
+    double evaluate(boost::shared_ptr<ISM::Pose> pPose);
     
   private:
     
@@ -91,7 +93,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pPose The pose to convert to a 7d vector.
      * @return The 7d vector representing the pose.
      */
-    Eigen::VectorXd getVectorFromObject(boost::shared_ptr<ResourcesForPsm::Pose> pPose);
+    Eigen::VectorXd getVectorFromObject(boost::shared_ptr<ISM::Pose> pPose);
     
   private:
     

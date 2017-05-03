@@ -44,6 +44,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/ocm/OcmSceneObjectLearner.h"
 
+#include "../../../lib_ism/libism/ISM/common_type/Tracks.hpp"
+#include "../../../lib_ism/libism/ISM/common_type/Track.hpp"
+
 #include "learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.h"
 
 namespace ProbabilisticSceneRecognition {
@@ -62,7 +65,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pExample A AsrSceneGraph message containing object observation trajectories.
      */
-    OcmForegroundSceneLearner(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample);
+    OcmForegroundSceneLearner(const ISM::ObjectSetPtr pExample);
     
     /**
      * Destructor.

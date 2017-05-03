@@ -40,6 +40,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "inference/model/foreground/ocm/OcmSceneObjectContent.h"
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -82,6 +84,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pRuntimeLogger A file handle for runtime logging.
      */
     void update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger);
+
     
     /**
      * Integrate the learning data in form of a AsrSceneGraph into the model.

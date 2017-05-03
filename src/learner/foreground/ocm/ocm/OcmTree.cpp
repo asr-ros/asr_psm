@@ -22,7 +22,7 @@ namespace ProbabilisticSceneRecognition {
   OcmTree::OcmTree(const boost::shared_ptr<SceneModel::TreeNode> pRoot)
   {
     // Set the type.
-    mType = pRoot->mObjectSet->mObjects[0]->mType;
+    mType = pRoot->mObjectSet->objects[0]->type;
     
     // Take object observations.
     mObjectSet = pRoot->mObjectSet;
@@ -48,8 +48,8 @@ namespace ProbabilisticSceneRecognition {
     mGaussianMixtureModelPosition.initializeVisualizer(mVisualizer);
     
     // Set the pose of the parent object.
-    unsigned int lastObservationOffset = mObjectSet->mObjects.size() - 1;
-    mSuperior->setPose(boost::shared_ptr<ResourcesForPsm::Pose>(new ResourcesForPsm::Pose(mObjectSet->mObjects[lastObservationOffset])));
+    unsigned int lastObservationOffset = mObjectSet->objects.size() - 1;
+    mSuperior->setPose(*new boost::shared_ptr<ISM::Pose>(new ISM::Pose(*mObjectSet->objects[lastObservationOffset]->pose)));
     
     // Iterate over all child nodes and append them, too!
     BOOST_FOREACH(boost::shared_ptr<OcmTree> child, mChildren)
@@ -75,23 +75,23 @@ namespace ProbabilisticSceneRecognition {
     std::vector<Eigen::Vector3d> mRelativeSamples;
     std::vector<Eigen::Vector3d> mAbsoluteSamples;
     std::vector<Eigen::Vector3d> mParentSamples;
-    for(unsigned int i = 0; i < mObjectSet->mObjects.size(); i++)
+    for(unsigned int i = 0; i < mObjectSet->objects.size(); i++)
     {
       // Extract the positions of child and parent.
-      boost::shared_ptr<ResourcesForPsm::Pose> childPose(new ResourcesForPsm::Pose(mObjectSet->mObjects[i]));
-      boost::shared_ptr<ResourcesForPsm::Pose> parentPose(new ResourcesForPsm::Pose(pParent->mObjectSet->mObjects[i]));
+      boost::shared_ptr<ISM::Pose> childPose(*new boost::shared_ptr<ISM::Pose>(new ISM::Pose(*mObjectSet->objects[i]->pose)));
+      boost::shared_ptr<ISM::Pose> parentPose(*new boost::shared_ptr<ISM::Pose>(new ISM::Pose(*pParent->mObjectSet->objects[i]->pose)));
       
       // All samples and gaussian kernels will be drawn relative to the praent object.
       mVisualizer->setParentPose(parentPose);
       
       // Calculate the relative pose between child and parent.
-      boost::shared_ptr<ResourcesForPsm::Pose> relativePoseToParent;
+      boost::shared_ptr<ISM::Pose> relativePoseToParent;
       childPose->convertPoseIntoFrame(parentPose, relativePoseToParent); 
       
       // Add relative sample, absolute sample and corresponding parent pose to the list.
-      mAbsoluteSamples.push_back(childPose->getPosition());
-      mParentSamples.push_back(parentPose->getPosition());
-      mRelativeSamples.push_back(relativePoseToParent->getPosition());
+      mAbsoluteSamples.push_back(childPose->point->eigen);
+      mParentSamples.push_back(parentPose->point->eigen);
+      mRelativeSamples.push_back(relativePoseToParent->point->eigen);
     }
     
     // Forward relative learning samples, absolute learning samples and the corresponding parent poses

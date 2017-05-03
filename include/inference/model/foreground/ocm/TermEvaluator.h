@@ -26,6 +26,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <asr_msgs/AsrObject.h>
 #include <asr_msgs/AsrSceneGraph.h>
 
+#include <ISM/common_type/Object.hpp>
+
 #include <visualization/psm/ProbabilisticPrimarySceneObjectVisualization.h>
 
 namespace ProbabilisticSceneRecognition {

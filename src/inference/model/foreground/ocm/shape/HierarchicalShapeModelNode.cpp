@@ -141,7 +141,7 @@ namespace ProbabilisticSceneRecognition {
       mChildren[i]->initializeVisualizer(mSuperior);
   }
   
-  void HierarchicalShapeModelNode::setAbsoluteParentPose(boost::shared_ptr<ResourcesForPsm::Pose> pPose)
+  void HierarchicalShapeModelNode::setAbsoluteParentPose(boost::shared_ptr<ISM::Pose> pPose)
   {
     mAbsoluteParentPose = pPose;
   }
@@ -168,7 +168,7 @@ namespace ProbabilisticSceneRecognition {
         mWasVisited = true;
 
       // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-      mAbsolutePose.reset(new ResourcesForPsm::Pose(pEvidenceList[pAssignments[pSlotId] - 1]));
+      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[pSlotId] - 1].pose));
       mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
       
       // Evaluate the relative pose under the the probability distribution describing the scene shape.
@@ -180,6 +180,7 @@ namespace ProbabilisticSceneRecognition {
       pConditionalProbabilities[pSlotId]->addProbability(score);
       
 //       ROS_DEBUG_STREAM("Pose fitting report for scene object '" << mSceneObject <<"'. Position is " << scorePos << ", orientation is " << scoreOri << ". Total is " << score << ".");
+      
       // Add score to global result.
       result *= score;
       
@@ -202,6 +203,7 @@ namespace ProbabilisticSceneRecognition {
 	// The returned probability will be one, so it has no influence at all.
     result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, false, pConditionalProbabilities);
       }
+      
       // Forward position of this primary scene object to visualizer.
       mVisualizer->setBestCandidatePose(mAbsolutePose);
 
@@ -215,7 +217,7 @@ namespace ProbabilisticSceneRecognition {
 
     return result;
   }
-  
+
   void HierarchicalShapeModelNode::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
   {
     // Try to find evidence for this scene object.
@@ -223,13 +225,14 @@ namespace ProbabilisticSceneRecognition {
     {
       // Get the object.
       asr_msgs::AsrObject object = pEvidenceList[i];
+
       
       // Is this evidence for this scene object (assumed that there is no detection uncertainty)?
       // If yes and the parent node was also detected, then update the position.
       if(mSceneObject.compare(object.type) == 0 && mAbsoluteParentPose)
       {
 	// Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-	mAbsolutePose.reset(new ResourcesForPsm::Pose(object));
+    mAbsolutePose.reset(new ISM::Pose(*object.pose));
 	mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
 	
 	/********************************************************
@@ -296,4 +299,4 @@ namespace ProbabilisticSceneRecognition {
   }
 }
   
-
+}

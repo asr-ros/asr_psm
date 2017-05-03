@@ -19,10 +19,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
   
-  ForegroundSceneLearner::ForegroundSceneLearner(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pExample)
-  : SceneLearner(pExample->identifier)
+
+  ForegroundSceneLearner::ForegroundSceneLearner(const ISM::ObjectSetPtr pExample)
+  : SceneLearner()
   {
     addExampleToScene(pExample);
+    mSceneName = pExample->mIdentifier;
   }
   
   ForegroundSceneLearner::~ForegroundSceneLearner()

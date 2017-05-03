@@ -72,14 +72,14 @@ namespace ProbabilisticSceneRecognition {
 	// When not called directly from CLI, we can used a list as input.
       } else {
 	// Check whether parameter loaded is really a list of values.
-    if(mInputBagFilenames.getType() != XmlRpc::XmlRpcValue::TypeArray)
+	if(mInputBagFilenames.getType() != XmlRpc::XmlRpcValue::TypeArray)
 	  throw std::invalid_argument("CLI option \"bag_filenames_list\" not set with an array.");
 	
     // Go through all potential filenames of AsrSceneGraph rosbag files.
-    for(int i = 0; i < mInputBagFilenames.size(); i++)
+	for(int i = 0; i < mInputBagFilenames.size(); i++)
 	{
 	  // Check whether parameter list element is really a filename. 
-      if(mInputBagFilenames[i].getType() != XmlRpc::XmlRpcValue::TypeString)
+	  if(mInputBagFilenames[i].getType() != XmlRpc::XmlRpcValue::TypeString)
 	    throw std::invalid_argument("Bag file path no. " + boost::lexical_cast<std::string>(i) + "is no valid string.");
 	}
       }
@@ -139,10 +139,12 @@ namespace ProbabilisticSceneRecognition {
      ********************************************************************/
     
     // Process evidences!
-    while(!mEvidenceBuffer.empty())
+   while(!mEvidenceBuffer.empty())
     {
       // Get the first entry.
+
       boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();
+
       
       // Remove the entry processed from the queue.
       mEvidenceBuffer.pop();
@@ -170,7 +172,7 @@ namespace ProbabilisticSceneRecognition {
     /********************************************************************
      * Integrate the learning data loaded from bag file.
      ********************************************************************/
-    
+
     // Process scene graphs!
     while(!mSceneGraphBuffer.empty())
     {
@@ -190,7 +192,7 @@ namespace ProbabilisticSceneRecognition {
     /********************************************************************
      * Do the inference and show the results.
      ********************************************************************/
-    
+
     // Get the results and show them.
     std::vector<SceneIdentifier> pSceneList;
     mModel.getSceneListWithProbabilities(pSceneList);
@@ -220,7 +222,7 @@ namespace ProbabilisticSceneRecognition {
     /********************************************************************
      * Visualize the scene.
      ********************************************************************/
-    
+
     // Do the visualization.
     if(mTargetingHelp)
       mVisualizer->drawInTargetingMode();
@@ -269,6 +271,7 @@ namespace ProbabilisticSceneRecognition {
 
       // Get interface compliant to AsrObject message on rosbag item currently taken into account.
       boost::shared_ptr<asr_msgs::AsrObject> currentObject = sceneGraphIterator->instantiate<asr_msgs::AsrObject>();
+
       
       // Update the model, if an object was found.
       if(currentObject != NULL)
@@ -320,8 +323,10 @@ namespace ProbabilisticSceneRecognition {
   }
   
   void SceneInferenceEngine::extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath)
+
   {
     ROS_INFO_STREAM("Extracting AsrSceneGraph messages from rosbag file: " << pPbdSceneGraphsBagPath);
+
 
     // Check whether topic name for scene graph has been set before trying to parse rosbag files.
     if(!mSceneGraphListener)
@@ -400,8 +405,10 @@ namespace ProbabilisticSceneRecognition {
       mVisGnuplot.initAnimatedBarChart(barLabels, "Scene Probability", "Probability", std::pair<float, float>(0.0, 1.0));
     }
   }
+    
 
   void SceneInferenceEngine::newObservationCallback(const boost::shared_ptr<asr_msgs::AsrObject>& pObject)
+
   {
     // Buffers the evidence to keep callback time as short as possible.
     mEvidenceBuffer.push(pObject);

@@ -41,6 +41,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/background/MultipliedBackgroundInferenceAlgorithm.h"
 #include "inference/model/background/MaximumBackgroundInferenceAlgorithm.h"
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**

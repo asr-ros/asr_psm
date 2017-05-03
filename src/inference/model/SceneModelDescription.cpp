@@ -60,8 +60,9 @@ namespace ProbabilisticSceneRecognition {
     for(boost::shared_ptr<SceneDescription> scene : mScenes)
 	scene->initializeVisualizer(mSuperior);
   }
-  
+
   void SceneModelDescription::integrateEvidence(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject)
+
   {
     // Add the evidence found to the buffer.
     mObjectEvidence.push(pObject);

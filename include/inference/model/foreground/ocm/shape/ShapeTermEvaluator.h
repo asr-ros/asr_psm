@@ -38,6 +38,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "inference/model/foreground/ocm/shape/HierarchicalShapeModel.h"
 
+#include <ISM/common_type/Object.hpp>
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -88,6 +90,7 @@ namespace ProbabilisticSceneRecognition {
      * @return Probability as determinded by the shape term.
      */
     double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments);
+
     
     /**
      * Update the visualizers based on the evidence.

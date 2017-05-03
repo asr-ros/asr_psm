@@ -20,9 +20,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 namespace ProbabilisticSceneRecognition {
 
   BackgroundSceneLearner::BackgroundSceneLearner()
-  : SceneLearner("background")
+  : SceneLearner()
   {
-    
+
   }
   
   BackgroundSceneLearner::~BackgroundSceneLearner()
@@ -36,7 +36,7 @@ namespace ProbabilisticSceneRecognition {
   
   void BackgroundSceneLearner::save(boost::property_tree::ptree& pPt)
   {
-    // Create a subtree.
+    // Create mSceneName = pExample->mIdentifier;a subtree.
     boost::property_tree::ptree subtree;
     
     // Add scene name and type.
@@ -57,23 +57,24 @@ namespace ProbabilisticSceneRecognition {
     // This is the list we store all object types. The size of the list will be the number of all unique objects.
     std::vector<std::string> index;
 
+    ISM::TracksPtr alltracks(new ISM::Tracks(mExamplesList));
     // Iterate over all examples for all scenes.
-    BOOST_FOREACH(boost::shared_ptr<const asr_msgs::AsrSceneGraph> example, mExamplesList)
-    {
-      // Iterate over all AsrNodes in the scene (a node represent an object).
-      BOOST_FOREACH(asr_msgs::AsrNode node, example->scene_elements)
-      {	
+
+    for (auto &track : alltracks->tracks){
+      // Iterate over all PbdNodes in the scene (a node represent an object).
+      //BOOST_FOREACH(pbd_msgs::PbdNode node, example->scene_elements)
+      //{
 	// Extract the object type from the first observation.
-	std::string type = node.track[0].type;
+    std::string type = track->type;
 	
 	// If the object is not already known, add it to the list of known objects.
 	if(std::find(index.begin(), index.end(), type) == index.end())
 	  index.push_back(type);
       }
-    }
+   // }
     
     // This is the number of unique objects.
     mMaximalNumberOfObjects = index.size();
-  }
-    
+    }
+
 }

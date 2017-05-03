@@ -32,8 +32,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
+
 // Local includes
 #include "learner/SceneModelLearner.h"
+#include "../../../lib_ism/libism/ISM/utility/TableHelper.hpp"
+#include "../../../lib_ism/libism/ISM/common_type/RecordedPattern.hpp"
+
 
 namespace ProbabilisticSceneRecognition {
   
@@ -70,7 +74,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pPbdSceneGraphsBagPath Path of file to be parsed for AsrSceneGraph messages.
      */
-    void extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath);
+    void extractTracksFromDbFile(const std::string& dbFileName);
     
     /**
      * Adds all recorded scene data in a AsrSceneGraph to a system that learns parameters of distributions in the decomposition of the joint distribution in a scene model.
@@ -93,6 +97,10 @@ namespace ProbabilisticSceneRecognition {
      * All distributions in the decomposition of the scene model and the learning data are plotted.
      */
     void visualizeSceneModel();
+    /**
+     * Learn recorded pattern and pass it to mSampleList.
+     */
+    void learn();
     
   private:
     
@@ -131,10 +139,9 @@ namespace ProbabilisticSceneRecognition {
     ros::Subscriber mPbdSceneGraphListener;
     
     /**
-     * A list of paths to rosbag files containing AsrSceneGraph messages.
-     * The latter can be used for model parameter learning.
+     * TableHelper to extract Objects from ".sqlite"-file.
      */
-    XmlRpc::XmlRpcValue mInputBagFilenames;
+    boost::shared_ptr<ISM::TableHelper> tableHelper;
         
     /************************************
      * Scene model
@@ -184,7 +191,16 @@ namespace ProbabilisticSceneRecognition {
      * Path to the directory the XML file containing the model is stored after learning.
      */
     std::string mSceneModelDirectory;
-    
+
+    /**
+     * Path to the directory the .sqlite file containing the training data.
+     */
+    std::string mInputDbFilename;
+
+    /**
+     * Recorded Pattern Pointer
+     */
+    ISM::RecordedPatternPtr recordedPattern;
     /**
      * The learner for the probabilistic scene model.
      */

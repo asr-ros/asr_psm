@@ -109,6 +109,7 @@ namespace ProbabilisticSceneRecognition {
       mChildren[i]->handleSceneGraph(node, pSceneGraph);
 	
     // There's only one AsrNode per object in a single scene graph.
+
 	break;
       }
     }
@@ -123,7 +124,7 @@ namespace ProbabilisticSceneRecognition {
     for(unsigned int i = 0; i < mChildren.size(); i++)
       mChildren[i]->initializeVisualizer(mSuperior);
   }
-  
+
   double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
       for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren) child->resetVisit();
@@ -141,7 +142,7 @@ namespace ProbabilisticSceneRecognition {
       
       // Converts the AsrObject assigned to this slot into the Pose data structure.
       // Subtract one from the assignment, because the first evidence is stored at position zero.
-      mAbsolutePose.reset(new ResourcesForPsm::Pose(pEvidenceList[pAssignments[0] - 1]));
+      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[0] - 1].pose));
       
       // Evaluate evidence for root node under uniform distribution (FOR EVERY DIMENSION. Could only be done, it a root object was assigned to the root node.
       // THIS IS NECESSARY! When we have only one object, a scene containing it and a background scene,
@@ -199,7 +200,7 @@ namespace ProbabilisticSceneRecognition {
 
     return result;
   }
-  
+
   void HierarchicalShapeModel::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
   {
     // Get the name of the primary scene object.
@@ -212,7 +213,7 @@ namespace ProbabilisticSceneRecognition {
       if(name.compare(pEvidenceList[i].type) == 0)
       {
 	// Extract pose of the object.
-	mAbsolutePose.reset(new ResourcesForPsm::Pose(pEvidenceList[i]));
+    mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[i].pose));
 	
 	// Forward the absolute pose of the primary scene object to the visualizer.
 	mVisualizer->setPose(mAbsolutePose);

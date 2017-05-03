@@ -45,7 +45,7 @@ namespace ProbabilisticSceneRecognition {
   {
     // Here is no visualization required.
   }
-  
+
   double OcclusionTermEvaluator::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
     /**************************************************************************************************
@@ -83,7 +83,7 @@ namespace ProbabilisticSceneRecognition {
     // Return the probability for the given hypothesis.
     return result;
   }
-  
+
   void OcclusionTermEvaluator::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
   {
     // No visualization to update.

@@ -32,9 +32,10 @@ namespace ProbabilisticSceneRecognition {
   {
     mBaseFrame = pBaseFrame;
   }
-  
+
   void ObjectTransformation::transform(const boost::shared_ptr<asr_msgs::AsrObject>& pObject)
   {
+
     // Create everything required for the transformation
     geometry_msgs::PoseStamped input, output;
     input.header = pObject->header;
@@ -43,7 +44,6 @@ namespace ProbabilisticSceneRecognition {
       std::cerr << "Got a AsrObject without poses." << std::endl;
       std::exit(1);    
     }
-
     input.pose = pObject->sampledPoses.front().pose;
     
     // If no transformation from source to target frame possible, drop object.

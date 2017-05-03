@@ -51,8 +51,8 @@ namespace ProbabilisticSceneRecognition {
   void AppearanceTermLearner::learnMapping(boost::shared_ptr<OcmModel> pModel, boost::shared_ptr<OcmTree> pNode)
   {
     // Iterate over all observations for the given node and create the mapping.
-    BOOST_FOREACH(boost::shared_ptr<SceneModel::Object> object, pNode->mObjectSet->mObjects)
-      pModel->mAppearanceTable->add(object->mType);
+    BOOST_FOREACH(boost::shared_ptr<ISM::Object> object, pNode->mObjectSet->objects)
+      pModel->mAppearanceTable->add(object->type);
 
     // Iterate over all child nodes and make them learn the mapping.
     BOOST_FOREACH(boost::shared_ptr<OcmTree> child, pNode->mChildren)
@@ -64,8 +64,8 @@ namespace ProbabilisticSceneRecognition {
     if (pNode->mIsReference) return;    // do not consider references for the appearance term, only important for shape
 
     // Iterate over all observations for the given node and count
-    BOOST_FOREACH(boost::shared_ptr<SceneModel::Object> object, pNode->mObjectSet->mObjects)
-      pModel->mAppearanceTable->add(pSlot, object->mType);
+    BOOST_FOREACH(boost::shared_ptr<ISM::Object> object, pNode->mObjectSet->objects)
+      pModel->mAppearanceTable->add(pSlot, object->type);
     
     // Add no additional appearances of the default class (=class for unknown objects).
     pModel->mAppearanceTable->setDefaultClassCounter(pSlot, 0);

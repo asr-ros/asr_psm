@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   visualization_msgs
+
   asr_psm_visualizations
   asr_relation_graph_generator
   asr_resources_for_psm
@@ -59,6 +60,7 @@ add_library(psm_inference  src/inference.cpp
 target_link_libraries(psm_inference  
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
   )
 
 catkin_package(
@@ -74,6 +76,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  
 )
 
 
@@ -170,6 +173,7 @@ add_executable(inference src/inference.cpp
 target_link_libraries(inference 
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  
 )
 
 add_executable(inference_batch src/inference_batch.cpp
@@ -199,4 +203,5 @@ add_executable(inference_batch src/inference_batch.cpp
 target_link_libraries(inference_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}  
+  
 )
