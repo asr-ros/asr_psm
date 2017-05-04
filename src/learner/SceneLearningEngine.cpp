@@ -18,9 +18,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "learner/SceneLearningEngine.h"
 
 
-#include "../../../lib_ism/libism/ISM/common_type/RecordedPattern.hpp"
-#include "../../../lib_ism/libism/ISM/utility/TableHelper.hpp"
-
 namespace ProbabilisticSceneRecognition {
 
 

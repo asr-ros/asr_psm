@@ -32,7 +32,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <trainer/PSMTrainer.h>
 
 //local includes
-#include "../../../lib_ism/libism/ISM/common_type/ObjectSet.hpp"
+#include <ISM/common_type/ObjectSet.hpp>
 
 namespace ProbabilisticSceneRecognition {
   

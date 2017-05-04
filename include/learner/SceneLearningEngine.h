@@ -35,8 +35,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Local includes
 #include "learner/SceneModelLearner.h"
-#include "../../../lib_ism/libism/ISM/utility/TableHelper.hpp"
-#include "../../../lib_ism/libism/ISM/common_type/RecordedPattern.hpp"
+#include <ISM/utility/TableHelper.hpp>
+#include <ISM/common_type/RecordedPattern.hpp>
 
 
 namespace ProbabilisticSceneRecognition {

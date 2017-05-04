@@ -40,8 +40,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/ocm/OcmSceneObjectLearner.h"
 
-#include "../../../lib_ism/libism/ISM/common_type/Tracks.hpp"
-#include "../../../lib_ism/libism/ISM/common_type/Track.hpp"
+#include <ISM/common_type/Tracks.hpp>
+#include <ISM/common_type/Track.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
