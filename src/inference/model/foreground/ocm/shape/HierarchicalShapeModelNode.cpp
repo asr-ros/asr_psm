@@ -66,7 +66,7 @@ namespace ProbabilisticSceneRecognition {
 
   }
   
-  void HierarchicalShapeModelNode::handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void HierarchicalShapeModelNode::handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Determine the AsrNode that contains observations for this scene object.
     for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
@@ -120,7 +120,7 @@ namespace ProbabilisticSceneRecognition {
 	break;
       }
     }
-  }
+  }*/
   
   void HierarchicalShapeModelNode::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
@@ -168,7 +168,8 @@ namespace ProbabilisticSceneRecognition {
         mWasVisited = true;
 
       // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[pSlotId] - 1].pose));
+        mAbsolutePose = PoseAdapter::adapt(pEvidenceList[pAssignments[pSlotId] - 1].sampledPoses[0].pose);
+      //mAbsolutePose.reset(new ISM::Pose(pEvidenceList[pAssignments[pSlotId] - 1].sampledPoses[0].pose));
       mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
       
       // Evaluate the relative pose under the the probability distribution describing the scene shape.
@@ -205,7 +206,8 @@ namespace ProbabilisticSceneRecognition {
       }
       
       // Forward position of this primary scene object to visualizer.
-      mVisualizer->setBestCandidatePose(mAbsolutePose);
+      mVisualizer->setBestCandidatePose(PoseAdapter::adapt(mAbsolutePose));
+      //mVisualizer->setBestCandidatePose(mAbsolutePose);
 
     }
     else
@@ -231,19 +233,22 @@ namespace ProbabilisticSceneRecognition {
       // If yes and the parent node was also detected, then update the position.
       if(mSceneObject.compare(object.type) == 0 && mAbsoluteParentPose)
       {
-	// Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-    mAbsolutePose.reset(new ISM::Pose(*object.pose));
+    // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
+          mAbsolutePose = PoseAdapter::adapt(object.sampledPoses[0].pose);
+    //mAbsolutePose.reset(new ISM::Pose(*object.sampledPoses[0].pose));
 	mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
 	
 	/********************************************************
 	* Now we draw.
 	********************************************************/
 	
-	// Apply last known absolut object position to the visualizer.
-	mVisualizer->setLastPose(mAbsolutePose);
+    // Apply last known absolut object position to the visualizer.
+    mVisualizer->setLastPose(PoseAdapter::adapt(mAbsolutePose));
+    //mVisualizer->setLastPose(mAbsolutePose);
 	
-	// Apply the absolute position of the parent object to the visualizer.
-	mVisualizer->setParentPose(mAbsoluteParentPose);
+    // Apply the absolute position of the parent object to the visualizer.
+    mVisualizer->setParentPose(PoseAdapter::adapt(mAbsoluteParentPose));
+    //mVisualizer->setParentPose(mAbsoluteParentPose);
 	
 	// Based on the assumption that there is no detection uncertainty for object types,
 	// evaluate the gaussian mixture and visualize the uncertainty for the detection.
@@ -299,4 +304,3 @@ namespace ProbabilisticSceneRecognition {
   }
 }
   
-}

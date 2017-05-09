@@ -58,7 +58,7 @@ public:
      * @param pExamplesList list of object observations serving as basis of the test sets.
      * @param pTestSetCount how many test sets to generate.
      */
-    void generateTestSets(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList, unsigned int pTestSetCount);
+    void generateTestSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
 
 private:
 
@@ -76,7 +76,7 @@ private:
      * @param pExamplesList list of object observations serving as basis of the test sets.
      * @param pTestSetCount how many test sets to generate.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> generateRandomSets(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList, unsigned int pTestSetCount);
+    std::vector<std::vector<asr_msgs::AsrObject>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
     /**
      * Validate whether test sets represent scene.
      * @param pTestSets the test sets to validate.
@@ -89,6 +89,13 @@ private:
      * @return the AsrObject the observation was transformed into.
      */
     asr_msgs::AsrObject makeAsrObject(asr_msgs::AsrObservations pObservation);
+
+    /**
+     * Transform asr_msgs::AsrObservation into asr_msgs::AsrObject.
+     * @param pObservation  the observation to transform.
+     * @return the AsrObject the observation was transformed into.
+     */
+    asr_msgs::AsrObject makeAsrObject(ISM::ObjectPtr pObservation);
     /**
      * Set the pose of a given object relative to a reference object.
      * @param pObject       the object to have its pose transformed.
@@ -101,7 +108,7 @@ private:
      * @param filename  of the database file.
      * @return the test sets loaded from the file.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> loadTestSetFromFile(const std::string& filename);
+    std::vector<std::vector<asr_msgs::AsrObject>> loadTestSetsFromFile(const std::string& filename);
 
     /**
      * Print a divider to ros info stream to divide and mark selected output.

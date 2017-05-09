@@ -35,7 +35,7 @@ namespace ProbabilisticSceneRecognition {
     std::string inferenceAlgorithm;
     
     // A list of paths to rosbag files containing AsrSceneGraph messages.
-    XmlRpc::XmlRpcValue mInputBagFilenames;
+    //XmlRpc::XmlRpcValue mInputBagFilenames;
     
     // The frame to transform the object poses to.
     // Also the coordinate frame in which the visualization should take place.
@@ -64,7 +64,7 @@ namespace ProbabilisticSceneRecognition {
       throw std::runtime_error("Please specify parameter " + std::string("scene_model_filename") + " when starting this node.");
     
     // Try to get names of bag files with AsrSceneGraph message input, if any exist.
-    if(mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/bag_filenames_list", mInputBagFilenames))
+    /*if(mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/bag_filenames_list", mInputBagFilenames))
     {
       // Either one string or a list of strings is accepted as input.
       if(mInputBagFilenames.getType() == XmlRpc::XmlRpcValue::TypeString)
@@ -83,7 +83,7 @@ namespace ProbabilisticSceneRecognition {
 	    throw std::invalid_argument("Bag file path no. " + boost::lexical_cast<std::string>(i) + "is no valid string.");
 	}
       }
-    }
+    }*/
 
     // Try to get the name of the scene to be published.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/base_frame_id", baseFrameId))
@@ -118,10 +118,10 @@ namespace ProbabilisticSceneRecognition {
     mObjectListener = mNodeHandle.subscribe(pPbdObjectTopic, 100, &SceneInferenceEngine::newObservationCallback, this);
     
     // Register callback handlers for scene graphs which contain the raw data used for learning.
-    mSceneGraphListener = mNodeHandle.subscribe(pPbdSceneGraphTopic, 5, &SceneInferenceEngine::newSceneGraphCallback, this);
+    //mSceneGraphListener = mNodeHandle.subscribe(pPbdSceneGraphTopic, 5, &SceneInferenceEngine::newSceneGraphCallback, this);
     
     // Read the learning data from bag file.
-    readLearnerInputBags(mInputBagFilenames);
+    //readLearnerInputBags(mInputBagFilenames);
 
   }
   
@@ -174,7 +174,7 @@ namespace ProbabilisticSceneRecognition {
      ********************************************************************/
 
     // Process scene graphs!
-    while(!mSceneGraphBuffer.empty())
+    /*while(!mSceneGraphBuffer.empty())
     {
       // Get the first entry.
       boost::shared_ptr<const asr_msgs::AsrSceneGraph> sceneGraph = mSceneGraphBuffer.front();
@@ -187,7 +187,7 @@ namespace ProbabilisticSceneRecognition {
       
       // Forward evidence to the model.
       mModel.integrateSceneGraph(sceneGraph);
-    }
+    }*/
     
     /********************************************************************
      * Do the inference and show the results.
@@ -307,7 +307,7 @@ namespace ProbabilisticSceneRecognition {
     mModel.loadModelFromFile(pSceneModelFileName, pInferenceAlgorithm);
   }
   
-  void SceneInferenceEngine::readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames)
+  /*void SceneInferenceEngine::readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames)
   {
     // If only one string is given to node, just use this as path to scene graphs.
     // Otherwise load a bunch of files and process input as it was one file.
@@ -320,9 +320,9 @@ namespace ProbabilisticSceneRecognition {
       for(int i = 0; i < pInputBagFilenames.size(); i++)
 	extractPbdSceneGraphsFromBag(static_cast<std::string>(pInputBagFilenames[i]));
     }
-  }
+  }*/
   
-  void SceneInferenceEngine::extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath)
+  /*void SceneInferenceEngine::extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath)
 
   {
     ROS_INFO_STREAM("Extracting AsrSceneGraph messages from rosbag file: " << pPbdSceneGraphsBagPath);
@@ -369,7 +369,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Clean up.
     pbdSceneGraphsBag.close();
-  }
+  }*/
   
   void SceneInferenceEngine::initializeVisualizationChain(const double pScale, const float pSigmaMultiplicator, const std::string pFrameId)
   {
@@ -414,11 +414,11 @@ namespace ProbabilisticSceneRecognition {
     mEvidenceBuffer.push(pObject);
   }
 
-  void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Buffers the scene graph to keep callback time as short as possible.
     mSceneGraphBuffer.push(pSceneGraph);
-  }
+  }*/
 
   
 }

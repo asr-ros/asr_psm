@@ -60,9 +60,9 @@ namespace ProbabilisticSceneRecognition {
     doInference(pEvidenceList, pRuntimeLogger);
   }
   
-  void BackgroundSceneContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void BackgroundSceneContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Scene graph is no of interest here.
-  }
+  }*/
   
 }

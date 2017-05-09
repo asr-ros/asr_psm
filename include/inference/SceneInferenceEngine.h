@@ -95,14 +95,14 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pInputBagFilenames A list of the bag files that contain the learning data.
      */
-    void readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames);
+    //void readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames);
     
     /**
      * Open rosbag file and extract AsrSceneGraph messages on input topic (which has been set before).
      * 
      * @param pPbdSceneGraphsBagPath Path of file to be parsed for PbdSceneGraph messages.
      */
-    void extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath);
+    //void extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath);
     
     /**
      * Initializes the chain responsible for visualization.
@@ -118,7 +118,7 @@ namespace ProbabilisticSceneRecognition {
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    //void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
   private:
     
@@ -154,7 +154,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * A buffer for storing scene graphs.
      */
-    std::queue<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mSceneGraphBuffer;
+    //std::queue<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mSceneGraphBuffer;
     
     /**
      * A transformer for objects into the target coordinate frame.

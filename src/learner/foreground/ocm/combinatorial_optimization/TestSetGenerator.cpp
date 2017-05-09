@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                                         unsigned int pTestSetCount)
 {
     ros::NodeHandle nodeHandle("~");
@@ -36,15 +36,34 @@ void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<const asr_
         validateSets(generateRandomSets(pExamplesList, pTestSetCount));
     else // get the test sets from the databases
     {
-        mSceneId = pExamplesList[0]->identifier;
-        mValidTestSets = loadTestSetFromFile(validTestSetDbFilename);
-        mInvalidTestSets = loadTestSetFromFile(invalidTestSetDbFilename);
+        mSceneId = pExamplesList[0]->mIdentifier;
+        mValidTestSets = loadTestSetsFromFile(validTestSetDbFilename);
+        mInvalidTestSets = loadTestSetsFromFile(invalidTestSetDbFilename);
 
-        throw std::runtime_error("Cannot load test sets from file yet.");
+        // Take only as many test sets as asked for, according to the fraction of the complete number of test sets each subset represents:
+        double fullTestSetCount = mValidTestSets.size() + mInvalidTestSets.size();
+        double validFraction = ((double) mValidTestSets.size()) / fullTestSetCount;
+        double invalidFraction = ((double) mInvalidTestSets.size()) / fullTestSetCount;
+        unsigned int validTestSetCount = std::floor(validFraction * ((double) pTestSetCount));
+        unsigned int invalidTestSetCount = std::floor(invalidFraction * ((double) pTestSetCount));
+        unsigned int sum = validTestSetCount + invalidTestSetCount;
+        // Fill up the smaller subset so that the pTestSetCount is exactly reached:
+        if (sum < pTestSetCount)
+        {
+            if (validTestSetCount < invalidTestSetCount) validTestSetCount += pTestSetCount - sum;
+            else invalidTestSetCount += pTestSetCount - sum;
+        }
+        mValidTestSets.resize(validTestSetCount);
+        mInvalidTestSets.resize(invalidTestSetCount);
+        ROS_INFO_STREAM("Reset number of test sets to " << mValidTestSets.size() << " valid and " << mInvalidTestSets.size() << " invalid sets "
+                        << "(" << mValidTestSets.size() + mInvalidTestSets.size() << "/" << pTestSetCount << ")");
     }
+
+    mEvaluator->setValidTestSets(mValidTestSets);    // update with newfound valid test sets
+    mEvaluator->setInvalidTestSets(mInvalidTestSets);    // initialize properly
 }
 
-std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList, unsigned int pTestSetCount)
+std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
 {
     printDivider();
     ROS_INFO_STREAM("Generating " << pTestSetCount << " random test sets.");
@@ -55,7 +74,9 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
     boost::uniform_int<> dist(0,RAND_MAX);  // Normal Distribution
     boost::variate_generator<boost::mt19937,boost::uniform_int<>>  gen(eng,dist);  // Variate generator
 
-    // Generate all possible realtions:
+    ROS_INFO_STREAM("Found " << mTypes.size() << " object types.");
+
+    // Generate all possible relations:
     std::vector<SceneModel::Relation> allRelations;
     for (unsigned int i = 0; i < mTypes.size() - 1; i++)
         for (unsigned int j = i + 1; j < mTypes.size(); j++)
@@ -63,38 +84,27 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
 
     std::vector<std::vector<asr_msgs::AsrObject>> testSets;
 
-    unsigned int testSetsPerSceneGraph = pTestSetCount / pExamplesList.size();
-    for (unsigned int i = 0; i < pExamplesList.size(); i++)
+    for (unsigned int i = 0; i < pTestSetCount; i++)
     {
-        boost::shared_ptr<const asr_msgs::AsrSceneGraph> currentSceneGraph = pExamplesList[i];
-        for (unsigned int j = 0; j < testSetsPerSceneGraph; j++)     // generate a certain number of test sets for each available scene graph for the scene
+        std::vector<asr_msgs::AsrObject> testSet;
+        unsigned int randomTimestep = gen() % pExamplesList.size();
+        unsigned int randomObjectIndex = gen() % pExamplesList[randomTimestep]->objects.size();
+        ISM::ObjectPtr referenceObject = pExamplesList[randomTimestep]->objects[randomObjectIndex];
+        for (ISM::ObjectPtr observation: pExamplesList[randomTimestep]->objects)
         {
-            std::vector<asr_msgs::AsrObject> testSet;
-            unsigned int randomTrackIndex = gen() % currentSceneGraph->scene_elements.size();
-            asr_msgs::AsrNode randomTrack = currentSceneGraph->scene_elements[randomTrackIndex];
-            unsigned int randomPoseIndex = gen() % randomTrack.track.size();    // Select random scene observation, assuming all tracks have the same length.
-            asr_msgs::AsrObject referenceObject = makeAsrObject(randomTrack.track[randomPoseIndex]);  // Pick random pose on trajectory
-
-            for (asr_msgs::AsrNode trajectory: currentSceneGraph->scene_elements)   // since each object can only appear once, iterate over all trajectories
+            unsigned int occurs;
+            if (mObjectMissingInTestSetProbability > 1) throw std::runtime_error("parameter object_missing_in_test_set_probability should not be larger than 1.");
+            if (mObjectMissingInTestSetProbability > 0)
+                occurs = gen() % 1 / mObjectMissingInTestSetProbability;   // only with a certain probability:
+            else occurs = 1;
+            if (occurs != 0)                    // object does occur
             {
-                unsigned int occurs;
-                if (mObjectMissingInTestSetProbability > 1) throw std::runtime_error("parameter object_missing_in_test_set_probability should not be larger than 1.");
-                if (mObjectMissingInTestSetProbability > 0)
-                    occurs = gen() % 1 / mObjectMissingInTestSetProbability;   // only with a certain probability:
-                else occurs = 1;
-                if (occurs != 0)                    // object does occur
-                {
-                    asr_msgs::AsrObservations observation = trajectory.track[randomPoseIndex];  // Pick random pose on trajectory
-                    asr_msgs::AsrObject object = makeAsrObject(observation);
-
-                    setPoseOfObjectRelativeToReference(object, referenceObject);
-                    testSet.push_back(object);
-
-                }
+                asr_msgs::AsrObject object = makeAsrObject(observation);
+                setPoseOfObjectRelativeToReference(object, makeAsrObject(referenceObject));
+                testSet.push_back(object);
             }
-            testSets.push_back(testSet);
-
         }
+        testSets.push_back(testSet);
     }
 
     return testSets;
@@ -112,9 +122,12 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
 
     ROS_INFO_STREAM("Recognizing test sets with fully meshed topology.");
     std::vector<double> testSetProbabilities;   // Needs to be in the same order as the testSets.
-    mEvaluator->evaluate(mFullyMeshedTopology, testSetProbabilities);
+    std::vector<double> invalidTestSetProbabilities;
+    mEvaluator->evaluate(mFullyMeshedTopology, testSetProbabilities, invalidTestSetProbabilities);
     if (mFullyMeshedTopology->mFalsePositives != 0)
         throw std::runtime_error("In TestSetGenerator::validateSets(): Error when evaluating fully meshed topology: has false positives, should have none");
+    if (!invalidTestSetProbabilities.empty())
+        throw std::runtime_error("In TestSetGenerator::validateSets(): Error when evaluating fully meshed topology: found invalid test sets when those should not have been initialized yet.");
 
     double maxProbability = 0;
     double minProbability = 1;  // Minumum probability greater than zero. set to possible maximum so it will be lowered in each case
@@ -125,8 +138,6 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
         if (probability == 0) zeroSets++;
         else if (probability < minProbability) minProbability = probability;    // set lowest non-zero probability as new minimum
     }
-
-    double middle = ((maxProbability - minProbability) / 2) + minProbability;  // for testing: the middle of the probability range.
 
     std::vector<std::vector<asr_msgs::AsrObject>> validTestSets;
     std::vector<std::vector<asr_msgs::AsrObject>> invalidTestSets;    
@@ -143,27 +154,23 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
     ROS_INFO_STREAM("Maximum probability: " << maxProbability);
     ROS_INFO_STREAM("Minimum probability greater than zero: " << minProbability);
     ROS_INFO_STREAM("Recognition threshold: " << recognitionThreshold);
-    ROS_INFO_STREAM("Middle: " << middle);
     ROS_INFO_STREAM("Found " << validTestSets.size() << " valid and " << invalidTestSets.size() << " invalid test sets.");
     ROS_INFO_STREAM(zeroSets << " test sets have probability 0.");
     printDivider();
 
-    mEvaluator->setValidTestSets(validTestSets);    // update with newfound valid test sets
-    mEvaluator->setInvalidTestSets(invalidTestSets);    // initialize properly
     mEvaluator->setRecognitionThreshold(recognitionThreshold);  // set actual recognition threshold again
 
     mValidTestSets = validTestSets;
     mInvalidTestSets = invalidTestSets;
 }
 
-asr_msgs::AsrObject TestSetGenerator::makeAsrObject(asr_msgs::AsrObservations pObservation)
+asr_msgs::AsrObject TestSetGenerator::makeAsrObject(ISM::ObjectPtr pObservation)
 {
     asr_msgs::AsrObject object;
-    object.header.stamp = pObservation.stamp;
     geometry_msgs::PoseWithCovariance pwc;
-    pwc.pose = pObservation.transform;
+    pwc.pose = PoseAdapter::adaptToGeometryMsg(pObservation->pose);
     object.sampledPoses.push_back(pwc);
-    object.type = pObservation.type;
+    object.type = pObservation->type;
     return object;
 }
 
@@ -207,7 +214,7 @@ void TestSetGenerator::setPoseOfObjectRelativeToReference(asr_msgs::AsrObject& p
     pObject.sampledPoses = newPoses;
 }
 
-std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::loadTestSetFromFile(const std::string& filename)
+std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::loadTestSetsFromFile(const std::string& filename)
 {
     // compare ISM CombinatorialTrainer
     ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(filename));
@@ -215,14 +222,21 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::loadTestSetFromF
     if (std::find(patternNames.begin(), patternNames.end(), mSceneId) == patternNames.end())
         throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + filename + "): scene id " + mSceneId + " is not a valid pattern in the database.");
 
-    std::vector<ISM::ObjectSetPtr> loadedTestSet;
+    std::vector<ISM::ObjectSetPtr> loadedTestSets;
 
-    loadedTestSet = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
+    loadedTestSets = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
 
-    // transformation not properly implemented yet:
-    std::vector<std::vector<asr_msgs::AsrObject>> testSet;
+    std::vector<std::vector<asr_msgs::AsrObject>> testSets;
+    for (ISM::ObjectSetPtr loadedTestSet: loadedTestSets)
+    {
+        std::vector<asr_msgs::AsrObject> testSet;
+        for (ISM::ObjectPtr object: loadedTestSet->objects)
+            testSet.push_back(makeAsrObject(object));
+        testSets.push_back(testSet);
+    }
+    ROS_INFO_STREAM("Loaded " << testSets.size() << " test sets from file " << filename);
 
-    return testSet;
+    return testSets;
 }
 
 }

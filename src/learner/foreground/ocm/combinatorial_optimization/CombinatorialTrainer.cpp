@@ -21,7 +21,7 @@ namespace ProbabilisticSceneRecognition {
 
 
     CombinatorialTrainer::CombinatorialTrainer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
-                                               std::vector<std::string> pObjectTypes, std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList):
+                                               std::vector<std::string> pObjectTypes, std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList):
         mMinFalsePositives(0), mMinFPInitialized(true), // No false positives found, like in fully meshed.
         mMinFalseNegatives(0), mMinFNInitialized(true),                             // No false negatives found, like in fully meshed.
         mMinAverageRecognitionRuntime(0.0), mMinTimeInitialized(true),  // minimum recognition runtime is not really limited
@@ -104,6 +104,22 @@ namespace ProbabilisticSceneRecognition {
            throw std::runtime_error("Please specify parameter cost_function when starting this node.");
         initCostFunction(costFunctionType);
 
+        // calculate cost for fully meshed and star topologies and set mBestOptimizedTopology to best.
+        // Has to be done after initialization since the cost function could not be initialised before:
+        if (!mCostFunction) throw std::runtime_error("In CombinatorialTrainer: cost function not initialised.");
+        mBestOptimizedTopology = mTopologyManager->getFullyMeshedTopology();
+        mCostFunction->calculateCost(mBestOptimizedTopology);
+        if (!mBestOptimizedTopology->mCostValid) throw std::runtime_error("In CombinatorialTrainer: fully meshed cost not valid.");
+        std::vector<boost::shared_ptr<SceneModel::Topology>> starTopologies = mTopologyManager->getStarTopologies();
+        for (boost::shared_ptr<SceneModel::Topology> star: starTopologies)
+        {
+            mCostFunction->calculateCost(star);
+            if (!star->mCostValid) throw std::runtime_error("In CombinatorialTrainer: star topology cost not valid.");
+            if (star->mCost < mBestOptimizedTopology->mCost)
+                mBestOptimizedTopology = star;
+        }
+        ROS_INFO_STREAM("Found best topology from fully meshed and stars. Was " << mBestOptimizedTopology->mIdentifier << " with cost " << mBestOptimizedTopology->mCost);
+
         std::string neighbourhoodFunctionType;
         // Try to get the type of the neighbourhood function.
         if(!mNodeHandle.getParam("neighbourhood_function", neighbourhoodFunctionType))
@@ -167,13 +183,41 @@ namespace ProbabilisticSceneRecognition {
     void CombinatorialTrainer::initFullyMeshedTopology()
     {
         boost::shared_ptr<SceneModel::Topology> fm = mTopologyManager->getFullyMeshedTopology();
-        mEvaluator->evaluate(fm);   // should already have been evaluated, just for safety: if topology was already evaluated, Evaluator returns immediately
+        std::vector<double> validTestSetProbabilities, invalidTestSetProbabilities;
+        // should already have been evaluated if test sets were not loaded from file; if topology was already evaluated, Evaluator returns immediately:
+        mEvaluator->evaluate(fm, validTestSetProbabilities, invalidTestSetProbabilities);
         mMaxAverageRecognitionRuntime = fm->mAverageRecognitionRuntime;
         printDivider();
         ROS_INFO_STREAM("Evaluation of fully meshed topology:");
         ROS_INFO_STREAM("Average recognition runtime (maximum of all topologies) is " << mMaxAverageRecognitionRuntime);
         printDivider();
-        mBestOptimizedTopology = fm;    // starts with fully meshed as best topology.
+
+        // FOR TESTING:
+        // if evaluate() did not return immediately, which indicates that the test sets were loaded and not created, look at probabilities to determine a better recognition threshold:
+        if (!validTestSetProbabilities.empty() || !invalidTestSetProbabilities.empty())
+        {
+            double minValidProbability = 1.0;
+            for (double validProbability: validTestSetProbabilities)
+                if (validProbability < minValidProbability)
+                    minValidProbability = validProbability;
+            double maxInvalidProbability = 0.0;
+            for (double invalidProbability: invalidTestSetProbabilities)
+                if (invalidProbability > maxInvalidProbability)
+                    maxInvalidProbability = invalidProbability;
+            if (minValidProbability <= maxInvalidProbability)
+                throw std::runtime_error("Error: minimum valid probability " + boost::lexical_cast<std::string>(minValidProbability)
+                                         + " smaller than maximum invalid probability " + boost::lexical_cast<std::string>(maxInvalidProbability));
+            double proposedRecognitionThreshold = ((minValidProbability - maxInvalidProbability) / 2) + maxInvalidProbability;
+            printDivider();
+            printDivider();
+            ROS_INFO_STREAM("minimum valid probability: " << minValidProbability << ", maximum invalid probability: " << maxInvalidProbability);
+            ROS_INFO_STREAM("Proposed recognition threshold: " << proposedRecognitionThreshold);
+            printDivider();
+            printDivider();
+
+            // for recognition threshold determination:
+            //throw std::runtime_error("Since we are currently only interested in the recognition threshold, we do not need to waste any more time here.");
+        }
 
         mMaxTimeInitialized = true;
     }
@@ -204,7 +248,6 @@ namespace ProbabilisticSceneRecognition {
                 maxFalseNegatives = starFalseNegatives;
             if (starAverageRecognitionRuntime <= minAverageRecognitionRuntime)
                 minAverageRecognitionRuntime = starAverageRecognitionRuntime;   // find mimumum
-            if (star->mCost <= mBestOptimizedTopology->mCost) mBestOptimizedTopology = star;    // set optimal star as new best if better than fully meshed.
         }
         printDivider();
         ROS_INFO_STREAM("Star topology evaluation complete.");
@@ -366,6 +409,8 @@ namespace ProbabilisticSceneRecognition {
         boost::shared_ptr<SceneModel::Topology> optimizedTopology = mOptimizationAlgorithm->optimize(pStartingTopology);
         if (!optimizedTopology->mCostValid) throw std::runtime_error("In CombinatorialTrainer::runOptimization(): optimization returned topology without valid cost.");
 
+        if (!mBestOptimizedTopology || !mBestOptimizedTopology->mCostValid)
+            throw std::runtime_error("In CombinatorialTrainer::runOptimization(): no valid older best topology or cost.");
         if (optimizedTopology->mCost <= mBestOptimizedTopology->mCost)
             mBestOptimizedTopology = optimizedTopology;
 

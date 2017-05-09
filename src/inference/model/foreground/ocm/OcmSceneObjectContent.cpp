@@ -226,12 +226,12 @@ namespace ProbabilisticSceneRecognition {
     ROS_DEBUG_STREAM("Probability for scene object before applying priori is " << mProbability << ".");
   }
   
-  void OcmSceneObjectContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void OcmSceneObjectContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Forward scene graph to the term evaluators.
     for(unsigned int i = 0; i < mEvaluators.size(); i++)
       mEvaluators[i]->handleSceneGraph(pSceneGraph);
-  }
+  }*/
   
   double OcmSceneObjectContent::getSceneObjectProbability()
   {

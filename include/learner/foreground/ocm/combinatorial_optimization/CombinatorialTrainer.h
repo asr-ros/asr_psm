@@ -27,6 +27,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/combinatorial_optimization/SimulatedAnnealingAlgorithm.hpp>
 #include <ISM/combinatorial_optimization/ExponentialCoolingSchedule.hpp>
 
+#include <ISM/common_type/ObjectSet.hpp>
+
 #include "learner/foreground/ocm/combinatorial_optimization/WeightedSum.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TopologyManager.h"
@@ -47,7 +49,7 @@ public:
      * @param pExamplesList The list of evidences to train on.
      */
     CombinatorialTrainer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
-                         std::vector<std::string> pObjectTypes, std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList);
+                         std::vector<std::string> pObjectTypes, std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList);
 
     /**
      * Destructor.

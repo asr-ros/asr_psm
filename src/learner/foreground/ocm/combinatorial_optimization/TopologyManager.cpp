@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-TopologyManager::TopologyManager(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+TopologyManager::TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                 const std::vector<std::string>& pObjectTypes,
                 boost::shared_ptr<SceneModel::TopologyGenerator> pTopologyGenerator,
                 boost::shared_ptr<Evaluator> pEvaluator):
@@ -31,9 +31,13 @@ TopologyManager::TopologyManager(std::vector<boost::shared_ptr<const asr_msgs::A
     if(!nodeHandle.getParam("optimization_history_output", mHistoryOutput))
         throw std::runtime_error("Please specify parameter optimization_history_output when starting this node.");
 
-    // Try to get the start temperature.
+    // Try to get the history file path.
     if(!nodeHandle.getParam("optimization_history_file_path", mHistoryFilePath))
         throw std::runtime_error("Please specify parameter optimization_history_file_path when starting this node.");
+
+    // Try to get whether to revisit .
+    if(!nodeHandle.getParam("revisit_topologies", mRevisitTopologies))
+        throw std::runtime_error("Please specify parameter revisit_topologies when starting this node.");
 
     if (mHistoryOutput == "svg") mSVGHelper.reset(new ISM::SVGHelper(mHistoryFilePath));
 }
@@ -53,7 +57,6 @@ boost::shared_ptr<SceneModel::Topology> TopologyManager::getNextNeighbour()
     if (!nextNeighbour->mTree) makeTree(nextNeighbour); // make sure the neighbour has a tree associated with it, which will be used by evaluator
     mEvaluator->evaluate(nextNeighbour);                // if nextNeighbour has already been evaluated, the Evaluator returns without rerunning the evaluation
 
-    //mSeenTopologies[nextNeighbour->mIdentifier]->mUsedInOptimization = true;  // topology has been used in optimization
     nextNeighbour->mUsedInOptimization = true;  // topology has been used in optimization
 
     mHistory[mHistoryIndex].push_back(std::pair<boost::shared_ptr<SceneModel::Topology>, bool>(nextNeighbour, false));   // add neighbour to history
@@ -78,7 +81,7 @@ void TopologyManager::setReferenceInstance(boost::shared_ptr<SceneModel::Topolog
             selectedNeighbours.push_back(neighbour);
             mSeenTopologies[neighbour->mIdentifier] = neighbour;
         }
-        else if (!mSeenTopologies[neighbour->mIdentifier]->mUsedInOptimization) // if in list of seen topologies, but not yet used in optimization
+        else if (mRevisitTopologies || !mSeenTopologies[neighbour->mIdentifier]->mUsedInOptimization) // if topologies get revisited or if topology in list of seen topologies, but not yet used in optimization
         {
             selectedNeighbours.push_back(mSeenTopologies[neighbour->mIdentifier]);
         }
@@ -202,7 +205,7 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
         {
             // Adapt history to ISM requirements:
             std::vector<std::vector<std::pair<ISM::TopologyPtr, unsigned int>>> history;
-            std::string sceneId = mExamplesList[0]->identifier; // Assuming all scene graphs are examples for the same scene.
+            std::string sceneId = mExamplesList[0]->mIdentifier; // Assuming all scene graphs are examples for the same scene.
             boost::shared_ptr<TopologyAdapter> topologyAdapter(new TopologyAdapter(mObjectTypes, sceneId));
 
             for (std::vector<std::pair<boost::shared_ptr<SceneModel::Topology>, bool>> psmstep: mHistory)

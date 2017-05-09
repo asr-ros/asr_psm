@@ -26,7 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <Pose.h>
 
@@ -39,6 +39,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/common_type/Object.hpp>
 
 #include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
+
+// temporary includes
+#include "helper/PoseAdapter.h"
 
 namespace ProbabilisticSceneRecognition {
   
@@ -73,7 +76,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pParent The AsrNode that acts as parent for this node.
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    //void handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
     /**
      * Initializes the visualization mechanism.

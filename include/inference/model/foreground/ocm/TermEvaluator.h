@@ -24,7 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <ISM/common_type/Object.hpp>
 
@@ -63,7 +63,7 @@ namespace ProbabilisticSceneRecognition {
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    virtual void handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph) = 0;
+    //virtual void handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph) = 0;
     
     /**
      * Initializes the visualization mechanism.

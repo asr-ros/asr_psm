@@ -36,10 +36,10 @@ namespace ProbabilisticSceneRecognition {
     mTable.reset(new ProbabilityTable(pPt.get_child("occlusion")));
   }
   
-  void OcclusionTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void OcclusionTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Scene graph is no of interest here.
-  }
+  }*/
   
   void OcclusionTermEvaluator::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {

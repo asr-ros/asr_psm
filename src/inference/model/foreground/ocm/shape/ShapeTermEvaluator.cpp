@@ -34,10 +34,10 @@ namespace ProbabilisticSceneRecognition {
     mHsm.load(pPt);
   }
   
-  void ShapeTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void ShapeTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     mHsm.handleSceneGraph(pSceneGraph);
-  }
+  }*/
   
   void ShapeTermEvaluator::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {

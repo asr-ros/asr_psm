@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <ISM/combinatorial_optimization/NeighbourhoodFunction.hpp>
 #include <ISM/utility/SVGHelper.hpp>
+#include <ISM/common_type/ObjectSet.hpp>
 
 #include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.h"
@@ -42,7 +43,7 @@ public:
      * @param pTopologyGenerator    Generator creating the topologies.
      * @param pEvaluator            Evaluator to evaluate the topologies.
      */
-    TopologyManager(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+    TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                     const std::vector<std::string>& pObjectTypes,
                     boost::shared_ptr<SceneModel::TopologyGenerator> pTopologyGenerator,
                     boost::shared_ptr<Evaluator> pEvaluator);
@@ -131,7 +132,7 @@ private:
     /**
      * List of object evidence used as basis of the topologies.
      */
-    std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> mExamplesList;
+    std::vector<boost::shared_ptr<ISM::ObjectSet>> mExamplesList;
 
     /**
      * List of different object types in the examples list.
@@ -164,6 +165,11 @@ private:
      * Helps to write history to svg file if output is set to "svg".
      */
     ISM::SVGHelperPtr mSVGHelper;
+
+    /**
+     * Whether to revisit topologies already seen in this optimization run.
+     */
+    bool mRevisitTopologies;
 };
 
 }

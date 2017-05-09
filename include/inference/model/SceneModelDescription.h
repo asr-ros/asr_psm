@@ -90,7 +90,7 @@ namespace ProbabilisticSceneRecognition {
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void integrateSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    //void integrateSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
     /**
      * Update the model based on the accumulated evidence.

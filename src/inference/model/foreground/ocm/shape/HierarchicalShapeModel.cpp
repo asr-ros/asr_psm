@@ -86,7 +86,7 @@ namespace ProbabilisticSceneRecognition {
     }
   }
   
-  void HierarchicalShapeModel::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
+  /*void HierarchicalShapeModel::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Determine the AsrNode that contains observations for this scene object.
     for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
@@ -113,7 +113,7 @@ namespace ProbabilisticSceneRecognition {
 	break;
       }
     }
-  }
+  }*/
   
   void HierarchicalShapeModel::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
@@ -142,7 +142,8 @@ namespace ProbabilisticSceneRecognition {
       
       // Converts the AsrObject assigned to this slot into the Pose data structure.
       // Subtract one from the assignment, because the first evidence is stored at position zero.
-      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[0] - 1].pose));
+      mAbsolutePose = PoseAdapter::adapt(pEvidenceList[pAssignments[0] - 1].sampledPoses[0].pose);
+      //mAbsolutePose.reset(new ISM::Pose(pEvidenceList[pAssignments[0] - 1].sampledPoses[0].pose));
       
       // Evaluate evidence for root node under uniform distribution (FOR EVERY DIMENSION. Could only be done, it a root object was assigned to the root node.
       // THIS IS NECESSARY! When we have only one object, a scene containing it and a background scene,
@@ -192,7 +193,8 @@ namespace ProbabilisticSceneRecognition {
       result = slotProduct; // overwriting it for output.
       
       // Forward position of this primary scene object to visualizer.
-      mVisualizer->setBestPoseCandidate(mAbsolutePose);
+      mVisualizer->setBestPoseCandidate(PoseAdapter::adapt(mAbsolutePose));
+      //mVisualizer->setBestPoseCandidate(mAbsolutePose);
     } else {
       // A hypothesis without an assigned root object is invalid and will therefore be scored with the impossible event.
       result = 0.0;
@@ -212,11 +214,13 @@ namespace ProbabilisticSceneRecognition {
       // Is this evidence for this scene object?
       if(name.compare(pEvidenceList[i].type) == 0)
       {
-	// Extract pose of the object.
-    mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[i].pose));
+    // Extract pose of the object.
+          mAbsolutePose = PoseAdapter::adapt(pEvidenceList[i].sampledPoses[0].pose);
+    //mAbsolutePose.reset(new ISM::Pose(pEvidenceList[i].sampledPoses[0].pose));
 	
-	// Forward the absolute pose of the primary scene object to the visualizer.
-	mVisualizer->setPose(mAbsolutePose);
+    // Forward the absolute pose of the primary scene object to the visualizer.
+          mVisualizer->setPose(PoseAdapter::adapt(mAbsolutePose));
+    //mVisualizer->setPose(mAbsolutePose);
 	
 	// Forward the pose of this node as parent node pose to the child nodes.
 	for(unsigned int i = 0; i < mChildren.size(); i++)

@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-Evaluator::Evaluator(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+Evaluator::Evaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                      std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold):
     mExamplesList(pExamplesList), mLearners(pLearners), mRecognitionThreshold(pRecognitionThreshold), mRunNumber(0)
 {
@@ -70,11 +70,6 @@ Evaluator::Evaluator(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph
         throw std::runtime_error("Please specify parameter scale_factor when starting this node.");
     if(!nodeHandle.getParam("sigma_multiplicator", mSigmaMultiplier))
         throw std::runtime_error("Please specify parameter sigma_multiplicator when starting this node.");
-
-    // Set up foreground scene content:
-    mForegroundSceneContent.initializeInferenceAlgorithms(mInferenceAlgorithm);
-    for (boost::shared_ptr<const asr_msgs::AsrSceneGraph> sceneGraph: mExamplesList)
-        mForegroundSceneContent.update(sceneGraph);
 }
 
 Evaluator::~Evaluator() {
@@ -86,11 +81,12 @@ Evaluator::~Evaluator() {
 
 void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology)
 {
-    std::vector<double> testSetProbabilities; // gets discarded afterwards
-    evaluate(pTopology, testSetProbabilities);
+    std::vector<double> validTestSetProbabilities, invalidTestSetProbabilities; // get discarded afterwards
+    evaluate(pTopology, validTestSetProbabilities, invalidTestSetProbabilities);
 }
 
-void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, std::vector<double>& pTestSetProbabilities)
+void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
+                         std::vector<double>& pValidTestSetProbabilities, std::vector<double>& pInvalidTestSetProbabilities)
 {
     if (!pTopology) throw std::runtime_error("In Evaluator::evaluate(): topology from argument is null pointer.");
 
@@ -103,11 +99,12 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, std:
 
     update(pTopology->mTree);
 
-    if (mValidTestSets.empty() && mInvalidTestSets.empty()) throw std::runtime_error("In Evaluator::evaluate(): no valid or invalid test sets found.");
+    if (mValidTestSets.empty() && mInvalidTestSets.empty()) throw std::runtime_error("In Evaluator::evaluate(): no test sets found.");
 
     unsigned int falseNegatives = 0;
     unsigned int falsePositives = 0;
-    std::vector<double> testSetProbabilities;
+    std::vector<double> validTestSetProbabilities;
+    std::vector<double> invalidTestSetProbabilities;
 
     struct timeval start;
     struct timeval end;
@@ -116,13 +113,13 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, std:
     for (std::vector<asr_msgs::AsrObject> valid: mValidTestSets)
     {
         double probability = getProbability(valid);
-        testSetProbabilities.push_back(probability);
+        validTestSetProbabilities.push_back(probability);
     }
 
     for (std::vector<asr_msgs::AsrObject> invalid: mInvalidTestSets)
     {
         double probability = getProbability(invalid); // Foreground scene probability of test set for partial model
-        testSetProbabilities.push_back(probability);
+        invalidTestSetProbabilities.push_back(probability);
     }
     gettimeofday(&end, NULL);   // get the stop time
 
@@ -133,12 +130,10 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, std:
     double avgRuntime = recognitionRuntime / (mValidTestSets.size() + mInvalidTestSets.size());
 
     // Output and checks are handled outside of the calculation to not interfere with the runtime measuring
-    if (testSetProbabilities.size() != mValidTestSets.size() + mInvalidTestSets.size())
-        throw std::runtime_error("In Evaluator::evaluate(): size of list of all test set probabilities is not equal to combined sizes of test set lists.");
     for (unsigned int i = 0; i < mValidTestSets.size(); i++)
-        if (testSetProbabilities[i] <= mRecognitionThreshold) falseNegatives++;   // did not recognize a valid scene.
-    for (unsigned int i = mValidTestSets.size(); i < mValidTestSets.size() + mInvalidTestSets.size(); i++)
-        if (testSetProbabilities[i] > mRecognitionThreshold) falsePositives++;   // did recognize an invalid scene.
+        if (validTestSetProbabilities[i] <= mRecognitionThreshold) falseNegatives++;   // did not recognize a valid scene.
+    for (unsigned int i = 0; i < mInvalidTestSets.size(); i++)
+        if (invalidTestSetProbabilities[i] > mRecognitionThreshold) falsePositives++;   // did recognize an invalid scene.
 
     ROS_INFO_STREAM("Evaluation result: " << falsePositives << " false positives, " << falseNegatives << " false negatives, " << avgRuntime << "s average recognition runtime.");
 
@@ -149,7 +144,8 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, std:
 
     xmlOutput(pTopology);
 
-    pTestSetProbabilities = testSetProbabilities;
+    pValidTestSetProbabilities = validTestSetProbabilities;
+    pInvalidTestSetProbabilities = invalidTestSetProbabilities;
 }
 
 double Evaluator::getProbability(const std::vector<asr_msgs::AsrObject>& pEvidence)
@@ -184,10 +180,15 @@ void Evaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
     ROS_INFO_STREAM("Learning complete. Preparing inference.");
     printDivider();
 
+    // Reset and set up foreground scene content:
+    mForegroundSceneContent = ForegroundSceneContent();
+    mForegroundSceneContent.initializeInferenceAlgorithms(mInferenceAlgorithm);
+    /*for (boost::shared_ptr<ISM::ObjectSet> sceneGraph: mExamplesList)
+        mForegroundSceneContent.update(sceneGraph);*/
     mForegroundSceneContent.load(mModel);   // loads partial model.
 
     // Set up visualizer:
-    std::string sceneId = mExamplesList[0]->identifier;
+    std::string sceneId = mExamplesList[0]->mIdentifier;
     mVisualizer.reset(new Visualization::ProbabilisticSceneVisualization(sceneId));
 
     mForegroundSceneContent.initializeVisualizer(mVisualizer);

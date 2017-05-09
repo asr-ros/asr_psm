@@ -1,7 +1,7 @@
 #Parameters for combinatorial optimization used in generating scene object relation graphs.
 
 #optimization parameters:
-optimization_algorithm: HillClimbing #type of optimization algorithm to use. from "HillClimbing", "RecordHunt", "SimulatedAnnealing"
+optimization_algorithm: SimulatedAnnealing #type of optimization algorithm to use. from "HillClimbing", "RecordHunt", "SimulatedAnnealing"
 starting_topologies_type: Random #type of starting topology to use. from "BestStarOrFullyMeshed", "Random"
 number_of_starting_topologies: 2 #number of topologies to start separate optimization runs from.
 
@@ -18,14 +18,14 @@ avg_recognition_time_weight: 1 #the weight to give the average recognition runti
 false_negatives_weight: 5 #the weight to give the number of false negatives in the weighted sum.
 
 #test set generator parameters:
-test_set_count: 10 #number of test sets to use to validate topologies with.
+test_set_count: 1000 #number of test sets to use to validate topologies with.
 object_missing_in_test_set_probability: 0 #probability with which an object does not appear in a test set. set to <= 0 to have all objects appear in each test set
 recognition_threshold: 0.01 #threshold above which a relation is considered fulfilled. scene threshold, above which scenes are recognized: pow(recognition_threshold,objects) 
 #not properly implemented yet:
-valid_test_set_db_filename: ''
-#database file to load the valid test sets from. New test sets are created if this is set to ''. LOADING NOT IMPLEMENTED YET.
-invalid_test_set_db_filename: ''
-#database file to load the invalid test sets from. New test sets are created if this is set to ''. LOADING NOT IMPLEMENTED YET.
+valid_test_set_db_filename: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/validTestSets_experiment_1.sqlite
+#database file to load the valid test sets from. New test sets are created if this is set to ''.
+invalid_test_set_db_filename: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/invalidTestSets_experiment_1.sqlite
+#database file to load the invalid test sets from. New test sets are created if this is set to ''.
 
 #miscellaneous parameters:
 conditional_probability_algorithm: minimum #algorithm used to determine probabilities depending on multiple parents.#from "minimum", "multiplied", "root_of_multiplied", "average"  
@@ -49,9 +49,11 @@ xml_output: file #output target for the partial PSMs learned on intermediate top
 xml_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/  #path to write models to. optional if xml_output is not set to "file"
 optimization_history_output: svg #output target for the history of the last optimization run. from "none", "screen", "txt", "svg"
 optimization_history_file_path: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/ #path to write the history file to. optional if optimization_history_output is not set to "file"
-create_runtime_log: true #whether to write a log of the runtimes to file
+create_runtime_log: false #whether to write a log of the runtimes to file
 log_file_name: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/comb_opt_xml/runtime_log.csv #full name of the .csv file to write log to. optional if create_runtime_log is false.
-visualize_inference: false #whether to visualize intermediate inference runs
+visualize_inference: true #whether to visualize intermediate inference runs
+
+revisit_topologies: true #whether to revisit topologies already seen in this optimization run.
 
 
 

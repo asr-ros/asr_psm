@@ -4,11 +4,11 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
 <launch>
   <node name="js_probabilistic_scene_learner_and_inference" pkg="asr_psm" type="learner" output="screen">
     <!-- The list of basg files containing scene graphs that should be used for learning. -->
-    <rosparam param="bag_filenames_list">
-    - '/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/bagfiles/Laufzeitmessung/simple/scenegraphs/SCENEGRAPH_400_03.bag'
+    <rosparam param="input_db_file">
+    /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/Scenes/experiment_1.sqlite
     </rosparam>
     <!-- That's how the scene should be called. -->
-    <param name="scene_model_name" value="advertisement_400_03"/>
+    <param name="scene_model_name" value="experiment_1"/>
     <!-- The type of the scene that should be learned. -->
     <param name="scene_model_type" value="ocm"/>
     <!-- That's where the resulting model xml file should be stored. -->
@@ -26,9 +26,9 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <!-- The minimal number of kernels. -->
     <param name="kernels_min" value="1"/>
     <!-- The maximal number of kernels. -->
-    <param name="kernels_max" value="1"/>
+    <param name="kernels_max" value="5"/>
     <!-- The number of runs per kernel. -->
-    <param name="runs_per_kernel" value="1"/>
+    <param name="runs_per_kernel" value="3"/>
     <!-- The number of samples to gereate for every recorded sample. -->
     <param name="synthetic_samples" value="0"/>
     <!-- The position interval for the sample relaxiation (in meters). -->
@@ -56,7 +56,7 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <param name="scene_graph_topic" value="/scene_graphs"/>
     <!-- Path to the file containing the probabilistic scene model.-->
     <!-- technically shared with learner, since this filename is just several of the learner parameters combined. -->
-    <param name="scene_model_filename" value="/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/400_03.xml"/>
+    <param name="scene_model_filename" value="/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/experiment_1.xml"/>
     <!-- Path to the bag file that contains the learning data. -->
     <!-- rosparam param="bag_filenames_list" shared with learner. -->
     <!--The name of the frame the objects should be transformed to. -->

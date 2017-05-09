@@ -24,7 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Package includes
 #include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
+//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
@@ -92,7 +92,7 @@ namespace ProbabilisticSceneRecognition {
      *
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
-    void update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+    //void update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
     /**
      * Calculates the probability of the scene.

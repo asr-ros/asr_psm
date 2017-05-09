@@ -22,6 +22,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <boost/property_tree/xml_parser.hpp>
 
+#include <ISM/common_type/ObjectSet.hpp>
+
 #include "learner/foreground/ForegroundSceneLearner.h"
 #include "learner/foreground/ocm/SceneObjectLearner.h"
 
@@ -41,7 +43,7 @@ public:
      * @param pLearners             learners to learn models to test.
      * @param pRecognitionThreshold the threshold above (>) which a scene is considered recognized.
      */
-    Evaluator(std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> pExamplesList,
+    Evaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
               std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold);
 
     /**
@@ -57,9 +59,11 @@ public:
     /**
      * Evaluate model learned on topology against test sets, write results to topology.
      * @param pTopology             pTopology to evaluate.
-     * @param pTestSetProbabilities list of probabilities for each test set (first valid, then invalid) found during evaluation.
+     * @param pValidTestSetProbabilities list of probabilities for each valid test set found during evaluation.
+     * @param pInvalidTestSetProbabilities list of probabilities for each invalid test set found during evaluation.
      */
-    void evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, std::vector<double>& pTestSetProbabilities);
+    void evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
+                  std::vector<double>& pValidTestSetProbabilities, std::vector<double>& pInvalidTestSetProbabilities);
 
     /**
      * Set valid test sets.
@@ -162,7 +166,7 @@ private:
     /**
      * List of object observations (evidences) to train on.
      */
-    std::vector<boost::shared_ptr<const asr_msgs::AsrSceneGraph>> mExamplesList;
+    std::vector<boost::shared_ptr<ISM::ObjectSet>> mExamplesList;
 
     /**
      * Type of output of the learned model in xml format.
