@@ -61,31 +61,31 @@ namespace ProbabilisticSceneRecognition {
 	std::map<std::string, KalmanFilter>::iterator it2;
 	
 	// Exists an entry with the given object instance name?
-    if((it2 = it->second.find(object.observedId)) != it->second.end())
+    if((it2 = it->second.find(object.identifier)) != it->second.end())
 	{
 	  // There exists an entry for type and instance, so we update the associated kalman filter.
 	  it2->second.update(object);
 	  
 	  // Status information for the user.
-      ROS_DEBUG_STREAM("Object Evidence: replaced object (" << object.type << ", " << object.observedId << ").");
+      ROS_DEBUG_STREAM("Object Evidence: replaced object (" << object.type << ", " << object.identifier << ").");
 	} else {
 	  
 	  // Create a new kalman filter.
-      it->second.insert(std::pair<std::string, KalmanFilter>(object.observedId, KalmanFilter(object)));
+      it->second.insert(std::pair<std::string, KalmanFilter>(object.identifier, KalmanFilter(object)));
 	  
 	  // Status information for the user.
-      ROS_DEBUG_STREAM("Object Evidence: object with new identifier found (" << object.type << ", " << object.observedId << ").");
+      ROS_DEBUG_STREAM("Object Evidence: object with new identifier found (" << object.type << ", " << object.identifier << ").");
 	}
       } else {
 	// There was no entry for the given object type and instance.
 	// So we first add a map for the instance to the evidences and then an entry to this map.
 	std::map<std::string, KalmanFilter> entry;
-    entry.insert(std::pair<std::string, KalmanFilter>(object.observedId, KalmanFilter(object)));
+    entry.insert(std::pair<std::string, KalmanFilter>(object.identifier, KalmanFilter(object)));
 	mObjectEvidences.insert(std::pair<std::string, std::map<std::string, KalmanFilter> >(object.type, entry));
 	// THIS IS WHY MANY PEOPLE PREFER JAVA...! OR PYTHON ;D!
 	
 	// Status information for the user.
-    ROS_DEBUG_STREAM("Object Evidence: object with new type and identifier found (" << object.type << ", " << object.observedId << ").");
+    ROS_DEBUG_STREAM("Object Evidence: object with new type and identifier found (" << object.type << ", " << object.identifier << ").");
       }
     }
     
@@ -105,7 +105,7 @@ namespace ProbabilisticSceneRecognition {
 
 	  
 	  it->second.erase(it2++);
-      ROS_DEBUG_STREAM("Removed timed out evidence (" << object.type << ", " << object.observedId << ").");
+      ROS_DEBUG_STREAM("Removed timed out evidence (" << object.type << ", " << object.identifier << ").");
 	} else {
 	  ++it2;
 	}
