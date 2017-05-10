@@ -142,7 +142,7 @@ namespace ProbabilisticSceneRecognition {
     {
       // Get the first entry.
 
-      boost::shared_ptr<asr_msgs::AsrObject> evidence = ISMObjectToAsrObject(mEvidenceBuffer.front());//HERE: mEvidenceBuffer.front();
+      boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();//HERE: mEvidenceBuffer.front();
 
       
       // Remove the entry processed from the queue.
@@ -382,7 +382,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Set drawing parameters.
     mVisualizer->setDrawingParameters(pScale, pSigmaMultiplicator, pFrameId);
-    
+
         // Get the results and show them.
     std::vector<SceneIdentifier> pSceneList;
     mModel.getSceneListWithProbabilities(pSceneList);
@@ -409,7 +409,7 @@ namespace ProbabilisticSceneRecognition {
 
   {
     // Buffers the evidence to keep callback time as short as possible.
-    mEvidenceBuffer.push(AsrObjectToISMObject(pObject)); // HERE: pObject
+    mEvidenceBuffer.push(pObject); // HERE: pObject
   }
   
   void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
