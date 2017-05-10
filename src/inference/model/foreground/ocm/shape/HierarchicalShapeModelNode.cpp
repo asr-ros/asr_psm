@@ -51,62 +51,6 @@ namespace ProbabilisticSceneRecognition {
     }
   }
   
-  void HierarchicalShapeModelNode::handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Determine the AsrNode that contains observations for this scene object.
-    for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
-    {	
-      // Get the type of the first observation (we assume here that all obserations are of the same type).
-      std::string type = node.track[0].type;
-      
-      // Check, if this AsrNode contains observations for this scene object.
-      if(mSceneObject.compare(type) == 0)
-      {
-	// Debug message.
-	ROS_INFO_STREAM("Raw data for secondary scene object'" << mSceneObject << "' found.");
-	
-	// Gets the length of the parent observation trajectory.
-	unsigned int trajectoryLength = pParent.track.size();
-	
-	// Check that both observation trajectories have the same length.
-	// If that's not the case, something went wrong in the Scene Graph Generator.
-	if(trajectoryLength != node.track.size())
-	  throw std::runtime_error("Shape Node: the observation trajectories of child and parent node don't have the same length. This indicates a bug in the scene_graph_generator.");
-	
-	// TODO could be removed
-// 	// Iterate over both trajectories, calculate the relative position of child to parent and add this info to the learner.
-// 	for(unsigned int i = 0; i < trajectoryLength; i++)
-// 	{
-// 	  boost::shared_ptr<ResourcesForPsm::Pose> parentPose;
-// 	  boost::shared_ptr<ResourcesForPsm::Pose> childPose;
-// 	  boost::shared_ptr<ResourcesForPsm::Pose> relativePose;
-// 	  
-// 	  // Extract the poses of the parent and child AsrObservation.
-// 	  parentPose.reset(new ResourcesForPsm::Pose(pParent.track[i].transform));
-// 	  childPose.reset(new ResourcesForPsm::Pose(node.track[i].transform));
-// 	  
-// 	  // calculate the pose of the child in the parent frame.
-// 	  childPose->convertPoseIntoFrame(parentPose, relativePose);
-// 	  
-// 	  // Add the sample to the list of raw data.
-// 	  mRawData.push_back(relativePose->getPosition());
-// 	}
-// 	
-// 	// Apply raw data to visualizer.
-// 	mVisualizer->setLearningSamples(mRawData);
-	
-	// Forward scene graph to all child nodes.
-	// IMPORTANT: We want all objects relative to the primary scene object
-	// (the root object of the tree), so we forward it instead of this node.
-	for(unsigned int i = 0; i < mChildren.size(); i++)
-	  mChildren[i].handleSceneGraph(node, pSceneGraph);
-	
-    // There's only one AsrNode per object in a single scene graph.
-	break;
-      }
-    }
-  }
-  
   void HierarchicalShapeModelNode::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
     // Debug message.

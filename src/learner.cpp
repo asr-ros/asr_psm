@@ -40,15 +40,15 @@ int main(int argc, char* argv[])
 
   // Check for wrong configurations and similar.
   try {
-    learner = new SceneLearningEngine(asr_msgs::Topics::SCENE_GRAPHS);
+    learner = new SceneLearningEngine();
 
   } catch(std::exception& exception){
     std::cerr << exception.what() << std::endl;
     std::exit(1);
   }
 
-  // Get all AsrSceneGraphs from rosbag files passed as ros parameters before trying to get other messages from the listeners of the node.
-  learner->readLearnerInputBags();
+  // Get all ISM::ObjectSets from database files passed as ros parameters.
+  learner->readLearnerInput();
 
   // Check for errors with the resulting scene model
   try {       

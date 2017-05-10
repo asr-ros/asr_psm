@@ -29,7 +29,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
 
 #include <Pose.h>
 
@@ -69,13 +68,6 @@ namespace ProbabilisticSceneRecognition {
      * @param pPt Data structure for performing XML operations.
      */
     void load(boost::property_tree::ptree& pPt);
-    
-    /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
-     *
-     * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
-     */
-    void handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
     
     /**
      * Initializes the visualization mechanism.

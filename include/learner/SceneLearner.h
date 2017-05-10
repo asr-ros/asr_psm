@@ -25,8 +25,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <asr_msgs/AsrSceneGraph.h>
-
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
 //local includes
@@ -81,16 +79,16 @@ namespace ProbabilisticSceneRecognition {
     virtual void learn() = 0;
     
     /**
-     * Checks, if the given AsrSceneGraph message contains an example for this scene.
+     * Checks, if the given ISM::ObjectSet contains an example for this scene.
      * 
-     * @return True, if the message contains an example for this scene.
+     * @return True, if the set contains an example for this scene.
      */
     bool isExampleForScene(const ISM::ObjectSetPtr pExample);
     
     /**
-     * Adds a AsrSceneGraph message to the learner.
+     * Adds an ISM::ObjectSet to the learner.
      * 
-     * @param pExample AsrSceneGraph message containing an example for the given scene.
+     * @param pExample ISM::ObjectSet containing an example for the given scene.
      */
     void addExampleToScene(const ISM::ObjectSetPtr pExample);
 
@@ -122,7 +120,7 @@ namespace ProbabilisticSceneRecognition {
     double mWorkspaceVolume;
     
     /**
-     * The name of the scene. It is required for filtering AsrSceneGraph messages and the export to file.
+     * The name of the scene. It is required for filtering ISM::ObjetSets and the export to file.
      */
     std::string mSceneName;
     

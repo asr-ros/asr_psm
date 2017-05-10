@@ -9,10 +9,6 @@
     <param name="scene_graph_topic" value="/scene_graphs"/>
     <!-- Path to the file containing the probabilistic scene model.-->
     <param name="scene_model_filename" value="/home/SMBAD/students/link/ilcasRosFull/src/perception/scene_recognition/psm/data/advertisement.xml"/>
-    <!-- Path to the bag file that contains the learning data. -->
-    <rosparam param="bag_filenames_list">
-    - '/home/SMBAD/gehrung/home/Data/P1V2/scenegraphs/SCENEGRAPH_falsepositive.bag'
-    </rosparam>
     <!--The name of the frame the objects should be transformed to. -->
     <param name="base_frame_id" value="/PTU"/>
     <!-- The visualization is pretty small, this scale factor enlarges it. -->

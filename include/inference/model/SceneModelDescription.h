@@ -86,13 +86,6 @@ namespace ProbabilisticSceneRecognition {
     void integrateEvidence(const boost::shared_ptr<const ISM::Object>& pObject);
     
     /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
-     *
-     * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
-     */
-    void integrateSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
-    
-    /**
      * Update the model based on the accumulated evidence.
      */
     void updateModel();

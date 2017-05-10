@@ -10,7 +10,7 @@
     <!-- The type of the scene that should be learned. -->
     <param name="scene_model_type" value="ocm"/>
     <!-- That's where the resulting model xml file should be stored. -->
-    <param name="scene_model_directory" value="$(find psm)/data"/>
+    <param name="scene_model_directory" value="$(find asr_psm)/data"/>
     <!-- The volume of the workspace we're working in in qubic meters. -->
     <param name="workspace_volume" value="8.0"/>
     <!-- Static break ratio for the tree generation. -->

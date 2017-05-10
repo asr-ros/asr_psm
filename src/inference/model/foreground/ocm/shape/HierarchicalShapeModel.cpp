@@ -41,34 +41,6 @@ namespace ProbabilisticSceneRecognition {
     }
   }
   
-  void HierarchicalShapeModel::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Determine the AsrNode that contains observations for this scene object.
-    for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
-    {	
-      // The type of the first observation will be the type of this primary scene object.
-      // We assume here that all obserations are of the same type.
-      std::string type = node.track[0].type;
-      
-      // Get the name of this primary scene object.
-      std::string sceneObjectName = mVisualizer->getSceneObjectName();
-      
-      // Check, if this AsrNode contains observations for this scene object.
-      if(sceneObjectName.compare(type) == 0)
-      {
-	// Debug message.
-	ROS_INFO_STREAM("Raw data for primary scene object'" << sceneObjectName << "' found.");
-	
-	// Forward scene graph to shape nodes.
-	for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].handleSceneGraph(node, pSceneGraph);
-    // There's only one AsrNode per object in a single scene graph.
-
-	break;
-      }
-    }
-  }
-  
   void HierarchicalShapeModel::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
     // Store a copy of the primary scene object visualizer.

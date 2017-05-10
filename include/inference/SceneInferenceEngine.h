@@ -25,7 +25,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <rosbag/view.h>
 
 #include <asr_msgs/AsrObject.h>
-#include <asr_msgs/AsrSceneGraph.h>
 
 #include <visualization/gnuplot/GnuplotVisualization.h>
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
@@ -91,20 +90,6 @@ namespace ProbabilisticSceneRecognition {
     void loadSceneModel(const std::string pSceneModelFileName, const std::string pInferenceAlgorithm);
     
     /**
-     * Extract AsrSceneGraph messages from all rosbag files given as CLI parameters.
-     * 
-     * @param pInputBagFilenames A list of the bag files that contain the learning data.
-     */
-    void readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames);
-    
-    /**
-     * Open rosbag file and extract AsrSceneGraph messages on input topic (which has been set before).
-     * 
-     * @param pPbdSceneGraphsBagPath Path of file to be parsed for PbdSceneGraph messages.
-     */
-    void extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath);
-    
-    /**
      * Initializes the chain responsible for visualization.
      * 
      * @param pScale Factor to multiply the kernel with.
@@ -112,13 +97,6 @@ namespace ProbabilisticSceneRecognition {
      * @param pFrameId The name of the coordinate frame that should be drawn into.
      */
     void initializeVisualizationChain(const double pScale, const float pSigmaMultiplicator, const std::string pFrameId);
-
-    /**
-     * Collects scene examples in form of AsrSceneGraph messages and forwards them to the visualization.
-     *
-     * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
-     */
-    void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
 
     /**
      * Converts an ISMObject to an AsrObject
@@ -165,10 +143,6 @@ namespace ProbabilisticSceneRecognition {
      * A buffer for storing evidences.
      */
     std::queue<boost::shared_ptr<asr_msgs::AsrObject> > mEvidenceBuffer;
-    /**
-     * A buffer for storing scene graphs.
-     */
-    std::queue<boost::shared_ptr<const asr_msgs::AsrSceneGraph> > mSceneGraphBuffer;
     
     /**
      * A transformer for objects into the target coordinate frame.

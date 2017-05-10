@@ -102,12 +102,6 @@ namespace ProbabilisticSceneRecognition {
     }
   }
   
-  void SceneObjectDescription::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    if(mContent)
-      mContent->update(pSceneGraph);
-  }
-  
   double SceneObjectDescription::getSceneObjectProbability()
   {
     double result = 0.0;

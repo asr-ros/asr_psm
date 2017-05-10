@@ -36,11 +36,6 @@ namespace ProbabilisticSceneRecognition {
     mMappedTable->load(pPt.get_child("appearance"));
   }
   
-  void AppearanceTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Scene graph is no of interest here.
-  }
-  
   void AppearanceTermEvaluator::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
     // Here is no visualization required.

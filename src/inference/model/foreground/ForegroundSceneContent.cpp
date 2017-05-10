@@ -81,11 +81,4 @@ namespace ProbabilisticSceneRecognition {
     doInference(pEvidenceList, pRuntimeLogger);
   }
   
-  void ForegroundSceneContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Forward scene graph to all primary scene objects.
-    for(unsigned int i = 0; i < mSceneObjects->size(); i++)
-      mSceneObjects->at(i)->update(pSceneGraph);
-  }
-  
 }
