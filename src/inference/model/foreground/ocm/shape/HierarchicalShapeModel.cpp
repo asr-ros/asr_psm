@@ -79,7 +79,7 @@ namespace ProbabilisticSceneRecognition {
       mChildren[i].initializeVisualizer(mSuperior);
   }
 
-  double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
     double result = 1.0;
 
@@ -121,7 +121,7 @@ namespace ProbabilisticSceneRecognition {
     return result;
   }
 
-  void HierarchicalShapeModel::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void HierarchicalShapeModel::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     // Get the name of the primary scene object.
     std::string name = mVisualizer->getSceneObjectName();

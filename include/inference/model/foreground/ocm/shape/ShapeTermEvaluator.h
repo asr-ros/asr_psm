@@ -89,7 +89,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pAssignments Assignments of parts to slots.
      * @return Probability as determinded by the shape term.
      */
-    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments);
+    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments);
 
     
     /**
@@ -97,7 +97,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
+    void visualize(std::vector<ISM::Object> pEvidenceList);
     
     /**
      * Returns the number of slots of the OCM (equals the number of distributions).

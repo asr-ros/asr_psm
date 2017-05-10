@@ -64,7 +64,7 @@ namespace ProbabilisticSceneRecognition {
       mEvaluators[i]->initializeVisualizer(mSuperior);
   }
 
-  void OcmSceneObjectContent::update(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void OcmSceneObjectContent::update(std::vector<ISM::Object> pEvidenceList)
   {
     // Generate object list for debug message
     std::stringstream objs;

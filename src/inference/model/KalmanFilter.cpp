@@ -20,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/KalmanFilter.h"
 
 namespace ProbabilisticSceneRecognition {
-    KalmanFilter::KalmanFilter(asr_msgs::AsrObject pObject) :
+    KalmanFilter::KalmanFilter(ISM::Object pObject) :
 
 			mReset(true)
 	{
@@ -43,7 +43,7 @@ namespace ProbabilisticSceneRecognition {
 		mReset = true;
 	}
 
-    void KalmanFilter::update(asr_msgs::AsrObject pObject) {
+    void KalmanFilter::update(ISM::Object pObject) {
 	  
 
 		// Bring last update time uptodate.
@@ -53,19 +53,19 @@ namespace ProbabilisticSceneRecognition {
 		Eigen::VectorXd x = Eigen::VectorXd::Zero(7);
 
 
-		if(!pObject.sampledPoses.size()){
-          std::cerr << "Got a AsrObject without poses." << std::endl;
+        if(!pObject.pose){
+          std::cerr << "Got a Object without poses." << std::endl;
 		  std::exit(1);    
 		}
 
-        geometry_msgs::Pose current_pose = pObject.sampledPoses.front().pose;
-        x(0) = current_pose.position.x;
-        x(1) = current_pose.position.y;
-        x(2) = current_pose.position.z;
-        x(3) = current_pose.orientation.w;
-        x(4) = current_pose.orientation.x;
-        x(5) = current_pose.orientation.y;
-        x(6) = current_pose.orientation.z;
+        boost::shared_ptr<ISM::Pose> current_pose = pObject.pose;
+        x(0) = current_pose->point->getEigen().x();
+        x(1) = current_pose->point->getEigen().y();
+        x(2) = current_pose->point->getEigen().z();
+        x(3) = current_pose->quat->getEigen().w();
+        x(4) = current_pose->quat->getEigen().x();
+        x(5) = current_pose->quat->getEigen().y();
+        x(6) = current_pose->quat->getEigen().z();
 		
 		// If reset flag is true, reset the system to the current measurement.
 		if (mReset) {
@@ -99,7 +99,7 @@ namespace ProbabilisticSceneRecognition {
 	  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - lastUpdate).count() > threshold;
 	}
 
-    asr_msgs::AsrObject KalmanFilter::getObject()
+    ISM::Object KalmanFilter::getObject()
 	{
 
 	  // Write the pose maintained by the kalman-filter back into the object.

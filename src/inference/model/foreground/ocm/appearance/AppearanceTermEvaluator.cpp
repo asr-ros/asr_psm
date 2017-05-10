@@ -46,7 +46,7 @@ namespace ProbabilisticSceneRecognition {
     // Here is no visualization required.
   }
 
-  double AppearanceTermEvaluator::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  double AppearanceTermEvaluator::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
     /**************************************************************************************************
      * Build an entry of the conditional joint distribution P(A|h) bases on the given hypothesis
@@ -88,7 +88,7 @@ namespace ProbabilisticSceneRecognition {
     return probability;
   }
 
-  void AppearanceTermEvaluator::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void AppearanceTermEvaluator::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     // No visualization to update.
   }

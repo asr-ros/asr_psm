@@ -92,7 +92,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    void update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger);
+    void update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
 
     
     /**

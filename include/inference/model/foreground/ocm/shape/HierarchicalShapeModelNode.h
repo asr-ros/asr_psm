@@ -96,14 +96,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pCut True, if a zero-object was assigned to a direct parent node.
      * @return Probability as determined by this subtree the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut);
+    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut);
     
     /**
      * Update the visualizers based on the evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
+    void visualize(std::vector<ISM::Object> pEvidenceList);
     
     /**
      * Return the number of nodes in the OCM.

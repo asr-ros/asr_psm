@@ -75,7 +75,7 @@ namespace ProbabilisticSceneRecognition {
       mSceneObjects->at(i)->initializeVisualizer(mSuperior);
   }
 
-  void ForegroundSceneContent::update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  void ForegroundSceneContent::update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     // Commandy the inference algorithm to execute the inference.
     doInference(pEvidenceList, pRuntimeLogger);

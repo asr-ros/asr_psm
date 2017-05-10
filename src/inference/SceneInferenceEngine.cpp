@@ -142,7 +142,7 @@ namespace ProbabilisticSceneRecognition {
     {
       // Get the first entry.
 
-      boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();
+      boost::shared_ptr<asr_msgs::AsrObject> evidence = boost::shared_ptr<asr_msgs::AsrObject>(new asr_msgs::AsrObject());//HERE: mEvidenceBuffer.front();
 
       
       // Remove the entry processed from the queue.
@@ -160,9 +160,11 @@ namespace ProbabilisticSceneRecognition {
 	ROS_ERROR("Unable to resolve transformation in target coordinate frame. Dropping object.");
 	continue;
       }
-      
+      //ISM::Pose helperPose = new ISM::Pose(*evidence->sampledPoses.front()->getPosition(), *evidence->sampledPoses.front()->getOrientation());
+      //boost::shared_ptr<ISM::Object> convertedEvidence = new ISM::Object("" + evidence->type, helperPose,"" +  evidence->identifier,"" +  evidence->meshResourcePath, "" + evidence->providedBy);
       // Forward the new evidence to the model.
-      mModel.integrateEvidence(evidence);
+      boost::shared_ptr<ISM::Object> convertedEvidence = boost::shared_ptr<ISM::Object>(new ISM::Object());
+      mModel.integrateEvidence(convertedEvidence); //HERE: evidence
     }
     
     // Update the model with the evidence collected until now.
@@ -286,7 +288,7 @@ namespace ProbabilisticSceneRecognition {
 	}
 	
 	// Forward the new evidence to the model.
-	mModel.integrateEvidence(currentObject);
+    mModel.integrateEvidence(boost::shared_ptr<ISM::Object>(new ISM::Object())); //HERE: currentObject
 	
 	// Update the model with the evidence collected until now.
 	mModel.updateModel();
@@ -410,7 +412,7 @@ namespace ProbabilisticSceneRecognition {
 
   {
     // Buffers the evidence to keep callback time as short as possible.
-    mEvidenceBuffer.push(pObject);
+    mEvidenceBuffer.push(boost::shared_ptr<ISM::Object>(new ISM::Object)); // HERE: pObject
   }
   
   void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)

@@ -146,16 +146,17 @@ namespace ProbabilisticSceneRecognition {
 	// but maximal 100 times.
 	for(int timer = 100; timer > 0; timer--)
 	{
-	  try {
-	    unsigned int offset  = i * mNumberOfRuns + run;
+        unsigned int offset  = i * mNumberOfRuns + run;
 
-        if(runExpectationMaximization(TEMP_FILE, mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset]))
-	    learningCycleCompleted = true;
-	    break;
-	  } catch (plError e) {
-
-        std::cout << "OpenCV training unsuccessful. Repeating cycle." << std::endl;
-      }
+        if(runExpectationMaximization(mData,mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset]))
+              {
+                learningCycleCompleted = true;
+                break;
+              }
+              else
+              {
+                ROS_INFO_STREAM("Training unsuccessful. Repeating cycle.");
+              }
     }
       }
 

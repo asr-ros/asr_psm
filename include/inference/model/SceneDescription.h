@@ -84,7 +84,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void update(std::vector<asr_msgs::AsrObject> pEvidenceList);
+    void update(std::vector<ISM::Object> pEvidenceList);
 
     
     /**

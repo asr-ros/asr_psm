@@ -72,7 +72,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    virtual void update(std::vector<asr_msgs::AsrObject> pEvidenceList) = 0;
+    virtual void update(std::vector<ISM::Object> pEvidenceList) = 0;
     
     /**
      * Integrate the learning data in form of a AsrSceneGraph into the model.

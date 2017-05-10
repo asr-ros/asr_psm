@@ -131,7 +131,7 @@ namespace ProbabilisticSceneRecognition {
     mAbsoluteParentPose = pPose;
   }
 
-  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut)
+  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut)
   {
     double result = 1.0;
     
@@ -182,13 +182,13 @@ namespace ProbabilisticSceneRecognition {
     return result;
   }
 
-  void HierarchicalShapeModelNode::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void HierarchicalShapeModelNode::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     // Try to find evidence for this scene object.
     for(unsigned int i = 0; i < pEvidenceList.size(); i++)
     {
       // Get the object.
-      asr_msgs::AsrObject object = pEvidenceList[i];
+      ISM::Object object = pEvidenceList[i];
 
       
       // Is this evidence for this scene object (assumed that there is no detection uncertainty)?

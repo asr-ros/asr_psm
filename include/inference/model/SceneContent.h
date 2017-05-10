@@ -84,7 +84,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    virtual void update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
+    virtual void update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
     
     /**
      * Integrate the learning data in form of a AsrSceneGraph into the model.
@@ -122,7 +122,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList The evidence found.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    void doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger);
+    void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
     
   private:
     

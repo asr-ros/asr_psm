@@ -93,7 +93,7 @@ namespace ProbabilisticSceneRecognition {
       mContent->initializeVisualizer(mVisualizer);
   }
 
-  void SceneDescription::update(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void SceneDescription::update(std::vector<ISM::Object> pEvidenceList)
 
   {
     // Debug message.

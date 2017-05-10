@@ -83,7 +83,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pObject AsrObject message containing data about the evidence.
      */
-    void integrateEvidence(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject);
+    void integrateEvidence(const boost::shared_ptr<const ISM::Object>& pObject);
     
     /**
      * Integrate the learning data in form of a AsrSceneGraph into the model.
@@ -115,7 +115,7 @@ namespace ProbabilisticSceneRecognition {
      * Used for forwarding the evidences.
      * Put this here so we don't need to build a new one every time we got new evidence.
      */
-    std::vector<asr_msgs::AsrObject> mEvidenceList;
+    std::vector<ISM::Object> mEvidenceList;
     
     /**
      * A list containing the background and foreground elements.
