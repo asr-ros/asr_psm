@@ -119,6 +119,20 @@ namespace ProbabilisticSceneRecognition {
      * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
      */
     void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
+
+    /**
+     * Converts an ISMObject to an AsrObject
+     *
+     * @param pObject the Object to convert
+     */
+    boost::shared_ptr<asr_msgs::AsrObject> ISMObjectToAsrObject(boost::shared_ptr<ISM::Object> pObject);
+
+    /**
+     * Converts an AsrObject to ISMObject
+     *
+     * @param pObject the Object to convert
+     */
+    boost::shared_ptr<ISM::Object> AsrObjectToISMObject(boost::shared_ptr<asr_msgs::AsrObject> pObject);
     
   private:
     

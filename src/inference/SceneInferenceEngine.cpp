@@ -142,7 +142,7 @@ namespace ProbabilisticSceneRecognition {
     {
       // Get the first entry.
 
-      boost::shared_ptr<asr_msgs::AsrObject> evidence = boost::shared_ptr<asr_msgs::AsrObject>(new asr_msgs::AsrObject());//HERE: mEvidenceBuffer.front();
+      boost::shared_ptr<asr_msgs::AsrObject> evidence = ISMObjectToAsrObject(mEvidenceBuffer.front());//HERE: mEvidenceBuffer.front();
 
       
       // Remove the entry processed from the queue.
@@ -160,11 +160,8 @@ namespace ProbabilisticSceneRecognition {
 	ROS_ERROR("Unable to resolve transformation in target coordinate frame. Dropping object.");
 	continue;
       }
-      //ISM::Pose helperPose = new ISM::Pose(*evidence->sampledPoses.front()->getPosition(), *evidence->sampledPoses.front()->getOrientation());
-      //boost::shared_ptr<ISM::Object> convertedEvidence = new ISM::Object("" + evidence->type, helperPose,"" +  evidence->identifier,"" +  evidence->meshResourcePath, "" + evidence->providedBy);
-      // Forward the new evidence to the model.
-      boost::shared_ptr<ISM::Object> convertedEvidence = boost::shared_ptr<ISM::Object>(new ISM::Object());
-      mModel.integrateEvidence(convertedEvidence); //HERE: evidence
+
+      mModel.integrateEvidence(AsrObjectToISMObject(evidence)); //HERE: evidence
     }
     
     // Update the model with the evidence collected until now.
@@ -288,7 +285,7 @@ namespace ProbabilisticSceneRecognition {
 	}
 	
 	// Forward the new evidence to the model.
-    mModel.integrateEvidence(boost::shared_ptr<ISM::Object>(new ISM::Object())); //HERE: currentObject
+    mModel.integrateEvidence(AsrObjectToISMObject(currentObject)); //HERE: currentObject
 	
 	// Update the model with the evidence collected until now.
 	mModel.updateModel();
@@ -412,13 +409,64 @@ namespace ProbabilisticSceneRecognition {
 
   {
     // Buffers the evidence to keep callback time as short as possible.
-    mEvidenceBuffer.push(boost::shared_ptr<ISM::Object>(new ISM::Object)); // HERE: pObject
+    mEvidenceBuffer.push(AsrObjectToISMObject(pObject)); // HERE: pObject
   }
   
   void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
   {
     // Buffers the scene graph to keep callback time as short as possible.
     mSceneGraphBuffer.push(pSceneGraph);
+  }
+
+  boost::shared_ptr<asr_msgs::AsrObject> SceneInferenceEngine::ISMObjectToAsrObject(boost::shared_ptr<ISM::Object> pObject){
+      //Create Output Object
+      boost::shared_ptr<asr_msgs::AsrObject> outputObject = boost::shared_ptr<asr_msgs::AsrObject>(new asr_msgs::AsrObject());
+      //create and fill asr pose
+      geometry_msgs::Pose *asrPose = new geometry_msgs::Pose();
+      asrPose->position.x = pObject->pose->point->getEigen().x();
+      asrPose->position.y = pObject->pose->point->getEigen().y();
+      asrPose->position.z = pObject->pose->point->getEigen().z();
+      asrPose->orientation.w = pObject->pose->quat->getEigen().w();
+      asrPose->orientation.x = pObject->pose->quat->getEigen().x();
+      asrPose->orientation.y = pObject->pose->quat->getEigen().y();
+      asrPose->orientation.z = pObject->pose->quat->getEigen().z();
+      //create and fill pose with covariance
+      geometry_msgs::PoseWithCovariance *poseWithCovariance = new geometry_msgs::PoseWithCovariance();
+      poseWithCovariance->pose = *asrPose;
+      //add converted pose to output object
+      outputObject->sampledPoses.push_back(*poseWithCovariance);
+      //cpnvert all attributes
+      outputObject->identifier = pObject->observedId;
+      outputObject->type = pObject->type;
+      outputObject->providedBy = pObject->providedBy;
+      outputObject->meshResourcePath = pObject->ressourcePath.string();
+      outputObject->typeConfidence = pObject->weight;
+      outputObject->sizeConfidence = pObject->confidence;
+      //return converted Object
+      return outputObject;
+  }
+
+  boost::shared_ptr<ISM::Object> SceneInferenceEngine::AsrObjectToISMObject(boost::shared_ptr<asr_msgs::AsrObject> pObject){
+      //Create Output Object
+      boost::shared_ptr<ISM::Object> outputObject = boost::shared_ptr<ISM::Object>(new ISM::Object());
+      //Create pose from given Object
+      geometry_msgs::Pose asrPose = pObject->sampledPoses.front().pose;
+      //Create point out of pose
+      ISM::Point *point = new ISM::Point(asrPose.position.x, asrPose.position.y, asrPose.position.z);
+      //create quaternion out of pose
+      ISM::Quaternion *quat = new ISM::Quaternion(asrPose.orientation.w, asrPose.orientation.x, asrPose.orientation.y, asrPose.orientation.z);
+      //add pose to output object
+      outputObject->pose = boost::shared_ptr<ISM::Pose>(new ISM::Pose(point, quat));
+
+      //convert all attributes
+      outputObject->observedId = pObject->identifier;
+      outputObject->type = pObject->type;
+      outputObject->providedBy = pObject->providedBy;
+      outputObject->ressourcePath = pObject->meshResourcePath;
+      outputObject->weight = pObject->typeConfidence;
+      outputObject->confidence = pObject->sizeConfidence;
+      //return converted object
+      return outputObject;
   }
   
 }
