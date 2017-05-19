@@ -107,5 +107,10 @@ namespace ProbabilisticSceneRecognition {
      * Interface to the private namespace of the ros node.
      */
     ros::NodeHandle mPrivateNamespaceHandle;
+
+    /**
+     * The number of attempts per run to find a valid model until the learner gives up.
+     */
+    int mAttemptsPerRun;
   };
 }

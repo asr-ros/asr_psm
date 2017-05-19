@@ -92,12 +92,16 @@ namespace ProbabilisticSceneRecognition {
     // Try to get the path for the orientation plot.
     if(!mPrivateNamespaceHandle.getParam("orientation_plot_path", mPathOrientationPlots))
       mPathOrientationPlots = "UNDEFINED";
+
+    // Try to get the number of attempts per run.
+    if(!mPrivateNamespaceHandle.getParam("attempts_per_run", mAttemptsPerRun))
+      throw std::runtime_error("Please specify parameter " + std::string("attempts_per_run") + " when starting this node.");
     
     
     
     // Create leaners for position and orientation.
-    GMMParameterEstimator learnerPosition(3, mNumberKernelsMin, mNumberKernelsMax, mRunsPerKernel, mNumberOfSyntheticSamples, mIntervalPosition, mIntervalOrientation, mPathOrientationPlots);
-    GMMParameterEstimator learnerOrientation(4, mNumberKernelsMin, mNumberKernelsMax, mRunsPerKernel, mNumberOfSyntheticSamples, mIntervalPosition, mIntervalOrientation, mPathOrientationPlots);
+    GMMParameterEstimator learnerPosition(3, mNumberKernelsMin, mNumberKernelsMax, mRunsPerKernel, mNumberOfSyntheticSamples, mIntervalPosition, mIntervalOrientation, mPathOrientationPlots, mAttemptsPerRun);
+    GMMParameterEstimator learnerOrientation(4, mNumberKernelsMin, mNumberKernelsMax, mRunsPerKernel, mNumberOfSyntheticSamples, mIntervalPosition, mIntervalOrientation, mPathOrientationPlots, mAttemptsPerRun);
     
     // Iterate over both trajectories, calculate the relative pose of child to parent and add it to the learners.
     for(unsigned int i = 0; i < trajectoryLength; i++)

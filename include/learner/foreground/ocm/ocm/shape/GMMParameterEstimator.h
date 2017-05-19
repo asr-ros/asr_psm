@@ -26,6 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Package includes
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -66,8 +67,9 @@ namespace ProbabilisticSceneRecognition {
      * @param pIntervalPosition The position interval for the sample relaxiation.
      * @param pIntervalOrientation The orientation interval for the sample relaxiation.
      * @param pPathOrientationPlots Path to the orientation plots.
+     * @param pAttemptsPerKernel Attempts to find a valid kernel until learner gives up.
      */
-    GMMParameterEstimator(unsigned int pNumberOfDimensions, unsigned int pNumberOfKernelsMin, unsigned int pNumberOfKernelsMax, unsigned int pNumberOfRuns, unsigned int pNumberOfSyntheticSamples, double pIntervalPosition, double pIntervalOrientation, std::string pPathOrientationPlots);
+    GMMParameterEstimator(unsigned int pNumberOfDimensions, unsigned int pNumberOfKernelsMin, unsigned int pNumberOfKernelsMax, unsigned int pNumberOfRuns, unsigned int pNumberOfSyntheticSamples, double pIntervalPosition, double pIntervalOrientation, std::string pPathOrientationPlots, unsigned int pAttemptsPerKernel);
     
     /**
      * Destructor.
@@ -117,6 +119,7 @@ namespace ProbabilisticSceneRecognition {
      * @param llk Log likelihood of the model evaluated under the learning data.
      * @param bic Bayesian Information Criterion score of the model evaluated under the learning data.
      * @param model Gaussian mixture model in form of a joind distribution.
+     * @param useGenericMatrices Whether to use generic matrices as covariance matrices (true) or more stable but less precise diagonal matrices.
      * @return whether EM training was successfull.
      */
     bool runExpectationMaximization(const std::vector<std::vector<double>> data,
@@ -124,7 +127,8 @@ namespace ProbabilisticSceneRecognition {
                     unsigned int& nparams,
                     double& llk,
                     double& bic,
-                    GaussianMixtureModel& model);
+                    GaussianMixtureModel& model,
+                    bool useGenericMatrices = true);
 
     /**
      * Writes the data to the gnuplot file with the given name and displays the gnuplot as a histogram
@@ -164,6 +168,11 @@ namespace ProbabilisticSceneRecognition {
      * Path to the orientation plots.
      */
     std::string mPathOrientationPlots;
+
+    /**
+     * Number of attempts to find a valid kernel until learner gives up.
+     */
+    unsigned int mAttemptsPerRun;
     
     /**
      * The data to learn from.
