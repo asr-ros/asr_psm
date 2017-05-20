@@ -159,7 +159,7 @@ namespace ProbabilisticSceneRecognition {
                 else
                 {
                     ROS_INFO_STREAM("Training unsuccessful. Repeating cycle.");
-                    if (timer == (mAttemptsPerRun / 2) + 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
+                    if (timer == (mAttemptsPerRun / 2) + 1 && mAttemptsPerRun != 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
                     {
                         ROS_INFO_STREAM("Attempting to learn diagonal covariance matrix instead of generic one.");
                         useGenericMatrices = false;
@@ -321,19 +321,30 @@ namespace ProbabilisticSceneRecognition {
       for (unsigned int i = 0; i < cvcovs.size(); i++)
       {
           cv::Mat cvcov = cvcovs.at(i);
+          // Check whether matrix is quadratic:
+          if (cvcov.rows != cvcov.cols)
+          {
+              ROS_DEBUG_STREAM("Matrix not quadratic: not a valid covariance matrix");
+              return false;
+          }
           Eigen::MatrixXd cov(cvcov.rows, cvcov.cols);
           // Check symmetry of matrix:
           for (unsigned int j = 0; j < cvcov.rows; j++)
           {
-              for (unsigned int k = 0; k < cvcov.cols; k++)
+              for (unsigned int k = j; k < cvcov.cols; k++)
               {
-                  if (j < k && std::abs(cvcov.at<double>(j,k) - cvcov.at<double>(k,j)) >= std::numeric_limits<double>::epsilon()) // check symmetry
+                  double entry = cvcov.at<double>(j,k);
+                  if (j != k)   // if not on diagonal:
                   {
-                      ROS_DEBUG_STREAM("Found unsymmetric covariance matrix entries " << cvcov.at<double>(j,k) << " (" << j << "," << k << "), "
-                                       << cvcov.at<double>(k,j) << " (" << k << "," << j << "). Not a valid covariance matrix.");
-                      return false; // Not symmetric: return false
+                      if(std::abs(entry - cvcov.at<double>(k,j)) >= std::numeric_limits<double>::epsilon()) // check symmetry
+                      {
+                          ROS_DEBUG_STREAM("Found unsymmetric covariance matrix entries " << cvcov.at<double>(j,k) << " (" << j << "," << k << "), "
+                                           << cvcov.at<double>(k,j) << " (" << k << "," << j << "). Not a valid covariance matrix.");
+                          return false; // Not symmetric: return false
+                      }
+                      cov(k,j) = entry; // if symmetric: set lower entry
                   }
-                  cov(j,k) = cvcov.at<double>(j,k); // assign to Eigen vector
+                  cov(j,k) = entry; // set upper entry or entry on diagonal
               }
           }
 
@@ -359,6 +370,11 @@ namespace ProbabilisticSceneRecognition {
               {
                   ROS_DEBUG_STREAM("Found invalid eigenvalue " << eigenvalues(i) << ": matrix not positive semi-definite, not a valid covariance matrix.");
                   return false; // Not positive semi-definite: return false
+              }
+              else if (eigenvalues(i) < std::numeric_limits<double>::epsilon())
+              {
+                  ROS_DEBUG_STREAM("Found eigenvalue 0: Matrix cannot be inverted, invalid.");
+                  return false; // matrix not invertible: return false (is a valid covariance matrix, but cannot be used in inference).
               }
           }
 
