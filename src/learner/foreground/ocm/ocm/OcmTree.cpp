@@ -49,8 +49,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Set the pose of the parent object.
     unsigned int lastObservationOffset = mObjectSet->objects.size() - 1;
-    mSuperior->setPose(PoseAdapter::adapt(mObjectSet->objects[lastObservationOffset]->pose));
-    //mSuperior->setPose(*new boost::shared_ptr<ISM::Pose>(new ISM::Pose(*mObjectSet->objects[lastObservationOffset]->pose)));
+    mSuperior->setPose(*new boost::shared_ptr<ISM::Pose>(new ISM::Pose(*mObjectSet->objects[lastObservationOffset]->pose)));
     
     // Iterate over all child nodes and append them, too!
     BOOST_FOREACH(boost::shared_ptr<OcmTree> child, mChildren)
@@ -83,7 +82,7 @@ namespace ProbabilisticSceneRecognition {
       boost::shared_ptr<ISM::Pose> parentPose(*new boost::shared_ptr<ISM::Pose>(new ISM::Pose(*pParent->mObjectSet->objects[i]->pose)));
       
       // All samples and gaussian kernels will be drawn relative to the praent object.
-      mVisualizer->setParentPose(PoseAdapter::adapt(parentPose));
+      mVisualizer->setParentPose(parentPose);
       //mVisualizer->setParentPose(parentPose);
       
       // Calculate the relative pose between child and parent.

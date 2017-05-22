@@ -26,7 +26,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <Pose.h>
 
@@ -40,8 +39,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
 
-// temporary includes
-#include "helper/PoseAdapter.h"
 
 namespace ProbabilisticSceneRecognition {
   
@@ -68,16 +65,8 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pPt Data structure for performing XML operations.
      */
-    void load(boost::property_tree::ptree& pPt, unsigned int& pID);
-    
-    /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
-     *
-     * @param pParent The AsrNode that acts as parent for this node.
-     * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
-     */
-    //void handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
-    
+    void load(boost::property_tree::ptree& pPt, unsigned int& pID);  
+ 
     /**
      * Initializes the visualization mechanism.
      * 
@@ -102,15 +91,15 @@ namespace ProbabilisticSceneRecognition {
      * @param pConditionalProbabilities List of conditional probabilities associated with each slot.
      * @return Probability as determined by this subtree the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
-                                             std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities);
+    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
+			std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities);
     
     /**
      * Update the visualizers based on the evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
+    void visualize(std::vector<ISM::Object> pEvidenceList);
     
     /**
      * Return the number of nodes in the OCM.
@@ -216,5 +205,4 @@ namespace ProbabilisticSceneRecognition {
     bool mWasVisited;
 
   };
-
 }

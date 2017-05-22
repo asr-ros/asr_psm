@@ -75,17 +75,10 @@ namespace ProbabilisticSceneRecognition {
       mSceneObjects->at(i)->initializeVisualizer(mSuperior);
   }
 
-  void ForegroundSceneContent::update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  void ForegroundSceneContent::update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     // Commandy the inference algorithm to execute the inference.
     doInference(pEvidenceList, pRuntimeLogger);
   }
-  
-  /*void ForegroundSceneContent::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Forward scene graph to all primary scene objects.
-    for(unsigned int i = 0; i < mSceneObjects->size(); i++)
-      mSceneObjects->at(i)->update(pSceneGraph);
-  }*/
   
 }

@@ -30,8 +30,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-#include <asr_msgs/AsrSceneGraph.h>
-
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
 // Local includes
@@ -84,9 +82,9 @@ namespace ProbabilisticSceneRecognition {
     void initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticSceneModelVisualization> mSuperior);
     
     /**
-     * Adds a AsrSceneGraph message to the learner.
+     * Adds a ISM::ObjectSet to the learner.
      * 
-     * @param pExample AsrSceneGraph message containing an example for a scene.
+     * @param pExample ISM::ObjectSet containing an example for a scene.
      */
     void addExample(const ISM::ObjectSetPtr pExample);
     
@@ -125,7 +123,7 @@ namespace ProbabilisticSceneRecognition {
     BackgroundSceneLearner mBackgroundSceneLearner;
     
     /**
-     * A list of all foreground scene learners. If an AsrSceneGraph message could not be associated with a learner in the list, a new scene learner is automatically added.
+     * A list of all foreground scene learners. If an ISM::ObjectSet could not be associated with a learner in the list, a new scene learner is automatically added.
      */
     std::vector<boost::shared_ptr<ForegroundSceneLearner> > mSceneLearners;
   };

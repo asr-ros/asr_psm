@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
  
-  GMMParameterEstimator::GMMParameterEstimator(unsigned int pNumberDimensions, unsigned int pNumberKernelsMin, unsigned int pNumberKernelsMax, unsigned int pNumberOfRuns, unsigned int pNumberOfSyntheticSamples, double pIntervalPosition, double pIntervalOrientation, std::string pPathOrientationPlots)
+  GMMParameterEstimator::GMMParameterEstimator(unsigned int pNumberDimensions, unsigned int pNumberKernelsMin, unsigned int pNumberKernelsMax, unsigned int pNumberOfRuns, unsigned int pNumberOfSyntheticSamples, double pIntervalPosition, double pIntervalOrientation, std::string pPathOrientationPlots, unsigned int pAttemptsPerRun)
   : mNumberDimensions(pNumberDimensions)
   , mNumberKernelsMin(pNumberKernelsMin)
   , mNumberKernelsMax(pNumberKernelsMax)
@@ -29,6 +29,7 @@ namespace ProbabilisticSceneRecognition {
   , mIntervalPosition(pIntervalPosition)
   , mIntervalOrientation(pIntervalOrientation)
   , mPathOrientationPlots(pPathOrientationPlots)
+  , mAttemptsPerRun(pAttemptsPerRun)
   {
   }
   
@@ -136,36 +137,44 @@ namespace ProbabilisticSceneRecognition {
     {
       bool learningCycleCompleted = false;
 
-      // generate 100 models and pick the best.
-      for(unsigned int run = 0; run < mNumberOfRuns; run++)
-      {
-    ROS_INFO_STREAM("Learning run " << run + 1 << ".");
+        // generate mNumberOfRuns models and pick the best.
+        for(unsigned int run = 0; run < mNumberOfRuns; run++)
+        {
 
-    // Repeat this calculation as long as runExpectationMaximization() returns false,
-    // but maximal 100 times.
-    for(int timer = 100; timer > 0; timer--)
-    {
-      unsigned int offset  = i * mNumberOfRuns + run;
+            ROS_INFO_STREAM("Learning run " << run + 1 << ".");
 
-      if(runExpectationMaximization(mData,mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset]))
-      {
-        learningCycleCompleted = true;
-        break;
-      }
-      else
-      {
-        ROS_INFO_STREAM("Training unsuccessful. Repeating cycle.");
-      }
-    }
-      }
+            bool useGenericMatrices = true;
 
-      // Terminate if OpenCV failed to learn a proper model.
-      if(!learningCycleCompleted) {
-    ROS_ERROR("Learning cycle incomplete. GMM learning failed! Please restart learner!");
-    exit (EXIT_FAILURE);
-      } else {
-    ROS_INFO("Learning cycle completed.");
-      }
+            // Repeat this calculation as long as the expectation maximizations finds a degenerated distribution,
+            // but maximal mAttemptsPerRun (formerly 100) times.
+            for(int timer = mAttemptsPerRun; timer > 0; timer--)
+            {
+                unsigned int offset  = i * mNumberOfRuns + run;
+
+                if(runExpectationMaximization(mData,mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset], useGenericMatrices))
+                {
+                    learningCycleCompleted = true;
+                    break;
+                }
+                else
+                {
+                    ROS_INFO_STREAM("Training unsuccessful. Repeating cycle.");
+                    if (timer == (mAttemptsPerRun / 2) + 1 && mAttemptsPerRun != 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
+                    {
+                        ROS_INFO_STREAM("Attempting to learn diagonal covariance matrix instead of generic one.");
+                        useGenericMatrices = false;
+                    }
+                }
+            }
+        }
+
+        // Terminate if OpenCV failed to learn a proper model.
+        if(!learningCycleCompleted) {
+            ROS_ERROR("Learning cycle incomplete. GMM learning failed! Please restart learner!");
+            exit (EXIT_FAILURE);
+        } else {
+            ROS_INFO("Learning cycle completed.");
+        }
     }
 
     // Determine the index of the GMM with the best BIC score.
@@ -200,7 +209,6 @@ namespace ProbabilisticSceneRecognition {
   {
     gmm = mBestGMM;
     ROS_INFO_STREAM("Number of kernels after removing duplicates is " << mBestGMM.getNumberOfKernels() << ".");
-
   }
   
   void GMMParameterEstimator::plotModel()
@@ -281,10 +289,16 @@ namespace ProbabilisticSceneRecognition {
                   unsigned int& nparams,
                   double& llk,
                   double& bic,
-                  GaussianMixtureModel& model)
+                  GaussianMixtureModel& model,
+                  bool useGenericMatrices)
   {
+      int covMatType = cv::EM::COV_MAT_GENERIC; // by default, use a generic covariance matrix
+      // If there is little data, a less precise diagonal matrix is more stable as a covariance matrix:
+      if (!useGenericMatrices)
+          covMatType = cv::EM::COV_MAT_DIAGONAL; // diagonal covariance matrix
+
       // Creating the EM learner instance
-      cv::EM myEM = cv::EM(nc, cv::EM::COV_MAT_GENERIC, // Generic covariance matrix  //cv::EM::COV_MAT_DIAGONAL,    // diagonal covariance matrix
+      cv::EM myEM = cv::EM(nc, covMatType,
              cv::TermCriteria(                // termination criteria
                  cv::TermCriteria::COUNT + cv::TermCriteria::EPS, // use maximum iterations and convergence epsilon
                  10,  // number of maximum iterations. 10 was used in ProBT.
@@ -301,6 +315,72 @@ namespace ProbabilisticSceneRecognition {
 
       // Run until convergence
       if (!myEM.train(cvdata, loglikelihoods)) return false;  // Training failed: return false
+
+      // extract covariance matrices and check whether they are symmetric and positive semi-definite, i.e. whether they actually are valid covariance matrices:
+      std::vector<cv::Mat> cvcovs = myEM.get<std::vector<cv::Mat>>("covs");
+      std::vector<boost::shared_ptr<Eigen::MatrixXd>> covs(cvcovs.size());
+      for (unsigned int i = 0; i < cvcovs.size(); i++)
+      {
+          cv::Mat cvcov = cvcovs.at(i);
+          // Check whether matrix is quadratic:
+          if (cvcov.rows != cvcov.cols)
+          {
+              ROS_DEBUG_STREAM("Matrix not quadratic: not a valid covariance matrix");
+              return false;
+          }
+          Eigen::MatrixXd cov(cvcov.rows, cvcov.cols);
+          // Check symmetry of matrix:
+          for (unsigned int j = 0; j < cvcov.rows; j++)
+          {
+              for (unsigned int k = j; k < cvcov.cols; k++)
+              {
+                  double entry = cvcov.at<double>(j,k);
+                  if (j != k)   // if not on diagonal:
+                  {
+                      if(std::abs(entry - cvcov.at<double>(k,j)) >= std::numeric_limits<double>::epsilon()) // check symmetry
+                      {
+                          ROS_DEBUG_STREAM("Found unsymmetric covariance matrix entries " << cvcov.at<double>(j,k) << " (" << j << "," << k << "), "
+                                           << cvcov.at<double>(k,j) << " (" << k << "," << j << "). Not a valid covariance matrix.");
+                          return false; // Not symmetric: return false
+                      }
+                      cov(k,j) = entry; // if symmetric: set lower entry
+                  }
+                  cov(j,k) = entry; // set upper entry or entry on diagonal
+              }
+          }
+
+          // Check positive semi-definiteness by checking whether all eigenvalues are positive:
+          Eigen::MatrixXd eigenvalues;
+          if (cov.rows() == 3) // dimension 3
+          {
+              Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es(cov);
+              eigenvalues = es.eigenvalues();
+
+          }
+          else if (cov.rows() == 4)
+          {
+              Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> es(cov);
+              eigenvalues = es.eigenvalues();
+          }
+          else
+              throw std::invalid_argument("In GMMParameterEstimator::runExpectationMaximization(): Found matrix with unsupported number of dimensions (supported are 3,4).");
+
+          for (unsigned int i = 0; i < eigenvalues.size(); i++)
+          {
+              if (eigenvalues(i) < 0)
+              {
+                  ROS_DEBUG_STREAM("Found invalid eigenvalue " << eigenvalues(i) << ": matrix not positive semi-definite, not a valid covariance matrix.");
+                  return false; // Not positive semi-definite: return false
+              }
+              else if (eigenvalues(i) < std::numeric_limits<double>::epsilon())
+              {
+                  ROS_DEBUG_STREAM("Found eigenvalue 0: Matrix cannot be inverted, invalid.");
+                  return false; // matrix not invertible: return false (is a valid covariance matrix, but cannot be used in inference).
+              }
+          }
+
+          covs.at(i) = boost::shared_ptr<Eigen::MatrixXd>(new Eigen::MatrixXd(cov)); // only if matrix is valid: put it into list.
+      }
 
       // Fill the output parameters
       llk = 0;
@@ -320,19 +400,8 @@ namespace ProbabilisticSceneRecognition {
           for (int j = 0; j < cvmeans.cols; j++) mean[j] = cvmeans.at<double>(i, j);
           means.at(i) = boost::shared_ptr<Eigen::VectorXd>(new Eigen::VectorXd(mean));
       }
-      // extract covariance matrices
-      std::vector<cv::Mat> cvcovs = myEM.get<std::vector<cv::Mat>>("covs");
-      std::vector<boost::shared_ptr<Eigen::MatrixXd>> covs(cvcovs.size());
-      for (unsigned int i = 0; i < cvcovs.size(); i++)
-      {
-          cv::Mat cvcov = cvcovs.at(i);
-          Eigen::MatrixXd cov(cvcov.rows, cvcov.cols);
-          for (unsigned int j = 0; j < cvcov.rows; j++)
-              for (unsigned int k = 0; k < cvcov.cols; k++)
-                  cov(j,k) = cvcov.at<double>(j,k);
-          covs.at(i) = boost::shared_ptr<Eigen::MatrixXd>(new Eigen::MatrixXd(cov));
-      }
 
+      GaussianMixtureModel newmodel = GaussianMixtureModel();
       // Iterate over all gaussian kernels and save them.
       for(unsigned int i = 0; i < weights.size(); i++)
       {
@@ -341,24 +410,29 @@ namespace ProbabilisticSceneRecognition {
         kernel.mMean = means[i];        // Set the mean vector.
         kernel.mCovariance = covs[i];   // Set the covariance matrix.
 
-        model.addKernel(kernel);        // Add the kernel to the GMM.
+        newmodel.addKernel(kernel);        // Add the kernel to the GMM.
       }
       // We removed kernels (automatically in addKernel), so we have to normalize the weights
-      model.normalizeWeights();
+      newmodel.normalizeWeights();
+      model = newmodel;
 
       // number of independent parameters nparams (for generic covariance matrix):
-      nparams = 0;
+      nparams = (model.getKernels().size() - 1);
       if (!model.getKernels().empty()) {
           unsigned int d = model.getKernels().at(0).mMean->size();       // dimension of mean vector and also symmetric covariance matrix
-          nparams = (d * (d + 1) / 2 + d) * model.getKernels().size() + (model.getKernels().size() - 1);   // (free variables in covariance matrix + in mean) * number of kernels + number of weights - 1
+          if (useGenericMatrices)
+              nparams += (d * (d + 1) / 2 + d) * model.getKernels().size();   // (free variables in covariance matrix + in mean) * number of kernels + number of weights - 1
+          else
+              nparams += 2 * d * model.getKernels().size(); // (free variables on diagonal of covariance matrix + in mean) * number of kernels + number of weights - 1
           // weights are parameters too, but if there is only one kernel, it's not independent (since it has to be 1)
           // one weight is also always determined by the rest, since the sum has to be 1.
       }
+      else
+          throw std::runtime_error("In GMMParameterEstimator::runExpectationMaximization(): trying to use empty model.");
 
       // Bayesian information criterion BIC:
       bic = llk - 0.25 * (double) nparams * std::log((double) data.size());
 
       return true;  // Training succeeded: return true
-  }
-  
+  }  
 }

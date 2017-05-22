@@ -65,50 +65,37 @@ private:
     /**
      * The test sets which represent the considered scene.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> mValidTestSets;
+    std::vector<std::vector<ISM::ObjectPtr>> mValidTestSets;
     /**
      * The test sets that resemble but do not represent the considered scene.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> mInvalidTestSets;
+    std::vector<std::vector<ISM::ObjectPtr>> mInvalidTestSets;
 
     /**
      * Generate random test sets.
      * @param pExamplesList list of object observations serving as basis of the test sets.
      * @param pTestSetCount how many test sets to generate.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
+    std::vector<std::vector<ISM::ObjectPtr>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
     /**
      * Validate whether test sets represent scene.
      * @param pTestSets the test sets to validate.
      */
-    void validateSets(std::vector<std::vector<asr_msgs::AsrObject>> pTestSets);
+    void validateSets(std::vector<std::vector<ISM::ObjectPtr>> pTestSets);
 
-    /**
-     * Transform asr_msgs::AsrObservation into asr_msgs::AsrObject.
-     * @param pObservation  the observation to transform.
-     * @return the AsrObject the observation was transformed into.
-     */
-    asr_msgs::AsrObject makeAsrObject(asr_msgs::AsrObservations pObservation);
-
-    /**
-     * Transform asr_msgs::AsrObservation into asr_msgs::AsrObject.
-     * @param pObservation  the observation to transform.
-     * @return the AsrObject the observation was transformed into.
-     */
-    asr_msgs::AsrObject makeAsrObject(ISM::ObjectPtr pObservation);
     /**
      * Set the pose of a given object relative to a reference object.
      * @param pObject       the object to have its pose transformed.
      * @param pReference    the reference object.
      */
-    void setPoseOfObjectRelativeToReference(asr_msgs::AsrObject& pObject, const asr_msgs::AsrObject& pReference);
+    void setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject, ISM::ObjectPtr pReference);
 
     /**
      * Load test sets from database file.
      * @param filename  of the database file.
      * @return the test sets loaded from the file.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> loadTestSetsFromFile(const std::string& filename);
+    std::vector<std::vector<ISM::ObjectPtr>> loadTestSetsFromFile(const std::string& filename);
 
     /**
      * Print a divider to ros info stream to divide and mark selected output.

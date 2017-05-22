@@ -29,7 +29,7 @@ namespace ProbabilisticSceneRecognition {
   {
   }
 
-  void MultipliedBackgroundInferenceAlgorithm::doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  void MultipliedBackgroundInferenceAlgorithm::doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     /**************************************************************************************
     * What we do here:

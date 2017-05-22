@@ -61,7 +61,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pObject AsrObject message containing information about the evidence.
      */
-    void push(const boost::shared_ptr<const asr_msgs::AsrObject>& pObject);
+    void push(const boost::shared_ptr<const ISM::Object>& pObject);
     
     /**
      * Checks, if new evidence has been added since the last model update.
@@ -81,7 +81,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pEvidences A vector containing all evidences.
      */
-    void getEvidences(std::vector<asr_msgs::AsrObject>& pEvidences);
+    void getEvidences(std::vector<ISM::Object>& pEvidences);
     
   private:
     
@@ -93,7 +93,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * A temporary buffer for accumulating evidences.
      */
-    std::vector<asr_msgs::AsrObject> mBuffer;
+    std::vector<ISM::Object> mBuffer;
     
     /**
      * A map for storing the object evidences, indexed by the object type and identifier.

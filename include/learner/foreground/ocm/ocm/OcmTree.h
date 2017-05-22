@@ -43,9 +43,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/common_type/Object.hpp>
 #include <ISM/common_type/Pose.hpp>
 
-// temporary includes:
-#include "helper/PoseAdapter.h"
-
 namespace ProbabilisticSceneRecognition {
   
   /**

@@ -33,24 +33,19 @@ namespace ProbabilisticSceneRecognition {
     // Load hierarchical shape model
     mHsm.load(pPt);
   }
-  
-  /*void ShapeTermEvaluator::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    mHsm.handleSceneGraph(pSceneGraph);
-  }*/
-  
+
   void ShapeTermEvaluator::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
     // Forward visualizer to hierarchical shape model.
     mHsm.initializeVisualizer(mSuperior);
   }
 
-  double ShapeTermEvaluator::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  double ShapeTermEvaluator::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
     return mHsm.calculateProbabilityForHypothesis(pEvidenceList, pAssignments);
   }
 
-  void ShapeTermEvaluator::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void ShapeTermEvaluator::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     mHsm.visualize(pEvidenceList);
   }

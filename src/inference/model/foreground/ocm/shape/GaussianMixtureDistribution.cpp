@@ -66,7 +66,7 @@ namespace ProbabilisticSceneRecognition {
     // Normalization is already done by the mixture weights in the kernel.
     BOOST_FOREACH(PSMInference::GaussianKernel kernel, mKernels)
       result += kernel.evaluate(evidence);
-      
+
     // The result is a marginalisation over all gaussian kernels. 
     return result;
   }

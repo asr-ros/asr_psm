@@ -22,7 +22,7 @@ namespace ProbabilisticSceneRecognition {
 
 
 
-  SceneLearningEngine::SceneLearningEngine(const std::string& pPbdSceneGraphTopic)
+  SceneLearningEngine::SceneLearningEngine()
   : mPrivateNamespaceHandle("~")
   {
 
@@ -97,9 +97,6 @@ namespace ProbabilisticSceneRecognition {
     
     // Initialize the scene model.
     initializeSceneModel(workspaceVolume, staticBreakRatio, togetherRatio, maxAngleDeviation);
-    
-    // Subscribe to the AsrSceneGraph messages pulled from the bag file(s).
-    mPbdSceneGraphListener = mGeneratorHandle.subscribe(pPbdSceneGraphTopic, 5, &SceneLearningEngine::newSceneGraphCallback, this);
   }
   
   SceneLearningEngine::~SceneLearningEngine()
@@ -107,7 +104,7 @@ namespace ProbabilisticSceneRecognition {
 
   }
   
-  void SceneLearningEngine::readLearnerInputBags()
+  void SceneLearningEngine::readLearnerInput()
   {
     // If only one string is given to node, just use this as path to scene graphs.
     // Otherwise load a bunch of files and process input as it was one file.
@@ -138,34 +135,6 @@ namespace ProbabilisticSceneRecognition {
 
 
 
-  }
-
-  
-  void SceneLearningEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Some error checking
-    if(!pSceneGraph)
-      throw std::invalid_argument("Cannot read from an non existing AsrSceneGraph message.");
-    
-    if(!mSceneModelLearner)
-      throw std::logic_error("Cannot add data to non existing instance of the scene model.");
-
-    // Status information
-    ROS_INFO_STREAM("Scene model learner: Receiving AsrSceneGraph message with scene type " << pSceneGraph->identifier << ".");
-
-    // Check whether scene graph input is conform to scenes definition.
-    try {
-    //  mSceneModelLearner->addExample(pSceneGraph);
-    } catch (std::domain_error& domainError) {
-      // Being here should see, we got a scene as input to learn, that is not mentioned in the definition of scenes this scene model should learn.
-      std::cerr << "Warning - AsrSceneGraph ignored: " << domainError.what() << std::endl;
-      // Do nothing more than ignoring this scene.
-    } catch (std::exception& exception) {
-      // ROS_ERROR does not work here.   
-      std::cerr << exception.what() << std::endl;
-      // Here something bad happened, so we abort processing.
-      std::exit(1);
-    }
   }
 
   void SceneLearningEngine::generateSceneModel()

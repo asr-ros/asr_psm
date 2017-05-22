@@ -86,35 +86,6 @@ namespace ProbabilisticSceneRecognition {
     }
   }
   
-  /*void HierarchicalShapeModel::handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Determine the AsrNode that contains observations for this scene object.
-    for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
-    {	
-      // The type of the first observation will be the type of this primary scene object.
-      // We assume here that all obserations are of the same type.
-      std::string type = node.track[0].type;
-      
-      // Get the name of this primary scene object.
-      std::string sceneObjectName = mVisualizer->getSceneObjectName();
-      
-      // Check, if this AsrNode contains observations for this scene object.
-      if(sceneObjectName.compare(type) == 0)
-      {
-	// Debug message.
-	ROS_INFO_STREAM("Raw data for primary scene object'" << sceneObjectName << "' found.");
-	
-	// Forward scene graph to shape nodes.
-	for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i]->handleSceneGraph(node, pSceneGraph);
-	
-    // There's only one AsrNode per object in a single scene graph.
-
-	break;
-      }
-    }
-  }*/
-  
   void HierarchicalShapeModel::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
     // Store a copy of the primary scene object visualizer.
@@ -125,7 +96,7 @@ namespace ProbabilisticSceneRecognition {
       mChildren[i]->initializeVisualizer(mSuperior);
   }
 
-  double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments)
+  double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
       for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren) child->resetVisit();
 
@@ -142,8 +113,7 @@ namespace ProbabilisticSceneRecognition {
       
       // Converts the AsrObject assigned to this slot into the Pose data structure.
       // Subtract one from the assignment, because the first evidence is stored at position zero.
-      mAbsolutePose = PoseAdapter::adapt(pEvidenceList[pAssignments[0] - 1].sampledPoses[0].pose);
-      //mAbsolutePose.reset(new ISM::Pose(pEvidenceList[pAssignments[0] - 1].sampledPoses[0].pose));
+      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[0] - 1].pose));
       
       // Evaluate evidence for root node under uniform distribution (FOR EVERY DIMENSION. Could only be done, it a root object was assigned to the root node.
       // THIS IS NECESSARY! When we have only one object, a scene containing it and a background scene,
@@ -193,17 +163,15 @@ namespace ProbabilisticSceneRecognition {
       result = slotProduct; // overwriting it for output.
       
       // Forward position of this primary scene object to visualizer.
-      mVisualizer->setBestPoseCandidate(PoseAdapter::adapt(mAbsolutePose));
-      //mVisualizer->setBestPoseCandidate(mAbsolutePose);
+      mVisualizer->setBestPoseCandidate(mAbsolutePose);
     } else {
       // A hypothesis without an assigned root object is invalid and will therefore be scored with the impossible event.
       result = 0.0;
     }
-
     return result;
   }
 
-  void HierarchicalShapeModel::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void HierarchicalShapeModel::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     // Get the name of the primary scene object.
     std::string name = mVisualizer->getSceneObjectName();
@@ -214,13 +182,11 @@ namespace ProbabilisticSceneRecognition {
       // Is this evidence for this scene object?
       if(name.compare(pEvidenceList[i].type) == 0)
       {
-    // Extract pose of the object.
-          mAbsolutePose = PoseAdapter::adapt(pEvidenceList[i].sampledPoses[0].pose);
-    //mAbsolutePose.reset(new ISM::Pose(pEvidenceList[i].sampledPoses[0].pose));
+	// Extract pose of the object.
+    mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[i].pose));
 	
-    // Forward the absolute pose of the primary scene object to the visualizer.
-          mVisualizer->setPose(PoseAdapter::adapt(mAbsolutePose));
-    //mVisualizer->setPose(mAbsolutePose);
+	// Forward the absolute pose of the primary scene object to the visualizer.
+	mVisualizer->setPose(mAbsolutePose);
 	
 	// Forward the pose of this node as parent node pose to the child nodes.
 	for(unsigned int i = 0; i < mChildren.size(); i++)

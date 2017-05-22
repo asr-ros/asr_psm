@@ -81,8 +81,8 @@ Evaluator::~Evaluator() {
 
 void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology)
 {
-    std::vector<double> validTestSetProbabilities, invalidTestSetProbabilities; // get discarded afterwards
-    evaluate(pTopology, validTestSetProbabilities, invalidTestSetProbabilities);
+    std::vector<double> v, i; // Get discarded afterwards
+    evaluate(pTopology, v, i);
 }
 
 void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
@@ -110,13 +110,13 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
     struct timeval end;
 
     gettimeofday(&start, NULL); // get start time
-    for (std::vector<asr_msgs::AsrObject> valid: mValidTestSets)
+    for (std::vector<ISM::ObjectPtr> valid: mValidTestSets)
     {
         double probability = getProbability(valid);
         validTestSetProbabilities.push_back(probability);
     }
 
-    for (std::vector<asr_msgs::AsrObject> invalid: mInvalidTestSets)
+    for (std::vector<ISM::ObjectPtr> invalid: mInvalidTestSets)
     {
         double probability = getProbability(invalid); // Foreground scene probability of test set for partial model
         invalidTestSetProbabilities.push_back(probability);
@@ -148,9 +148,12 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
     pInvalidTestSetProbabilities = invalidTestSetProbabilities;
 }
 
-double Evaluator::getProbability(const std::vector<asr_msgs::AsrObject>& pEvidence)
+double Evaluator::getProbability(const std::vector<ISM::ObjectPtr>& pEvidence)
 {
-    mForegroundSceneContent.update(pEvidence, mRuntimeLogger);
+    std::vector<ISM::Object> evidence;
+    for (ISM::ObjectPtr objPtr: pEvidence)
+        evidence.push_back(*objPtr);
+    mForegroundSceneContent.update(evidence, mRuntimeLogger);
     if (mVisualize)
     {
         if (mTargetingHelp)
@@ -183,8 +186,6 @@ void Evaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
     // Reset and set up foreground scene content:
     mForegroundSceneContent = ForegroundSceneContent();
     mForegroundSceneContent.initializeInferenceAlgorithms(mInferenceAlgorithm);
-    /*for (boost::shared_ptr<ISM::ObjectSet> sceneGraph: mExamplesList)
-        mForegroundSceneContent.update(sceneGraph);*/
     mForegroundSceneContent.load(mModel);   // loads partial model.
 
     // Set up visualizer:

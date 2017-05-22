@@ -27,12 +27,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
 // Local includes
 #include "inference/model/background/BackgroundInferenceAlgorithm.h"
+
+#include <ISM/common_type/Object.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -61,7 +62,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    void doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger);
+    void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
     
     /**
      * Returns the probability calculated by the inference process.

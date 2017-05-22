@@ -26,8 +26,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <asr_msgs/AsrSceneGraph.h>
-
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
@@ -63,7 +61,7 @@ namespace ProbabilisticSceneRecognition {
     /**
      * Constructor.
      * 
-     * @param pExample A AsrSceneGraph message containing object observation trajectories.
+     * @param pExample A ISM::ObjectSet containing object observation trajectories.
      */
     OcmForegroundSceneLearner(const ISM::ObjectSetPtr pExample);
     

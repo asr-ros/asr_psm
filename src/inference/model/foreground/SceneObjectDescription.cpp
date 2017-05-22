@@ -78,7 +78,7 @@ namespace ProbabilisticSceneRecognition {
       mContent->initializeVisualizer(mVisualizer);
   }
 
-  void SceneObjectDescription::update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger)
+  void SceneObjectDescription::update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
 
   {
     // Debug message.
@@ -101,12 +101,6 @@ namespace ProbabilisticSceneRecognition {
       ROS_INFO_STREAM("Evaluating scene object '" << mDescription << "' took " << std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() << " milliseconds.");
     }
   }
-  
-  /*void SceneObjectDescription::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    if(mContent)
-      mContent->update(pSceneGraph);
-  }*/
   
   double SceneObjectDescription::getSceneObjectProbability()
   {

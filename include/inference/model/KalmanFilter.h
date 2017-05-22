@@ -84,7 +84,7 @@ namespace ProbabilisticSceneRecognition {
         /**
          * Instance of the current AsrObject.
 		 */
-        asr_msgs::AsrObject mInstance;
+        ISM::Object mInstance;
 
 
 	public:
@@ -92,7 +92,7 @@ namespace ProbabilisticSceneRecognition {
 		 * Creates a kalman filter for given input matrices.
 		 * @param pObject The inintial measurement.
          */
-        KalmanFilter(asr_msgs::AsrObject pObject);
+        KalmanFilter(ISM::Object pObject);
 
 		/**
 		 * Destructor.
@@ -108,7 +108,7 @@ namespace ProbabilisticSceneRecognition {
 		 * Updates the current state of the system
 		 * @param pObject The new measurement to update the filter.
          */
-        void update(asr_msgs::AsrObject pObject);
+        void update(ISM::Object pObject);
 		
 		/**
 		 * Checks if the last update has been longer ago than the given threshold.
@@ -121,6 +121,6 @@ namespace ProbabilisticSceneRecognition {
          * Returns the AsrObject wrapped by the filter.
          * @return The AsrObject wrapped by the filter.
          */
-        asr_msgs::AsrObject getObject();
+        ISM::Object getObject();
 	};
 }

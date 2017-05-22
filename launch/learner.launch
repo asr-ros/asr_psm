@@ -3,14 +3,14 @@
   <node name="js_probabilistic_scene_learner" pkg="asr_psm" type="learner" output="screen">
     <!-- The list of basg files containing scene graphs that should be used for learning. -->
     <rosparam param="input_db_file">
-    /home/SMBAD/students/link/Downloads/experiment_1/experiment_1/experiment_2_part_1_and_2.sqlite
+    /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/scenes/office_2016_plus_breakfast_merge.sqlite
     </rosparam>
     <!-- That's how the scene should be called. -->
     <param name="scene_model_name" value="advertisement"/>
     <!-- The type of the scene that should be learned. -->
     <param name="scene_model_type" value="ocm"/>
     <!-- That's where the resulting model xml file should be stored. -->
-    <param name="scene_model_directory" value="$(find psm)/data"/>
+    <param name="scene_model_directory" value="$(find asr_psm)/data"/>
     <!-- The volume of the workspace we're working in in qubic meters. -->
     <param name="workspace_volume" value="8.0"/>
     <!-- Static break ratio for the tree generation. -->
@@ -24,13 +24,13 @@
     <!-- The minimal number of kernels. -->
     <param name="kernels_min" value="1"/>
     <!-- The maximal number of kernels. -->
-    <param name="kernels_max" value="1"/>
+    <param name="kernels_max" value="2"/>
     <!-- The number of runs per kernel. -->
-    <param name="runs_per_kernel" value="1"/>
+    <param name="runs_per_kernel" value="2"/>
     <!-- The number of samples to gereate for every recorded sample. -->
-    <param name="synthetic_samples" value="0"/>
+    <param name="synthetic_samples" value="1"/>
     <!-- The position interval for the sample relaxiation (in meters). -->
-    <param name="interval_position" value="0.50"/>
+    <param name="interval_position" value="0.250"/>
     <!-- The orientation interval for the sample relaxiation (in degrees). -->
     <param name="interval_orientation" value="10"/>
     <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
@@ -43,5 +43,9 @@
     <param name="scale_factor" value="1.0"/>
     <!-- This factor determines the multiple of the standard deviation. -->
     <param name="sigma_multiplicator" value="3.0"/>
+    <!-- How often the learner attempts to learn a valid model in each run until it gives up and throws an error.
+    After half the attempts, the learner switches from a generic to a less precise but more stable diagonal matrix as base for the covariance matrices.
+    Use "2" if each matrix type should be tried exactly once and "1" if only a generic matrix should be used once. -->
+    <param name="attempts_per_run" value="8" />
   </node>
 </launch>

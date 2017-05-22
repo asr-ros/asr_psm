@@ -63,7 +63,7 @@ void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<ISM::Objec
     mEvaluator->setInvalidTestSets(mInvalidTestSets);    // initialize properly
 }
 
-std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
+std::vector<std::vector<ISM::ObjectPtr>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
 {
     printDivider();
     ROS_INFO_STREAM("Generating " << pTestSetCount << " random test sets.");
@@ -82,11 +82,11 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
         for (unsigned int j = i + 1; j < mTypes.size(); j++)
             allRelations.push_back(SceneModel::Relation(mTypes[i], mTypes[j]));
 
-    std::vector<std::vector<asr_msgs::AsrObject>> testSets;
+    std::vector<std::vector<ISM::ObjectPtr>> testSets;
 
     for (unsigned int i = 0; i < pTestSetCount; i++)
     {
-        std::vector<asr_msgs::AsrObject> testSet;
+        std::vector<ISM::ObjectPtr> testSet;
         unsigned int randomTimestep = gen() % pExamplesList.size();
         unsigned int randomObjectIndex = gen() % pExamplesList[randomTimestep]->objects.size();
         ISM::ObjectPtr referenceObject = pExamplesList[randomTimestep]->objects[randomObjectIndex];
@@ -99,9 +99,8 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
             else occurs = 1;
             if (occurs != 0)                    // object does occur
             {
-                asr_msgs::AsrObject object = makeAsrObject(observation);
-                setPoseOfObjectRelativeToReference(object, makeAsrObject(referenceObject));
-                testSet.push_back(object);
+                setPoseOfObjectRelativeToReference(observation, referenceObject);
+                testSet.push_back(observation);
             }
         }
         testSets.push_back(testSet);
@@ -110,13 +109,13 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::generateRandomSe
     return testSets;
 }
 
-void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>> pTestSets)
+void TestSetGenerator::validateSets(std::vector<std::vector<ISM::ObjectPtr>> pTestSets)
 {
     // Use fully meshed topology to calculate probabilities:
     if (!mFullyMeshedTopology->mTree) throw std::runtime_error("in TestSetGenerator::validateSets(): fully meshed topology has no valid tree.");
     // set all tests as valid (so that fully meshed topology, which cannot have false positives, gets its evaluation result set already)
     mEvaluator->setValidTestSets(pTestSets);
-    mEvaluator->setInvalidTestSets(std::vector<std::vector<asr_msgs::AsrObject>>());
+    mEvaluator->setInvalidTestSets(std::vector<std::vector<ISM::ObjectPtr>>());
     double recognitionThreshold = mEvaluator->getRecognitionThreshold();    // save actual recognition threshold.
     mEvaluator->setRecognitionThreshold(-1);    // so every test set gets recognized
 
@@ -139,8 +138,8 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
         else if (probability < minProbability) minProbability = probability;    // set lowest non-zero probability as new minimum
     }
 
-    std::vector<std::vector<asr_msgs::AsrObject>> validTestSets;
-    std::vector<std::vector<asr_msgs::AsrObject>> invalidTestSets;    
+    std::vector<std::vector<ISM::ObjectPtr>> validTestSets;
+    std::vector<std::vector<ISM::ObjectPtr>> invalidTestSets;
 
     for (unsigned int i = 0; i < testSetProbabilities.size(); i++)
     {
@@ -164,18 +163,12 @@ void TestSetGenerator::validateSets(std::vector<std::vector<asr_msgs::AsrObject>
     mInvalidTestSets = invalidTestSets;
 }
 
-asr_msgs::AsrObject TestSetGenerator::makeAsrObject(ISM::ObjectPtr pObservation)
+void TestSetGenerator::setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject, ISM::ObjectPtr pReference)
 {
-    asr_msgs::AsrObject object;
-    geometry_msgs::PoseWithCovariance pwc;
-    pwc.pose = PoseAdapter::adaptToGeometryMsg(pObservation->pose);
-    object.sampledPoses.push_back(pwc);
-    object.type = pObservation->type;
-    return object;
-}
-
-void TestSetGenerator::setPoseOfObjectRelativeToReference(asr_msgs::AsrObject& pObject, const asr_msgs::AsrObject& pReference)
-{
+    ISM::PosePtr newPose;
+    pObject->pose->convertPoseIntoFrame(pReference->pose, newPose);
+    pObject->pose = newPose;
+    /*
     std::vector<geometry_msgs::PoseWithCovariance> newPoses;
     for (geometry_msgs::PoseWithCovariance refPose: pReference.sampledPoses)
     {
@@ -211,10 +204,10 @@ void TestSetGenerator::setPoseOfObjectRelativeToReference(asr_msgs::AsrObject& p
         }
     }
 
-    pObject.sampledPoses = newPoses;
+    pObject.sampledPoses = newPoses;*/
 }
 
-std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::loadTestSetsFromFile(const std::string& filename)
+std::vector<std::vector<ISM::ObjectPtr>> TestSetGenerator::loadTestSetsFromFile(const std::string& filename)
 {
     // compare ISM CombinatorialTrainer
     ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(filename));
@@ -226,12 +219,12 @@ std::vector<std::vector<asr_msgs::AsrObject>> TestSetGenerator::loadTestSetsFrom
 
     loadedTestSets = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
 
-    std::vector<std::vector<asr_msgs::AsrObject>> testSets;
+    std::vector<std::vector<ISM::ObjectPtr>> testSets;
     for (ISM::ObjectSetPtr loadedTestSet: loadedTestSets)
     {
-        std::vector<asr_msgs::AsrObject> testSet;
+        std::vector<ISM::ObjectPtr> testSet;
         for (ISM::ObjectPtr object: loadedTestSet->objects)
-            testSet.push_back(makeAsrObject(object));
+            testSet.push_back(object);
         testSets.push_back(testSet);
     }
     ROS_INFO_STREAM("Loaded " << testSets.size() << " test sets from file " << filename);

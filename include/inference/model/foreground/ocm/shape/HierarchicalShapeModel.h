@@ -29,7 +29,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <Pose.h>
 
@@ -46,9 +45,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/foreground/ocm/shape/MultipliedConditionalProbability.h"
 #include "inference/model/foreground/ocm/shape/RootOfMultipliedConditionalProbability.h"
 #include "inference/model/foreground/ocm/shape/AverageConditionalProbability.h"
-
-// temporary includes
-#include "helper/PoseAdapter.h"
 
 namespace ProbabilisticSceneRecognition {
   
@@ -80,13 +76,6 @@ namespace ProbabilisticSceneRecognition {
     void load(boost::property_tree::ptree& pPt);
     
     /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
-     *
-     * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
-     */
-    //void handleSceneGraph(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
-    
-    /**
      * Initializes the visualization mechanism.
      * 
      * @param mSuperior The superior visualizer coordinating the scene visualizers.
@@ -100,14 +89,14 @@ namespace ProbabilisticSceneRecognition {
      * @param pAssignments Assignments of parts to slots.
      * @return Probability as determined by the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments);
+    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments);
     
     /**
      * Update the visualizers based on the evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      */
-    void visualize(std::vector<asr_msgs::AsrObject> pEvidenceList);
+    void visualize(std::vector<ISM::Object> pEvidenceList);
     
     /**
      * Return the number of nodes in the OCM.
@@ -143,5 +132,4 @@ namespace ProbabilisticSceneRecognition {
      */
     std::string mConditionalProbabilityAlgorithm;
   };
-
 }

@@ -29,7 +29,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <asr_msgs/AsrNode.h>
 #include <asr_msgs/AsrObject.h>
 
 namespace ProbabilisticSceneRecognition {

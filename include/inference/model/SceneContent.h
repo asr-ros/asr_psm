@@ -27,7 +27,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
-//#include <asr_msgs/AsrSceneGraph.h>
 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
@@ -84,14 +83,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    virtual void update(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
-    
-    /**
-     * Integrate the learning data in form of a AsrSceneGraph into the model.
-     *
-     * @param pSceneGraph Preprocessed observations that describe the objects in a scene over time.
-     */
-    //virtual void update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph) = 0;
+    virtual void update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger) = 0;
     
     /**
      * Returns the probability for the scene modelled by this class.
@@ -122,7 +114,7 @@ namespace ProbabilisticSceneRecognition {
      * @param pEvidenceList The evidence found.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    void doInference(std::vector<asr_msgs::AsrObject> pEvidenceList, std::ofstream& pRuntimeLogger);
+    void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
     
   private:
     

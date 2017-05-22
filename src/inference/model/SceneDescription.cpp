@@ -93,7 +93,7 @@ namespace ProbabilisticSceneRecognition {
       mContent->initializeVisualizer(mVisualizer);
   }
 
-  void SceneDescription::update(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void SceneDescription::update(std::vector<ISM::Object> pEvidenceList)
 
   {
     // Debug message.
@@ -103,12 +103,6 @@ namespace ProbabilisticSceneRecognition {
     if(mContent)
       mContent->update(pEvidenceList, mRuntimeFile);
   }
-  
-  /*void SceneDescription::update(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    if(mContent)
-      mContent->update(pSceneGraph);
-  }*/
   
   void SceneDescription::calculateSceneProbaility()
   {

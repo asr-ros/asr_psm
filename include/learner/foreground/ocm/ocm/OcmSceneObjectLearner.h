@@ -27,8 +27,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <trainer/TreeNode.h>
 
-#include <asr_msgs/AsrSceneGraph.h>
-
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 #include <visualization/psm/ProbabilisticPrimarySceneObjectVisualization.h>
 

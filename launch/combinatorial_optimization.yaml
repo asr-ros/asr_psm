@@ -18,13 +18,14 @@ avg_recognition_time_weight: 1 #the weight to give the average recognition runti
 false_negatives_weight: 5 #the weight to give the number of false negatives in the weighted sum.
 
 #test set generator parameters:
-test_set_count: 1000 #number of test sets to use to validate topologies with.
+test_set_count: 10 #00 #number of test sets to use to validate topologies with.
 object_missing_in_test_set_probability: 0 #probability with which an object does not appear in a test set. set to <= 0 to have all objects appear in each test set
-recognition_threshold: 0.01 #threshold above which a relation is considered fulfilled. scene threshold, above which scenes are recognized: pow(recognition_threshold,objects) 
-#not properly implemented yet:
-valid_test_set_db_filename: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/validTestSets_experiment_1.sqlite
+recognition_threshold: 0.01 #threshold above which a relation is considered fulfilled. scene threshold, above which scenes are recognized: pow(recognition_threshold,objects)
+valid_test_set_db_filename: ''
+#/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/validTestSets_experiment_1.sqlite
 #database file to load the valid test sets from. New test sets are created if this is set to ''.
-invalid_test_set_db_filename: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/invalidTestSets_experiment_1.sqlite
+invalid_test_set_db_filename: ''
+#/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/invalidTestSets_experiment_1.sqlite
 #database file to load the invalid test sets from. New test sets are created if this is set to ''.
 
 #miscellaneous parameters:

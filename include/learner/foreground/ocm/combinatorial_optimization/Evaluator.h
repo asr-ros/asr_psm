@@ -69,7 +69,7 @@ public:
      * Set valid test sets.
      * @param pValidTestSets    valid test sets to set.
      */
-    void setValidTestSets(const std::vector<std::vector<asr_msgs::AsrObject>>& pValidTestSets)
+    void setValidTestSets(const std::vector<std::vector<ISM::ObjectPtr>>& pValidTestSets)
     {
         mValidTestSets = pValidTestSets;
     }
@@ -78,7 +78,7 @@ public:
      * Set invalid test sets.
      * @param pInvalidTestSets  invalid test sets to set.
      */
-    void setInvalidTestSets(const std::vector<std::vector<asr_msgs::AsrObject>>& pInvalidTestSets)
+    void setInvalidTestSets(const std::vector<std::vector<ISM::ObjectPtr>>& pInvalidTestSets)
     {
         mInvalidTestSets = pInvalidTestSets;
     }
@@ -107,7 +107,7 @@ private:
      * @param pEvidence the object observations to calculate the probability for.
      * @return the probability whether the given evidence represents the scene represented by the last learned model.
      */
-    double getProbability(const std::vector<asr_msgs::AsrObject>& pEvidence);
+    double getProbability(const std::vector<ISM::ObjectPtr>& pEvidence);
 
     /**
      * Update the model to represent the given tree.
@@ -132,11 +132,11 @@ private:
     /**
      * The test sets which represent the considered scene.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> mValidTestSets;
+    std::vector<std::vector<ISM::ObjectPtr>> mValidTestSets;
     /**
      * The test sets that resemble but do not represent the considered scene.
      */
-    std::vector<std::vector<asr_msgs::AsrObject>> mInvalidTestSets;
+    std::vector<std::vector<ISM::ObjectPtr>> mInvalidTestSets;
 
     /**
      * Learners to learn models to test.

@@ -63,64 +63,7 @@ namespace ProbabilisticSceneRecognition {
       if(!std::strcmp(v.first.c_str(), "child"))
     mChildren.push_back(boost::shared_ptr<HierarchicalShapeModelNode>(new HierarchicalShapeModelNode(v.second, pID)));
     }
-
   }
-  
-  /*void HierarchicalShapeModelNode::handleSceneGraph(asr_msgs::AsrNode& pParent, const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Determine the AsrNode that contains observations for this scene object.
-    for(asr_msgs::AsrNode node : pSceneGraph->scene_elements)
-    {	
-      // Get the type of the first observation (we assume here that all obserations are of the same type).
-      std::string type = node.track[0].type;
-      
-      // Check, if this AsrNode contains observations for this scene object.
-      if(mSceneObject.compare(type) == 0)
-      {
-	// Debug message.
-	ROS_INFO_STREAM("Raw data for secondary scene object'" << mSceneObject << "' found.");
-	
-	// Gets the length of the parent observation trajectory.
-	unsigned int trajectoryLength = pParent.track.size();
-	
-	// Check that both observation trajectories have the same length.
-	// If that's not the case, something went wrong in the Scene Graph Generator.
-	if(trajectoryLength != node.track.size())
-	  throw std::runtime_error("Shape Node: the observation trajectories of child and parent node don't have the same length. This indicates a bug in the scene_graph_generator.");
-	
-	// TODO could be removed
-// 	// Iterate over both trajectories, calculate the relative position of child to parent and add this info to the learner.
-// 	for(unsigned int i = 0; i < trajectoryLength; i++)
-// 	{
-// 	  boost::shared_ptr<ResourcesForPsm::Pose> parentPose;
-// 	  boost::shared_ptr<ResourcesForPsm::Pose> childPose;
-// 	  boost::shared_ptr<ResourcesForPsm::Pose> relativePose;
-// 	  
-// 	  // Extract the poses of the parent and child AsrObservation.
-// 	  parentPose.reset(new ResourcesForPsm::Pose(pParent.track[i].transform));
-// 	  childPose.reset(new ResourcesForPsm::Pose(node.track[i].transform));
-// 	  
-// 	  // calculate the pose of the child in the parent frame.
-// 	  childPose->convertPoseIntoFrame(parentPose, relativePose);
-// 	  
-// 	  // Add the sample to the list of raw data.
-// 	  mRawData.push_back(relativePose->getPosition());
-// 	}
-// 	
-// 	// Apply raw data to visualizer.
-// 	mVisualizer->setLearningSamples(mRawData);
-	
-	// Forward scene graph to all child nodes.
-	// IMPORTANT: We want all objects relative to the primary scene object
-	// (the root object of the tree), so we forward it instead of this node.
-	for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i]->handleSceneGraph(node, pSceneGraph);
-	
-    // There's only one AsrNode per object in a single scene graph.
-	break;
-      }
-    }
-  }*/
   
   void HierarchicalShapeModelNode::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
@@ -145,9 +88,9 @@ namespace ProbabilisticSceneRecognition {
   {
     mAbsoluteParentPose = pPose;
   }
-  
-  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<asr_msgs::AsrObject> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
-                                                                       std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities)
+
+  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
+																		std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities)
   {
     double result = 1.0;
     
@@ -168,8 +111,7 @@ namespace ProbabilisticSceneRecognition {
         mWasVisited = true;
 
       // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-        mAbsolutePose = PoseAdapter::adapt(pEvidenceList[pAssignments[pSlotId] - 1].sampledPoses[0].pose);
-      //mAbsolutePose.reset(new ISM::Pose(pEvidenceList[pAssignments[pSlotId] - 1].sampledPoses[0].pose));
+      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[pSlotId] - 1].pose));
       mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
       
       // Evaluate the relative pose under the the probability distribution describing the scene shape.
@@ -206,9 +148,7 @@ namespace ProbabilisticSceneRecognition {
       }
       
       // Forward position of this primary scene object to visualizer.
-      mVisualizer->setBestCandidatePose(PoseAdapter::adapt(mAbsolutePose));
-      //mVisualizer->setBestCandidatePose(mAbsolutePose);
-
+      mVisualizer->setBestCandidatePose(mAbsolutePose);
     }
     else
     {
@@ -220,35 +160,32 @@ namespace ProbabilisticSceneRecognition {
     return result;
   }
 
-  void HierarchicalShapeModelNode::visualize(std::vector<asr_msgs::AsrObject> pEvidenceList)
+  void HierarchicalShapeModelNode::visualize(std::vector<ISM::Object> pEvidenceList)
   {
     // Try to find evidence for this scene object.
     for(unsigned int i = 0; i < pEvidenceList.size(); i++)
     {
       // Get the object.
-      asr_msgs::AsrObject object = pEvidenceList[i];
+      ISM::Object object = pEvidenceList[i];
 
       
       // Is this evidence for this scene object (assumed that there is no detection uncertainty)?
       // If yes and the parent node was also detected, then update the position.
       if(mSceneObject.compare(object.type) == 0 && mAbsoluteParentPose)
       {
-    // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-          mAbsolutePose = PoseAdapter::adapt(object.sampledPoses[0].pose);
-    //mAbsolutePose.reset(new ISM::Pose(*object.sampledPoses[0].pose));
+	// Extract the pose of the object associates with this node/slot and convert it into the parent frame.
+    mAbsolutePose.reset(new ISM::Pose(*object.pose));
 	mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
 	
 	/********************************************************
 	* Now we draw.
 	********************************************************/
 	
-    // Apply last known absolut object position to the visualizer.
-    mVisualizer->setLastPose(PoseAdapter::adapt(mAbsolutePose));
-    //mVisualizer->setLastPose(mAbsolutePose);
+	// Apply last known absolut object position to the visualizer.
+	mVisualizer->setLastPose(mAbsolutePose);
 	
-    // Apply the absolute position of the parent object to the visualizer.
-    mVisualizer->setParentPose(PoseAdapter::adapt(mAbsoluteParentPose));
-    //mVisualizer->setParentPose(mAbsoluteParentPose);
+	// Apply the absolute position of the parent object to the visualizer.
+	mVisualizer->setParentPose(mAbsoluteParentPose);
 	
 	// Based on the assumption that there is no detection uncertainty for object types,
 	// evaluate the gaussian mixture and visualize the uncertainty for the detection.
@@ -303,4 +240,3 @@ namespace ProbabilisticSceneRecognition {
     for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren) child->resetVisit();
   }
 }
-  

@@ -28,8 +28,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 
-#include <asr_msgs/AsrSceneGraph.h>
-
 #include <visualization/psm/ProbabilisticSceneModelVisualization.h>
 
 
@@ -52,10 +50,8 @@ namespace ProbabilisticSceneRecognition {
 
     /**
      * Constructor.
-     * 
-     * @param pPbdSceneGraphTopic Name of the topic AsrSceneGraph messages were published.
      */
-    SceneLearningEngine(const std::string& pPbdSceneGraphTopic);
+    SceneLearningEngine();
 
     /**
      * Destructor.
@@ -63,25 +59,18 @@ namespace ProbabilisticSceneRecognition {
     ~SceneLearningEngine();
 
     /**
-     * Extract AsrSceneGraph messages from all rosbag files given as CLI parameters.
+     * Extract ISM::ObjectSets from all databases given as CLI parameters.
      * Transfer all measurements for each scene into distribution parameter learners.
      */
-    void readLearnerInputBags();
+    void readLearnerInput();
     
     /**
-     * Open rosbag file and extract AsrSceneGraph messages on input topic (which has been set before).
-     * All scene graph that the rosbag file contains, are transfered to the distribution parameter learners.
+     * Open database and extract ISM::ObjectSets.
+     * All object sets that the database contains, are transfered to the distribution parameter learners.
      * 
-     * @param pPbdSceneGraphsBagPath Path of file to be parsed for AsrSceneGraph messages.
+     * @param pPbdSceneGraphsBagPath Path of file to be parsed ISM::ObjectSets.
      */
     void extractTracksFromDbFile(const std::string& dbFileName);
-    
-    /**
-     * Adds all recorded scene data in a AsrSceneGraph to a system that learns parameters of distributions in the decomposition of the joint distribution in a scene model.
-     *
-     * @param pSceneGraph Features of all objects in a scene localized over a certain period of time.
-     */
-    void newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph);
 
     /**
      * All learnt information is transfered into a scene model description. 
@@ -132,11 +121,6 @@ namespace ProbabilisticSceneRecognition {
      * Interface to the private namespace of the ros node.
      */
     ros::NodeHandle mPrivateNamespaceHandle;
-        
-    /**
-     * Listener for AsrSceneGraph messages.
-     */
-    ros::Subscriber mPbdSceneGraphListener;
     
     /**
      * TableHelper to extract Objects from ".sqlite"-file.

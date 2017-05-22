@@ -1,6 +1,6 @@
 <!-- Launches the inference engine for probabilistic scene recognition. Incoming AsrObject messages are being processed and the results used for scene recognition. -->
 <launch>
-  <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
+  <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" output="screen">
     <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
     <param name="plot" value="true"/>
     <!-- The topic to get the the AsrObject messages from. -->
@@ -8,7 +8,7 @@
     <!-- The topic to get the the AsrSceneGraph messages from. -->
     <param name="scene_graph_topic" value="/scene_graphs"/>
     <!-- Path to the file containing the probabilistic scene model.-->
-    <param name="scene_model_filename" value="/home/SMBAD/students/link/ilcasRosFull/src/perception/scene_recognition/psm/data/advertisement.xml"/>
+    <param name="scene_model_filename" value="$(find psm_evaluation)/advertisements/simple/kite.xml"/>
     <!--The name of the frame the objects should be transformed to. -->
     <param name="base_frame_id" value="/PTU"/>
     <!-- The visualization is pretty small, this scale factor enlarges it. -->

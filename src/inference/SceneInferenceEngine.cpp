@@ -33,10 +33,7 @@ namespace ProbabilisticSceneRecognition {
     
     // The name of the algorithm that should be used for the inference.
     std::string inferenceAlgorithm;
-    
-    // A list of paths to rosbag files containing AsrSceneGraph messages.
-    //XmlRpc::XmlRpcValue mInputBagFilenames;
-    
+
     // The frame to transform the object poses to.
     // Also the coordinate frame in which the visualization should take place.
     std::string baseFrameId;
@@ -62,28 +59,6 @@ namespace ProbabilisticSceneRecognition {
     // Try to get the file name of the XML file from which the scene model should be read.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/scene_model_filename", sceneModelFileName))
       throw std::runtime_error("Please specify parameter " + std::string("scene_model_filename") + " when starting this node.");
-    
-    // Try to get names of bag files with AsrSceneGraph message input, if any exist.
-    /*if(mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/bag_filenames_list", mInputBagFilenames))
-    {
-      // Either one string or a list of strings is accepted as input.
-      if(mInputBagFilenames.getType() == XmlRpc::XmlRpcValue::TypeString)
-      {
-	// When not called directly from CLI, we can used a list as input.
-      } else {
-	// Check whether parameter loaded is really a list of values.
-	if(mInputBagFilenames.getType() != XmlRpc::XmlRpcValue::TypeArray)
-	  throw std::invalid_argument("CLI option \"bag_filenames_list\" not set with an array.");
-	
-    // Go through all potential filenames of AsrSceneGraph rosbag files.
-	for(int i = 0; i < mInputBagFilenames.size(); i++)
-	{
-	  // Check whether parameter list element is really a filename. 
-	  if(mInputBagFilenames[i].getType() != XmlRpc::XmlRpcValue::TypeString)
-	    throw std::invalid_argument("Bag file path no. " + boost::lexical_cast<std::string>(i) + "is no valid string.");
-	}
-      }
-    }*/
 
     // Try to get the name of the scene to be published.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/base_frame_id", baseFrameId))
@@ -116,13 +91,6 @@ namespace ProbabilisticSceneRecognition {
     
     // Tell node how to react on messages from objects that could belong to scenes being looked for.
     mObjectListener = mNodeHandle.subscribe(pPbdObjectTopic, 100, &SceneInferenceEngine::newObservationCallback, this);
-    
-    // Register callback handlers for scene graphs which contain the raw data used for learning.
-    //mSceneGraphListener = mNodeHandle.subscribe(pPbdSceneGraphTopic, 5, &SceneInferenceEngine::newSceneGraphCallback, this);
-    
-    // Read the learning data from bag file.
-    //readLearnerInputBags(mInputBagFilenames);
-
   }
   
   SceneInferenceEngine::~SceneInferenceEngine()
@@ -143,7 +111,7 @@ namespace ProbabilisticSceneRecognition {
     {
       // Get the first entry.
 
-      boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();
+      boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();//HERE: mEvidenceBuffer.front();
 
       
       // Remove the entry processed from the queue.
@@ -161,33 +129,12 @@ namespace ProbabilisticSceneRecognition {
 	ROS_ERROR("Unable to resolve transformation in target coordinate frame. Dropping object.");
 	continue;
       }
-      
-      // Forward the new evidence to the model.
-      mModel.integrateEvidence(evidence);
+
+      mModel.integrateEvidence(AsrObjectToISMObject(evidence)); //HERE: evidence
     }
     
     // Update the model with the evidence collected until now.
     mModel.updateModel();
-    
-    /********************************************************************
-     * Integrate the learning data loaded from bag file.
-     ********************************************************************/
-
-    // Process scene graphs!
-    /*while(!mSceneGraphBuffer.empty())
-    {
-      // Get the first entry.
-      boost::shared_ptr<const asr_msgs::AsrSceneGraph> sceneGraph = mSceneGraphBuffer.front();
-      
-      // Remove the entry processed from the queue.
-      mSceneGraphBuffer.pop();
-      
-      // Status information for the user.
-      ROS_INFO_STREAM("SceneGraph of type '" << sceneGraph->identifier << "' found.");
-      
-      // Forward evidence to the model.
-      mModel.integrateSceneGraph(sceneGraph);
-    }*/
     
     /********************************************************************
      * Do the inference and show the results.
@@ -241,7 +188,7 @@ namespace ProbabilisticSceneRecognition {
 
     // Check whether topic name for scene graph has been set before trying to parse rosbag files.
     if(!mObjectListener)
-      throw std::logic_error("Cannot parse bag file with AsrSceneGraphs without knowing on which topic they were sent.");
+      throw std::logic_error("Cannot parse bag file with AsrObjects without knowing on which topic they were sent.");
     
     // Set topic representatio. When parsing rosbag files this is required for extracting the messages which are representing scene graphs.
     rosbag::TopicQuery pbdSceneGraphIdentifier(mObjectListener.getTopic());
@@ -287,7 +234,7 @@ namespace ProbabilisticSceneRecognition {
 	}
 	
 	// Forward the new evidence to the model.
-	mModel.integrateEvidence(currentObject);
+    mModel.integrateEvidence(AsrObjectToISMObject(currentObject)); //HERE: currentObject
 	
 	// Update the model with the evidence collected until now.
 	mModel.updateModel();
@@ -307,70 +254,6 @@ namespace ProbabilisticSceneRecognition {
     mModel.loadModelFromFile(pSceneModelFileName, pInferenceAlgorithm);
   }
   
-  /*void SceneInferenceEngine::readLearnerInputBags(XmlRpc::XmlRpcValue pInputBagFilenames)
-  {
-    // If only one string is given to node, just use this as path to scene graphs.
-    // Otherwise load a bunch of files and process input as it was one file.
-    if(pInputBagFilenames.getType() == XmlRpc::XmlRpcValue::TypeString) {
-      extractPbdSceneGraphsFromBag(static_cast<std::string>(pInputBagFilenames));
-    } else {
-      
-      // Go through all paths to AsrSceneGraph rosbag files passed to ros node via cli.
-      // Extract all AsrSceneGraph messages from rosbag file currently taken into account.
-      for(int i = 0; i < pInputBagFilenames.size(); i++)
-	extractPbdSceneGraphsFromBag(static_cast<std::string>(pInputBagFilenames[i]));
-    }
-  }*/
-  
-  /*void SceneInferenceEngine::extractPbdSceneGraphsFromBag(const std::string& pPbdSceneGraphsBagPath)
-
-  {
-    ROS_INFO_STREAM("Extracting AsrSceneGraph messages from rosbag file: " << pPbdSceneGraphsBagPath);
-
-
-    // Check whether topic name for scene graph has been set before trying to parse rosbag files.
-    if(!mSceneGraphListener)
-      throw std::logic_error("Cannot parse bag file with AsrSceneGraphs without knowing on which topic they were sent.");
-    
-    // Set topic representatio. When parsing rosbag files this is required for extracting the messages which are representing scene graphs.
-    rosbag::TopicQuery pbdSceneGraphIdentifier(mSceneGraphListener.getTopic());
-
-    // Create file handler for rosbag file to be read.
-    rosbag::Bag pbdSceneGraphsBag;
-
-    // Get read-only access to messages in given rosbag file, create access infrastructure.
-    try {
-      pbdSceneGraphsBag.open(pPbdSceneGraphsBagPath, rosbag::bagmode::Read);
-    } catch(rosbag::BagIOException& exception) {
-      // ROS_ERROR does not work here.
-      std::cerr << "Trying to extract AsrSceneGraph messages aborted because of: " << exception.what() << std::endl;
-      // Quit this function as no data is to be processed.
-      return;
-    }
-
-    // Create interface to extract only scene graph messages in given bag file from a previously defined topic.
-    rosbag::View pbdSceneGraphView(pbdSceneGraphsBag, pbdSceneGraphIdentifier);
-
-    // Check whether there is any raw data from a scene on the topic where we expect them.
-    if(!pbdSceneGraphView.size())
-      ROS_WARN_STREAM("No AsrSceneGraph messages exist in " << pPbdSceneGraphsBagPath << " on topic " << mSceneGraphListener.getTopic() << ".");
-
-    // Get access to all scene graphs in bag file to transfer them to parameter learner for scene model.
-    for(rosbag::View::iterator sceneGraphIterator = pbdSceneGraphView.begin(); sceneGraphIterator != pbdSceneGraphView.end(); sceneGraphIterator++) {
-
-      // Get interface compliant to AsrSceneGraph message on rosbag item currently taken into account.
-      asr_msgs::AsrSceneGraph::ConstPtr currentSceneGraph = sceneGraphIterator->instantiate<asr_msgs::AsrSceneGraph>();
-
-      // Success check for extraction.
-      if(currentSceneGraph != NULL)
-      // And add all object measurements in scene graph to parameter learners.
-	newSceneGraphCallback(currentSceneGraph);
-    }
-    
-    // Clean up.
-    pbdSceneGraphsBag.close();
-  }*/
-  
   void SceneInferenceEngine::initializeVisualizationChain(const double pScale, const float pSigmaMultiplicator, const std::string pFrameId)
   {
     // Status information for the user.
@@ -384,7 +267,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Set drawing parameters.
     mVisualizer->setDrawingParameters(pScale, pSigmaMultiplicator, pFrameId);
-    
+
         // Get the results and show them.
     std::vector<SceneIdentifier> pSceneList;
     mModel.getSceneListWithProbabilities(pSceneList);
@@ -411,14 +294,58 @@ namespace ProbabilisticSceneRecognition {
 
   {
     // Buffers the evidence to keep callback time as short as possible.
-    mEvidenceBuffer.push(pObject);
+    mEvidenceBuffer.push(pObject); // HERE: pObject
   }
 
-  /*void SceneInferenceEngine::newSceneGraphCallback(const boost::shared_ptr<const asr_msgs::AsrSceneGraph>& pSceneGraph)
-  {
-    // Buffers the scene graph to keep callback time as short as possible.
-    mSceneGraphBuffer.push(pSceneGraph);
-  }*/
+  boost::shared_ptr<asr_msgs::AsrObject> SceneInferenceEngine::ISMObjectToAsrObject(boost::shared_ptr<ISM::Object> pObject){
+      //Create Output Object
+      boost::shared_ptr<asr_msgs::AsrObject> outputObject = boost::shared_ptr<asr_msgs::AsrObject>(new asr_msgs::AsrObject());
+      //create and fill asr pose
+      geometry_msgs::Pose *asrPose = new geometry_msgs::Pose();
+      asrPose->position.x = pObject->pose->point->getEigen().x();
+      asrPose->position.y = pObject->pose->point->getEigen().y();
+      asrPose->position.z = pObject->pose->point->getEigen().z();
+      asrPose->orientation.w = pObject->pose->quat->getEigen().w();
+      asrPose->orientation.x = pObject->pose->quat->getEigen().x();
+      asrPose->orientation.y = pObject->pose->quat->getEigen().y();
+      asrPose->orientation.z = pObject->pose->quat->getEigen().z();
+      //create and fill pose with covariance
+      geometry_msgs::PoseWithCovariance *poseWithCovariance = new geometry_msgs::PoseWithCovariance();
+      poseWithCovariance->pose = *asrPose;
+      //add converted pose to output object
+      outputObject->sampledPoses.push_back(*poseWithCovariance);
+      //cpnvert all attributes
+      outputObject->identifier = pObject->observedId;
+      outputObject->type = pObject->type;
+      outputObject->providedBy = pObject->providedBy;
+      outputObject->meshResourcePath = pObject->ressourcePath.string();
+      outputObject->typeConfidence = pObject->weight;
+      outputObject->sizeConfidence = pObject->confidence;
+      //return converted Object
+      return outputObject;
+  }
 
+  boost::shared_ptr<ISM::Object> SceneInferenceEngine::AsrObjectToISMObject(boost::shared_ptr<asr_msgs::AsrObject> pObject){
+      //Create Output Object
+      boost::shared_ptr<ISM::Object> outputObject = boost::shared_ptr<ISM::Object>(new ISM::Object());
+      //Create pose from given Object
+      geometry_msgs::Pose asrPose = pObject->sampledPoses.front().pose;
+      //Create point out of pose
+      ISM::Point *point = new ISM::Point(asrPose.position.x, asrPose.position.y, asrPose.position.z);
+      //create quaternion out of pose
+      ISM::Quaternion *quat = new ISM::Quaternion(asrPose.orientation.w, asrPose.orientation.x, asrPose.orientation.y, asrPose.orientation.z);
+      //add pose to output object
+      outputObject->pose = boost::shared_ptr<ISM::Pose>(new ISM::Pose(point, quat));
+
+      //convert all attributes
+      outputObject->observedId = pObject->identifier;
+      outputObject->type = pObject->type;
+      outputObject->providedBy = pObject->providedBy;
+      outputObject->ressourcePath = pObject->meshResourcePath;
+      outputObject->weight = pObject->typeConfidence;
+      outputObject->confidence = pObject->sizeConfidence;
+      //return converted object
+      return outputObject;
+  }
   
 }
