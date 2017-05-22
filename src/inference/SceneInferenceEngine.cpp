@@ -44,6 +44,10 @@ namespace ProbabilisticSceneRecognition {
     // This factor determines the radii of the covariance ellipse.
     double sigmaMultiplicator;
     
+	// Try to get difference_based bool.
+	if (!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/difference_based", difference_based))
+		throw std::runtime_error("Please specify parameter " + std::string("difference_based") + " when starting this node.");
+
     // Try to get the clearance for plotting the scene probabilties.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/plot", showPlot))
       throw std::runtime_error("Please specify parameter " + std::string("plot") + " when starting this node.");

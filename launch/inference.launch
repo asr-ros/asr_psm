@@ -3,6 +3,8 @@
   <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
     <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
     <param name="plot" value="true"/>
+    <!-- Set true, to use difference based inference. -->
+    <param name="difference_based" value="true"/>
     <!-- The topic to get the the AsrObject messages from. -->
     <param name="object_topic" value="/stereo/objects"/>
     <!-- The topic to get the the AsrSceneGraph messages from. -->

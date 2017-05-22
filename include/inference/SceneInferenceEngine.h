@@ -78,6 +78,11 @@ namespace ProbabilisticSceneRecognition {
      * The model is responsible for loading the scene model from file, collect and manage the evidence and do the inference.
      */
     SceneModelDescription getModel() {return mModel;}
+
+	/**
+	* Bool to decide if difference based inference shall be used
+	*/
+	bool difference_based;
     
   private:
     
