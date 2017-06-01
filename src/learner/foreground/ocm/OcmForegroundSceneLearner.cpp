@@ -127,20 +127,9 @@ namespace ProbabilisticSceneRecognition {
             learner->setPriori(1.0);
         }
 
-        boost::shared_ptr<CombinatorialTrainer> combinatorialTrainer(new CombinatorialTrainer(mSceneObjectLearners, types, mExamplesList));
-        // set the optimized topology as the one to be transformed into the tree to be used for the final result
-        boost::shared_ptr<SceneModel::Topology> optimizedTopology = combinatorialTrainer->runOptimization();
-
-        if (!optimizedTopology)
-            throw std::runtime_error("no valid topology was found.");
-        if (!optimizedTopology->mTree)
-            throw std::runtime_error("the topology selected through combinatorial optimization has no tree associated with it.");
-
-        boost::shared_ptr<SceneModel::TreeNode> optimizedTree = optimizedTopology->mTree;
-        while(optimizedTree->mParent)   // after rearrangement in learning, the pointer points to an inner node (through parent pointers, the whole tree is still intact)
-            optimizedTree = optimizedTree->mParent;
-        SceneModel::FixedTreeTrainer fttrainer(optimizedTree);
-        trainer = fttrainer;
+        CombinatorialTrainer combinatorialTrainer(mSceneObjectLearners, types);
+        combinatorialTrainer.addSceneGraphMessages(mExamplesList);
+        trainer = combinatorialTrainer;
     }
     else throw std::runtime_error("Trainer type " + trainerType + " is invalid. Valid types are tree, fullymeshed, combinatorial_optimization.");
 

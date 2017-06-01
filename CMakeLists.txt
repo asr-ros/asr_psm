@@ -107,7 +107,10 @@ add_executable(learner src/learner.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp)
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialGraphGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialOptimizer.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSetSelection.cpp)
 target_link_libraries(learner
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
@@ -136,7 +139,10 @@ add_executable(learner_batch src/learner_batch.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp)
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialGraphGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialOptimizer.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSetSelection.cpp)
 target_link_libraries(learner_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}

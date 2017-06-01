@@ -23,51 +23,65 @@ void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<ISM::Objec
                                         unsigned int pTestSetCount)
 {
     ros::NodeHandle nodeHandle("~");
-    std::string validTestSetDbFilename, invalidTestSetDbFilename;
-    // Try to get the valid test set database filename:
+    std::string validTestSetDbFilename, invalidTestSetDbFilename, writeValidTestSetsFilename, writeInvalidTestSetsFilename;
+    // Try to get the valid test set source database filename:
     if(!nodeHandle.getParam("valid_test_set_db_filename", validTestSetDbFilename))
         throw std::runtime_error("Please specifiy parameter valid_test_set_db_filename when starting this node.");
-    // Try to get the invalid test set database filename:
+    // Try to get the invalid test set source database filename:
     if(!nodeHandle.getParam("invalid_test_set_db_filename", invalidTestSetDbFilename))
         throw std::runtime_error("Please specifiy parameter invalid_test_set_db_filename when starting this node.");
+    // Try to get the valid test set target database filename:
+    if(!nodeHandle.getParam("write_valid_test_sets_filename", writeValidTestSetsFilename))
+        throw std::runtime_error("Please specifiy parameter write_valid_test_sets_filename when starting this node.");
+    // Try to get the invalid test set target database filename:
+    if(!nodeHandle.getParam("write_invalid_test_sets_filename", writeInvalidTestSetsFilename))
+        throw std::runtime_error("Please specifiy parameter write_invalid_test_sets_filename when starting this node.");
+    mSceneId = pExamplesList[0]->mIdentifier;
 
     // if the file names are empty: generate new test sets.
     if (validTestSetDbFilename == "" || invalidTestSetDbFilename == "")
+    {
         validateSets(generateRandomSets(pExamplesList, pTestSetCount));
+        if (writeValidTestSetsFilename != "")
+            writeTestSetsToFile(writeValidTestSetsFilename, mValidTestSets);
+        if (writeInvalidTestSetsFilename != "")
+            writeTestSetsToFile(writeInvalidTestSetsFilename, mInvalidTestSets);
+    }
     else // get the test sets from the databases
     {
-        mSceneId = pExamplesList[0]->mIdentifier;
         mValidTestSets = loadTestSetsFromFile(validTestSetDbFilename);
         mInvalidTestSets = loadTestSetsFromFile(invalidTestSetDbFilename);
 
         // Take only as many test sets as asked for, according to the fraction of the complete number of test sets each subset represents:
         double fullTestSetCount = mValidTestSets.size() + mInvalidTestSets.size();
-        double validFraction = ((double) mValidTestSets.size()) / fullTestSetCount;
-        double invalidFraction = ((double) mInvalidTestSets.size()) / fullTestSetCount;
-        unsigned int validTestSetCount = std::floor(validFraction * ((double) pTestSetCount));
-        unsigned int invalidTestSetCount = std::floor(invalidFraction * ((double) pTestSetCount));
-        unsigned int sum = validTestSetCount + invalidTestSetCount;
-        // Fill up the smaller subset so that the pTestSetCount is exactly reached:
-        if (sum < pTestSetCount)
+        if (fullTestSetCount > pTestSetCount)
         {
-            if (validTestSetCount < invalidTestSetCount) validTestSetCount += pTestSetCount - sum;
-            else invalidTestSetCount += pTestSetCount - sum;
+            double validFraction = ((double) mValidTestSets.size()) / fullTestSetCount;
+            double invalidFraction = ((double) mInvalidTestSets.size()) / fullTestSetCount;
+            unsigned int validTestSetCount = std::floor(validFraction * ((double) pTestSetCount));
+            unsigned int invalidTestSetCount = std::floor(invalidFraction * ((double) pTestSetCount));
+            unsigned int sum = validTestSetCount + invalidTestSetCount;
+            // Fill up the smaller subset so that the pTestSetCount is exactly reached:
+            if (sum < pTestSetCount)
+            {
+                if (validTestSetCount < invalidTestSetCount) validTestSetCount += pTestSetCount - sum;
+                else invalidTestSetCount += pTestSetCount - sum;
+            }
+            mValidTestSets.resize(validTestSetCount);
+            mInvalidTestSets.resize(invalidTestSetCount);
+            ROS_INFO_STREAM("Reset number of test sets to " << mValidTestSets.size() << " valid and " << mInvalidTestSets.size() << " invalid sets "
+                            << "(" << mValidTestSets.size() + mInvalidTestSets.size() << "/" << pTestSetCount << ")");
         }
-        mValidTestSets.resize(validTestSetCount);
-        mInvalidTestSets.resize(invalidTestSetCount);
-        ROS_INFO_STREAM("Reset number of test sets to " << mValidTestSets.size() << " valid and " << mInvalidTestSets.size() << " invalid sets "
-                        << "(" << mValidTestSets.size() + mInvalidTestSets.size() << "/" << pTestSetCount << ")");
     }
 
     mEvaluator->setValidTestSets(mValidTestSets);    // update with newfound valid test sets
     mEvaluator->setInvalidTestSets(mInvalidTestSets);    // initialize properly
 }
 
-std::vector<std::vector<ISM::ObjectPtr>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
+std::vector<boost::shared_ptr<TestSet>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
 {
-    printDivider();
-    ROS_INFO_STREAM("Generating " << pTestSetCount << " random test sets.");
-    printDivider();
+    mPrintHelper.printAsHeader("Generating " + boost::lexical_cast<std::string>(pTestSetCount) + " random test sets.");
+
     std::random_device rd;
     boost::mt19937  eng;    // Mersenne Twister
     eng.seed(rd());
@@ -76,86 +90,114 @@ std::vector<std::vector<ISM::ObjectPtr>> TestSetGenerator::generateRandomSets(st
 
     ROS_INFO_STREAM("Found " << mTypes.size() << " object types.");
 
-    // Generate all possible relations:
-    std::vector<SceneModel::Relation> allRelations;
-    for (unsigned int i = 0; i < mTypes.size() - 1; i++)
-        for (unsigned int j = i + 1; j < mTypes.size(); j++)
-            allRelations.push_back(SceneModel::Relation(mTypes[i], mTypes[j]));
-
-    std::vector<std::vector<ISM::ObjectPtr>> testSets;
+    std::vector<boost::shared_ptr<TestSet>> testSets;
 
     for (unsigned int i = 0; i < pTestSetCount; i++)
     {
-        std::vector<ISM::ObjectPtr> testSet;
+        boost::shared_ptr<TestSet> testSet(new TestSet());
+
+
         unsigned int randomTimestep = gen() % pExamplesList.size();
         unsigned int randomObjectIndex = gen() % pExamplesList[randomTimestep]->objects.size();
         ISM::ObjectPtr referenceObject = pExamplesList[randomTimestep]->objects[randomObjectIndex];
-        for (ISM::ObjectPtr observation: pExamplesList[randomTimestep]->objects)
+        //setPoseOfObjectRelativeToReference(referenceObject, referenceObject);
+        testSet->mObjectSet->insert(referenceObject);
+
+        for (std::string objectType: mTypes)
         {
-            unsigned int occurs;
-            if (mObjectMissingInTestSetProbability > 1) throw std::runtime_error("parameter object_missing_in_test_set_probability should not be larger than 1.");
-            if (mObjectMissingInTestSetProbability > 0)
-                occurs = gen() % 1 / mObjectMissingInTestSetProbability;   // only with a certain probability:
-            else occurs = 1;
-            if (occurs != 0)                    // object does occur
+            if (objectType == referenceObject->type)
+                continue;
+            else
             {
-                setPoseOfObjectRelativeToReference(observation, referenceObject);
-                testSet.push_back(observation);
+                unsigned int occurs;
+                if (mObjectMissingInTestSetProbability > 1)
+                    throw std::runtime_error("parameter object_missing_in_test_set_probability should not be larger than 1.");
+                if (mObjectMissingInTestSetProbability > 0)
+                    occurs = gen() % (int) ((double) 1.0 / mObjectMissingInTestSetProbability);   // only with a certain probability: object ccurs
+                else occurs = 1;
+
+                if (occurs != 0)             // object does occur
+                {
+                    ISM::ObjectPtr object;
+
+                    unsigned int counter = 0;
+                    while (!object && counter < pExamplesList.size())   // does not iterate over all timesteps; using example list size to scale
+                    {
+                        unsigned int newRandomTimestep = gen() % pExamplesList.size();
+                        for (ISM::ObjectPtr currentObject: pExamplesList[newRandomTimestep]->objects)
+                        {
+                            if (currentObject->type == objectType)
+                            {
+                                object = currentObject;
+                                break;
+                            }
+                        }
+                        counter++;
+                    }
+
+                    if (!object)
+                        throw std::runtime_error("In TestSetGenerator::generateTestSets(): Failed to find object of type " + objectType + " in evidence list.");
+                    //setPoseOfObjectRelativeToReference(object, referenceObject);
+                    testSet->mObjectSet->insert(object);
+                }
             }
         }
+
         testSets.push_back(testSet);
     }
 
     return testSets;
 }
 
-void TestSetGenerator::validateSets(std::vector<std::vector<ISM::ObjectPtr>> pTestSets)
+void TestSetGenerator::validateSets(std::vector<boost::shared_ptr<TestSet>> pTestSets)
 {
     // Use fully meshed topology to calculate probabilities:
     if (!mFullyMeshedTopology->mTree) throw std::runtime_error("in TestSetGenerator::validateSets(): fully meshed topology has no valid tree.");
     // set all tests as valid (so that fully meshed topology, which cannot have false positives, gets its evaluation result set already)
     mEvaluator->setValidTestSets(pTestSets);
-    mEvaluator->setInvalidTestSets(std::vector<std::vector<ISM::ObjectPtr>>());
+    mEvaluator->setInvalidTestSets(std::vector<boost::shared_ptr<TestSet>>());
     double recognitionThreshold = mEvaluator->getRecognitionThreshold();    // save actual recognition threshold.
     mEvaluator->setRecognitionThreshold(-1);    // so every test set gets recognized
 
     ROS_INFO_STREAM("Recognizing test sets with fully meshed topology.");
-    std::vector<double> testSetProbabilities;   // Needs to be in the same order as the testSets.
-    std::vector<double> invalidTestSetProbabilities;
-    mEvaluator->evaluate(mFullyMeshedTopology, testSetProbabilities, invalidTestSetProbabilities);
+    mEvaluator->evaluate(mFullyMeshedTopology, true);
     if (mFullyMeshedTopology->mFalsePositives != 0)
         throw std::runtime_error("In TestSetGenerator::validateSets(): Error when evaluating fully meshed topology: has false positives, should have none");
-    if (!invalidTestSetProbabilities.empty())
+
+    if (!mEvaluator->getInvalidTestSets().empty())
         throw std::runtime_error("In TestSetGenerator::validateSets(): Error when evaluating fully meshed topology: found invalid test sets when those should not have been initialized yet.");
 
     double maxProbability = 0;
-    double minProbability = 1;  // Minumum probability greater than zero. set to possible maximum so it will be lowered in each case
+    double minProbability = 2;  // Minumum probability greater than zero. Set higher than possible maximum so it will be lowered in each case, and if invalid probability 2 is returned, this indicates that no probability > 0 was found.
     unsigned int zeroSets = 0;
-    for (double probability: testSetProbabilities)
+    pTestSets = mEvaluator->getValidTestSets();
+    for (boost::shared_ptr<TestSet> testSet: pTestSets)
     {
+        double probability = testSet->mFullyMeshedProbability;
         if (probability > maxProbability) maxProbability = probability;
         if (probability == 0) zeroSets++;
         else if (probability < minProbability) minProbability = probability;    // set lowest non-zero probability as new minimum
     }
 
-    std::vector<std::vector<ISM::ObjectPtr>> validTestSets;
-    std::vector<std::vector<ISM::ObjectPtr>> invalidTestSets;
+    std::vector<boost::shared_ptr<TestSet>> validTestSets;
+    std::vector<boost::shared_ptr<TestSet>> invalidTestSets;
 
-    for (unsigned int i = 0; i < testSetProbabilities.size(); i++)
+    for (unsigned int i = 0; i < pTestSets.size(); i++)
     {
-        if (testSetProbabilities[i] > recognitionThreshold)
+        if (pTestSets[i]->mFullyMeshedProbability > recognitionThreshold)
             validTestSets.push_back(pTestSets[i]);
         else invalidTestSets.push_back(pTestSets[i]);
     }
 
-    printDivider();
-    ROS_INFO_STREAM("Test set creation complete.");
-    ROS_INFO_STREAM("Maximum probability: " << maxProbability);
-    ROS_INFO_STREAM("Minimum probability greater than zero: " << minProbability);
-    ROS_INFO_STREAM("Recognition threshold: " << recognitionThreshold);
-    ROS_INFO_STREAM("Found " << validTestSets.size() << " valid and " << invalidTestSets.size() << " invalid test sets.");
-    ROS_INFO_STREAM(zeroSets << " test sets have probability 0.");
-    printDivider();
+    mPrintHelper.addLine("Test set creation complete.");
+    mPrintHelper.addLine("Maximum probability: " + boost::lexical_cast<std::string>(maxProbability));
+    if (minProbability == 2)
+        minProbability = std::numeric_limits<double>::quiet_NaN();
+    mPrintHelper.addLine("Minimum probability greater than zero: " + boost::lexical_cast<std::string>(minProbability));
+    mPrintHelper.addLine("Recognition threshold: " + boost::lexical_cast<std::string>(recognitionThreshold));
+    mPrintHelper.addLine("Found " + boost::lexical_cast<std::string>(validTestSets.size()) + " valid and " + boost::lexical_cast<std::string>(invalidTestSets.size()) + " invalid test sets.");
+    mPrintHelper.addLine(boost::lexical_cast<std::string>(zeroSets) + " test sets have probability 0.");
+    mPrintHelper.printAsHeader();
 
     mEvaluator->setRecognitionThreshold(recognitionThreshold);  // set actual recognition threshold again
 
@@ -207,29 +249,78 @@ void TestSetGenerator::setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject
     pObject.sampledPoses = newPoses;*/
 }
 
-std::vector<std::vector<ISM::ObjectPtr>> TestSetGenerator::loadTestSetsFromFile(const std::string& filename)
+std::vector<boost::shared_ptr<TestSet>> TestSetGenerator::loadTestSetsFromFile(const std::string& pFilename)
 {
+    ROS_INFO_STREAM("Loading test sets from file " << pFilename);
     // compare ISM CombinatorialTrainer
-    ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(filename));
-    std::vector<std::string> patternNames = localTableHelper->getRecordedPatternNames();
-    if (std::find(patternNames.begin(), patternNames.end(), mSceneId) == patternNames.end())
-        throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + filename + "): scene id " + mSceneId + " is not a valid pattern in the database.");
-
-    std::vector<ISM::ObjectSetPtr> loadedTestSets;
-
-    loadedTestSets = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
-
-    std::vector<std::vector<ISM::ObjectPtr>> testSets;
-    for (ISM::ObjectSetPtr loadedTestSet: loadedTestSets)
+    try
     {
-        std::vector<ISM::ObjectPtr> testSet;
-        for (ISM::ObjectPtr object: loadedTestSet->objects)
-            testSet.push_back(object);
-        testSets.push_back(testSet);
-    }
-    ROS_INFO_STREAM("Loaded " << testSets.size() << " test sets from file " << filename);
+        ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(pFilename));
+        std::vector<std::string> patternNames = localTableHelper->getRecordedPatternNames();
+                                        std::string names;
+                                        for (std::string pattern: patternNames)
+                                            names += " " +  pattern;
+                                        ROS_INFO_STREAM("Found " << patternNames.size() << " patterns:" << names << ". Scene id is " << mSceneId);
+        if (std::find(patternNames.begin(), patternNames.end(), mSceneId) == patternNames.end())
+            throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + pFilename + "): scene id " + mSceneId + " is not a valid pattern in the database.");
 
-    return testSets;
+        if (!localTableHelper->getRecordedPattern(mSceneId))
+            throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + pFilename + "): loading recorded pattern for scene id " + mSceneId + " returned null pointer.");
+
+        std::vector<ISM::ObjectSetPtr> loadedTestSets;
+        loadedTestSets = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
+
+        std::vector<boost::shared_ptr<TestSet>> testSets;
+        for (ISM::ObjectSetPtr loadedTestSet: loadedTestSets)
+        {
+            if (!loadedTestSet)
+                throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + pFilename + "): loaded a null pointer.");
+            boost::shared_ptr<TestSet> testSet(new TestSet());
+            for (ISM::ObjectPtr object: loadedTestSet->objects)
+                testSet->mObjectSet->insert(object);
+            testSets.push_back(testSet);
+        }
+        ROS_INFO_STREAM("Loaded " << testSets.size() << " test sets.");
+
+        return testSets;
+    }
+    catch (soci::soci_error& e)
+    {
+        throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(): soci error while trying to write to database file.\nProbably the file path does not exist.");
+    }
+}
+
+void TestSetGenerator::writeTestSetsToFile(const std::string& pFilename, const std::vector<boost::shared_ptr<TestSet>>& pTestSets)
+{
+    ROS_INFO_STREAM("Writing test sets to file " << pFilename);
+    if (!pTestSets.empty())
+    {
+        try
+        {
+            ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(pFilename));
+            localTableHelper->dropTables();
+            localTableHelper->createTablesIfNecessary();
+            localTableHelper->insertRecordedPattern(mSceneId);
+            std::vector<ISM::ObjectSetPtr> objectSets;
+            for (boost::shared_ptr<TestSet> testSet: pTestSets)
+            {
+                ISM::ObjectSetPtr objectSet(new ISM::ObjectSet());
+                for (ISM::ObjectPtr object: testSet->mObjectSet->objects)
+                    objectSet->insert(object);
+                objectSets.push_back(objectSet);
+            }
+
+            for (unsigned int i = 0; i < objectSets.size(); ++i)
+                localTableHelper->insertRecordedObjectSet(objectSets[i], mSceneId);
+
+        }
+        catch (soci::soci_error& e)
+        {
+            throw std::runtime_error("In TestSetGenerator::writeTestSetsToFile(): soci error while trying to write to database file " + pFilename
+                                 + "\nProbably the file path does not exist.");
+        }
+    }
+    ROS_INFO_STREAM("Wrote " << pTestSets.size() << " test sets.");
 }
 
 }

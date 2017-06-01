@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2017, Gaßner Nikolai, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -15,30 +15,75 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.h"
+#pragma once
+
+#include <string>
 
 namespace ProbabilisticSceneRecognition {
 
-  CombinatorialTrainer::CombinatorialTrainer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
-                                             std::vector<std::string> pObjectTypes)
-      : SceneModel::AbstractTrainer()
-  {
-    std::cout << "Learning tree with combinatorial optimization." << std::endl;
+/**
+ * This class offers functionality to help printing to the screen.
+ */
+class PrintHelper {
 
-    // Initilaize a source that translates evidence messages.
-    examplesListSource = boost::shared_ptr<SceneModel::ExamplesListSource>(new SceneModel::ExamplesListSource());
-    source = examplesListSource;
+public:
+    /**
+     * Constructor.
+     * @param pMarker    Symbol used to mark output with dividers consisting of it.
+     */
+    PrintHelper(char pMarker)
+    {
+        mDivider = std::string(60, pMarker);
+    }
 
-    // Initialize the generator for building the tree using combinatorial optimization.
-    boost::shared_ptr<CombinatorialGraphGenerator> gen(new CombinatorialGraphGenerator(pLearners, pObjectTypes));
-    generator = gen;
+    /**
+     * Destructor.
+     */
+    ~PrintHelper() { }
 
-    std::cout << "Combinatorial optimization prepared." << std::endl;
-  }
+    /**
+     * Add a line to print.
+     * @param pLine to print.
+     */
+    void addLine(const std::string& pLine)
+    {
+        mLines.push_back(pLine);
+    }
 
-  void CombinatorialTrainer::addSceneGraphMessages(std::vector<ISM::ObjectSetPtr> pMessages)
-  {
-      examplesListSource->addSceneGraphMessage(pMessages);
-  }
+    /**
+     * Print added lines as header, between two dividers, and reset lines.
+     */
+    void printAsHeader()
+    {
+        ROS_INFO_STREAM(mDivider);
+        for (std::string line: mLines)
+            ROS_INFO_STREAM(line);
+        ROS_INFO_STREAM(mDivider);
+        mLines = std::vector<std::string>(); // reset mLines.
+    }
+
+    /**
+     * Print a single line as a header.
+     * @param pLine
+     */
+    void printAsHeader(const std::string& pLine)
+    {
+        addLine(pLine);
+        printAsHeader();
+    }
+
+private:
+
+    /**
+     * Divider used to mark output.
+     */
+    std::string mDivider;
+
+    /**
+     * Lines to print.
+     */
+    std::vector<std::string> mLines;
+
+};
 
 }

@@ -21,8 +21,10 @@ namespace ProbabilisticSceneRecognition {
 
 Evaluator::Evaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                      std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold):
-    mExamplesList(pExamplesList), mLearners(pLearners), mRecognitionThreshold(pRecognitionThreshold), mRunNumber(0)
+    AbstractEvaluator(), mExamplesList(pExamplesList), mLearners(pLearners), mRunNumber(0), mPrintHelper('-')
 {
+    mRecognitionThreshold = pRecognitionThreshold;
+
     ros::NodeHandle nodeHandle("~");
 
     // Try to get the name of the inference algorithm.
@@ -79,22 +81,14 @@ Evaluator::~Evaluator() {
     }
 }
 
-void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology)
-{
-    std::vector<double> v, i; // Get discarded afterwards
-    evaluate(pTopology, v, i);
-}
-
-void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
-                         std::vector<double>& pValidTestSetProbabilities, std::vector<double>& pInvalidTestSetProbabilities)
+bool Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool pFullyMeshed)
 {
     if (!pTopology) throw std::runtime_error("In Evaluator::evaluate(): topology from argument is null pointer.");
 
-    if (pTopology->mEvaluated) return;
+    if (pTopology->mEvaluated) return false;    // no new evaluation needed
 
-    printDivider();
-    ROS_INFO_STREAM("Evaluating topology " << pTopology->mIdentifier << ":");
-    printDivider();
+    mPrintHelper.printAsHeader("Evaluating topology " + pTopology->mIdentifier + ":");
+
     if (!pTopology->mTree) throw std::runtime_error("In Evaluator::evaluate(): topology from argument has no tree associated with it.");
 
     update(pTopology->mTree);
@@ -103,38 +97,25 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
 
     unsigned int falseNegatives = 0;
     unsigned int falsePositives = 0;
-    std::vector<double> validTestSetProbabilities;
-    std::vector<double> invalidTestSetProbabilities;
+    double recognitionRuntimeSum = 0;
 
-    struct timeval start;
-    struct timeval end;
-
-    gettimeofday(&start, NULL); // get start time
-    for (std::vector<ISM::ObjectPtr> valid: mValidTestSets)
+    for (boost::shared_ptr<TestSet> valid: mValidTestSets)
     {
-        double probability = getProbability(valid);
-        validTestSetProbabilities.push_back(probability);
+        std::pair<double, double> recognitionResult = recognize(valid, pFullyMeshed);
+        if (recognitionResult.first <= mRecognitionThreshold) falseNegatives++; // did not recognize a valid scene.
+        recognitionRuntimeSum += recognitionResult.second;
     }
 
-    for (std::vector<ISM::ObjectPtr> invalid: mInvalidTestSets)
+    for (boost::shared_ptr<TestSet> invalid: mInvalidTestSets)
     {
-        double probability = getProbability(invalid); // Foreground scene probability of test set for partial model
-        invalidTestSetProbabilities.push_back(probability);
+        std::pair<double, double> recognitionResult = recognize(invalid, pFullyMeshed);
+        if (recognitionResult.first > mRecognitionThreshold) falsePositives++; // did recognize an invalid scene.
+        recognitionRuntimeSum += recognitionResult.second;
     }
-    gettimeofday(&end, NULL);   // get the stop time
 
-    double recognitionRuntime, seconds, useconds;
-    seconds = end.tv_sec - start.tv_sec;
-    useconds = end.tv_usec - start.tv_usec;
-    recognitionRuntime = seconds + useconds / 1000000;
-    double avgRuntime = recognitionRuntime / (mValidTestSets.size() + mInvalidTestSets.size());
+    double avgRuntime = recognitionRuntimeSum / (mValidTestSets.size() + mInvalidTestSets.size());
 
-    // Output and checks are handled outside of the calculation to not interfere with the runtime measuring
-    for (unsigned int i = 0; i < mValidTestSets.size(); i++)
-        if (validTestSetProbabilities[i] <= mRecognitionThreshold) falseNegatives++;   // did not recognize a valid scene.
-    for (unsigned int i = 0; i < mInvalidTestSets.size(); i++)
-        if (invalidTestSetProbabilities[i] > mRecognitionThreshold) falsePositives++;   // did recognize an invalid scene.
-
+    ROS_INFO_STREAM("Evaluated topology " << pTopology->mIdentifier << " against " << mValidTestSets.size() << " valid and " << mInvalidTestSets.size() << " invalid test sets.");
     ROS_INFO_STREAM("Evaluation result: " << falsePositives << " false positives, " << falseNegatives << " false negatives, " << avgRuntime << "s average recognition runtime.");
 
     pTopology->mFalsePositives = falsePositives;
@@ -144,14 +125,36 @@ void Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
 
     xmlOutput(pTopology);
 
-    pValidTestSetProbabilities = validTestSetProbabilities;
-    pInvalidTestSetProbabilities = invalidTestSetProbabilities;
+    return true;    // was evaluated.
 }
 
-double Evaluator::getProbability(const std::vector<ISM::ObjectPtr>& pEvidence)
+std::pair<double, double> Evaluator::recognize(boost::shared_ptr<TestSet> pEvidence, bool pFullyMeshed)
+{
+    struct timeval start;
+    struct timeval end;
+
+    gettimeofday(&start, NULL); // get start time
+    double probability = getProbability(pEvidence);
+    gettimeofday(&end, NULL);   // get the stop time
+
+    double recognitionRuntime, seconds, useconds;
+    seconds = end.tv_sec - start.tv_sec;
+    useconds = end.tv_usec - start.tv_usec;
+    recognitionRuntime = seconds + useconds / 1000000;
+
+    if (pFullyMeshed)
+    {
+        pEvidence->mFullyMeshedProbability = probability;
+        pEvidence->mFullyMeshedRecognitionRuntime = recognitionRuntime;
+    }
+
+    return std::pair<double, double>(probability, recognitionRuntime);
+}
+
+double Evaluator::getProbability(boost::shared_ptr<TestSet> pEvidence)
 {
     std::vector<ISM::Object> evidence;
-    for (ISM::ObjectPtr objPtr: pEvidence)
+    for (ISM::ObjectPtr objPtr: pEvidence->mObjectSet->objects)
         evidence.push_back(*objPtr);
     mForegroundSceneContent.update(evidence, mRuntimeLogger);
     if (mVisualize)
@@ -169,9 +172,7 @@ void Evaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
     // reset mModel:
     mModel = boost::property_tree::ptree();
 
-    printDivider();
-    ROS_INFO_STREAM("Starting to learn OCM foreground model:");
-    printDivider();
+    mPrintHelper.printAsHeader("Starting to learn OCM foreground model:");
 
     // Now just forward all examples for the scene to the scene object learners and save partial model to property tree.
     for (boost::shared_ptr<SceneObjectLearner> learner: mLearners)
@@ -179,9 +180,8 @@ void Evaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
         learner->learn(mExamplesList, pTree);
         learner->save(mModel);
     }
-    printDivider();
-    ROS_INFO_STREAM("Learning complete. Preparing inference.");
-    printDivider();
+
+    mPrintHelper.printAsHeader("Learning complete. Preparing inference.");
 
     // Reset and set up foreground scene content:
     mForegroundSceneContent = ForegroundSceneContent();

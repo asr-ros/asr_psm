@@ -18,7 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #pragma once
 
 #include <trainer/TopologyTreeTrainer.h>
-#include <topology_generator/Topology.h>
+#include <topology_creator/Topology.h>
 
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -26,15 +26,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ForegroundSceneLearner.h"
 #include "learner/foreground/ocm/SceneObjectLearner.h"
+#include "learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.h"
 
 #include "inference/model/foreground/ForegroundSceneContent.h"
+
+#include "helper/PrintHelper.h"
+
 
 namespace ProbabilisticSceneRecognition {
 
 /**
  * Tests learned models of topologies against valid and invalid test sets.
  */
-class Evaluator {
+class Evaluator: public AbstractEvaluator {
 public:
 
     /**
@@ -54,60 +58,28 @@ public:
     /**
      * Evaluate model learned on topology against test sets, write results to topology.
      * @param pTopology to evaluate.
+     * @param pFullyMeshed  whether the topology to evaluate is the fully meshed one.
+     * @return  whether a new evaluation was neccessary.
      */
-    void evaluate(boost::shared_ptr<SceneModel::Topology> pTopology);
-    /**
-     * Evaluate model learned on topology against test sets, write results to topology.
-     * @param pTopology             pTopology to evaluate.
-     * @param pValidTestSetProbabilities list of probabilities for each valid test set found during evaluation.
-     * @param pInvalidTestSetProbabilities list of probabilities for each invalid test set found during evaluation.
-     */
-    void evaluate(boost::shared_ptr<SceneModel::Topology> pTopology,
-                  std::vector<double>& pValidTestSetProbabilities, std::vector<double>& pInvalidTestSetProbabilities);
-
-    /**
-     * Set valid test sets.
-     * @param pValidTestSets    valid test sets to set.
-     */
-    void setValidTestSets(const std::vector<std::vector<ISM::ObjectPtr>>& pValidTestSets)
-    {
-        mValidTestSets = pValidTestSets;
-    }
-
-    /**
-     * Set invalid test sets.
-     * @param pInvalidTestSets  invalid test sets to set.
-     */
-    void setInvalidTestSets(const std::vector<std::vector<ISM::ObjectPtr>>& pInvalidTestSets)
-    {
-        mInvalidTestSets = pInvalidTestSets;
-    }
-
-    /**
-     * Set recognition threshold.
-     * @param pRecognitionThreshold recognition threshold to set.
-     */
-    void setRecognitionThreshold(double pRecognitionThreshold)
-    {
-        mRecognitionThreshold = pRecognitionThreshold;
-    }
-
-    /**
-     * Get recognition threshold.
-     * @return the recognition threshold.
-     */
-    double getRecognitionThreshold()
-    {
-        return mRecognitionThreshold;
-    }
+    bool evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool pFullyMeshed = false);
 
 private:
+
+    /**
+     * Runs recognition on evidence and returns probability recognition runtime.
+     * Also writes recognition runtime and probability to TestSet if the topology used to evaluate against is the fully meshed one.
+     * @param pEvidence the TestSet to recognize
+     * @param pFullyMeshed whether the topology used to recognize is the fully meshed one, and whether to store recognition runtime and probability in TestSet
+     * @return the probability and recognition runtime for this test set.
+     */
+    std::pair<double, double> recognize(boost::shared_ptr<TestSet> pEvidence, bool pFullyMeshed = false);
+
     /**
      * Returns the probability whether the given evidence represents the scene represented by the last learned model.
      * @param pEvidence the object observations to calculate the probability for.
      * @return the probability whether the given evidence represents the scene represented by the last learned model.
      */
-    double getProbability(const std::vector<ISM::ObjectPtr>& pEvidence);
+    double getProbability(boost::shared_ptr<TestSet> pEvidence);
 
     /**
      * Update the model to represent the given tree.
@@ -122,31 +94,9 @@ private:
     void xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology);
 
     /**
-     * Print a divider to ros info stream to divide and mark selected output.
-     */
-    void printDivider()
-    {
-        ROS_INFO_STREAM("-----------------------------------------------------------");
-    }
-
-    /**
-     * The test sets which represent the considered scene.
-     */
-    std::vector<std::vector<ISM::ObjectPtr>> mValidTestSets;
-    /**
-     * The test sets that resemble but do not represent the considered scene.
-     */
-    std::vector<std::vector<ISM::ObjectPtr>> mInvalidTestSets;
-
-    /**
      * Learners to learn models to test.
      */
     std::vector<boost::shared_ptr<SceneObjectLearner>> mLearners;
-
-    /**
-     * Threshold above which (>) a probability is seen as high enough to represent a scene has been recognized.
-     */
-    double mRecognitionThreshold;
 
     /**
      * A logger for the runtimes for the scene objects.
@@ -221,6 +171,11 @@ private:
      * Visualizer for the ForegroundSceneContent.
      */
     boost::shared_ptr<Visualization::ProbabilisticSceneVisualization> mVisualizer;
+
+    /**
+     * Class used to print lines as headers, marked with dividers.
+     */
+    PrintHelper mPrintHelper;
 };
 
 }

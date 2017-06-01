@@ -151,7 +151,7 @@ namespace ProbabilisticSceneRecognition {
             {
                 unsigned int offset  = i * mNumberOfRuns + run;
 
-                if(runExpectationMaximization(mData,mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset], useGenericMatrices))
+                if(runExpectationMaximization(mData, mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset], useGenericMatrices))
                 {
                     learningCycleCompleted = true;
                     break;

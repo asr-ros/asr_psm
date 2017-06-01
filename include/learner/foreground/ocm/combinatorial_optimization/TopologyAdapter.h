@@ -17,7 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #pragma once
 
-#include <topology_generator/Topology.h>
+#include <topology_creator/Topology.h>
 #include <ISM/combinatorial_trainer/Topology.hpp>
 
 namespace ProbabilisticSceneRecognition

@@ -21,9 +21,9 @@ namespace ProbabilisticSceneRecognition {
 
 TopologyManager::TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                 const std::vector<std::string>& pObjectTypes,
-                boost::shared_ptr<SceneModel::TopologyGenerator> pTopologyGenerator,
-                boost::shared_ptr<Evaluator> pEvaluator):
-    mEvaluator(pEvaluator), mTopologyGenerator(pTopologyGenerator), mExamplesList(pExamplesList), mObjectTypes(pObjectTypes), mHistoryIndex(0)
+                boost::shared_ptr<SceneModel::AbstractTopologyCreator> pTopologyCreator,
+                boost::shared_ptr<AbstractEvaluator> pEvaluator):
+    mEvaluator(pEvaluator), mTopologyCreator(pTopologyCreator), mExamplesList(pExamplesList), mObjectTypes(pObjectTypes), mHistoryIndex(0), mPrintHelper('#')
 {
     ros::NodeHandle nodeHandle("~");
 
@@ -71,8 +71,8 @@ bool TopologyManager::hasNextNeighbour()
 
 void TopologyManager::setReferenceInstance(boost::shared_ptr<SceneModel::Topology> instance)
 {
-    if (!mTopologyGenerator) throw std::runtime_error("In TopologyManager::setReferenceInstance(): TopologyGenerator not initialized.");
-    std::vector<boost::shared_ptr<SceneModel::Topology>> allNeighbours = mTopologyGenerator->generateNeighbours(instance);
+    if (!mTopologyCreator) throw std::runtime_error("In TopologyManager::setReferenceInstance(): TopologyCreator not initialized.");
+    std::vector<boost::shared_ptr<SceneModel::Topology>> allNeighbours = mTopologyCreator->generateNeighbours(instance);
     std::vector<boost::shared_ptr<SceneModel::Topology>> selectedNeighbours;
     for (boost::shared_ptr<SceneModel::Topology> neighbour: allNeighbours)
     {
@@ -110,8 +110,8 @@ void TopologyManager::setReferenceInstance(boost::shared_ptr<SceneModel::Topolog
 
 boost::shared_ptr<SceneModel::Topology> TopologyManager::getFullyMeshedTopology()
 {
-    if (!mTopologyGenerator) throw std::runtime_error("In TopologyManager::getFullyMeshedTopology(): TopologyGenerator not initialized.");
-    boost::shared_ptr<SceneModel::Topology> fullyMeshed = mTopologyGenerator->generateFullyMeshedTopology();
+    if (!mTopologyCreator) throw std::runtime_error("In TopologyManager::getFullyMeshedTopology(): TopologyCreator not initialized.");
+    boost::shared_ptr<SceneModel::Topology> fullyMeshed = mTopologyCreator->generateFullyMeshedTopology();
     if (mSeenTopologies[fullyMeshed->mIdentifier])
         return mSeenTopologies[fullyMeshed->mIdentifier];   // only set up tree once
     makeTree(fullyMeshed);
@@ -122,8 +122,8 @@ boost::shared_ptr<SceneModel::Topology> TopologyManager::getFullyMeshedTopology(
 
 std::vector<boost::shared_ptr<SceneModel::Topology>> TopologyManager::getStarTopologies()
 {
-    if (!mTopologyGenerator) throw std::runtime_error("In TopologyManager::getStarTopologies(): TopologyGenerator not initialized.");
-    std::vector<boost::shared_ptr<SceneModel::Topology>> starTopologies = mTopologyGenerator->generateStarTopologies();
+    if (!mTopologyCreator) throw std::runtime_error("In TopologyManager::getStarTopologies(): TopologyCreator not initialized.");
+    std::vector<boost::shared_ptr<SceneModel::Topology>> starTopologies = mTopologyCreator->generateStarTopologies();
     for (unsigned int i = 0; i < starTopologies.size(); i++)
     {
         boost::shared_ptr<SceneModel::Topology> star = starTopologies[i];
@@ -139,8 +139,8 @@ std::vector<boost::shared_ptr<SceneModel::Topology>> TopologyManager::getStarTop
 
 boost::shared_ptr<SceneModel::Topology> TopologyManager::getRandomTopology()
 {
-    if (!mTopologyGenerator) throw std::runtime_error("In TopologyManager::getRandomTopology(): TopologyGenerator not initialized.");
-    boost::shared_ptr<SceneModel::Topology> randomTopology = mTopologyGenerator->generateRandomTopology();
+    if (!mTopologyCreator) throw std::runtime_error("In TopologyManager::getRandomTopology(): TopologyCreator not initialized.");
+    boost::shared_ptr<SceneModel::Topology> randomTopology = mTopologyCreator->generateRandomTopology();
     if (mSeenTopologies[randomTopology->mIdentifier])
         return mSeenTopologies[randomTopology->mIdentifier];   // only set up tree once
     makeTree(randomTopology);
@@ -151,9 +151,9 @@ boost::shared_ptr<SceneModel::Topology> TopologyManager::getRandomTopology()
 
 void TopologyManager::makeTree(boost::shared_ptr<SceneModel::Topology> pTopology)
 {
-    printDivider();
-    ROS_INFO_STREAM("Generating tree from topology " << pTopology->mIdentifier);
-    printDivider();
+
+    mPrintHelper.printAsHeader("Generating tree from topology " + pTopology->mIdentifier);
+
     SceneModel::TopologyTreeTrainer tttrainer(pTopology->mRelations);
     tttrainer.addSceneGraphMessages(mExamplesList);
 
@@ -249,7 +249,7 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
                 std::string padding = "";
                 if (i < 10) padding += "0";
                 if (i < 100) padding += "0";
-                std::string title = " step " + padding + std::to_string(i) + ": ";
+                std::string title = " step " + padding + boost::lexical_cast<std::string>(i) + ": ";
                 documentation << thirddivider << title << thirddivider << std::endl;
 
                 std::vector<std::pair<boost::shared_ptr<SceneModel::Topology>, bool>> step = mHistory[i];

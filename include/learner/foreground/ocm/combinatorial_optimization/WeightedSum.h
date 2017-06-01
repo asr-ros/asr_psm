@@ -20,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ros/ros.h>
 
 #include <ISM/combinatorial_optimization/CostFunction.hpp>
-#include <topology_generator/Topology.h>
+#include <topology_creator/Topology.h>
 
 namespace ProbabilisticSceneRecognition {
 

@@ -17,8 +17,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #pragma once
 
-#include <topology_generator/Topology.h>
-#include <topology_generator/TopologyGenerator.h>
+#include <topology_creator/Topology.h>
+#include <topology_creator/TopologyCreator.h>
 
 #include <ISM/combinatorial_optimization/NeighbourhoodFunction.hpp>
 #include <ISM/utility/SVGHelper.hpp>
@@ -26,6 +26,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.h"
+
+#include "helper/PrintHelper.h"
 
 namespace ProbabilisticSceneRecognition {
 
@@ -40,13 +42,13 @@ public:
     /**
      * Constructor.
      * @param pExamplesList         List of object evidence used as basis of the topologies.
-     * @param pTopologyGenerator    Generator creating the topologies.
+     * @param pTopologyCreator    Generator creating the topologies.
      * @param pEvaluator            Evaluator to evaluate the topologies.
      */
     TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                     const std::vector<std::string>& pObjectTypes,
-                    boost::shared_ptr<SceneModel::TopologyGenerator> pTopologyGenerator,
-                    boost::shared_ptr<Evaluator> pEvaluator);
+                    boost::shared_ptr<SceneModel::AbstractTopologyCreator> pTopologyCreator,
+                    boost::shared_ptr<AbstractEvaluator> pEvaluator);
 
     /**
      * Desctructor.
@@ -105,14 +107,6 @@ public:
 private:
 
     /**
-     * Print a divider to ros info stream to divide and mark selected output.
-     */
-    void printDivider()
-    {
-        ROS_INFO_STREAM("###########################################################");
-    }
-
-    /**
      * List of all unvisited neighbours of current reference topology.
      */
     std::vector<boost::shared_ptr<SceneModel::Topology>> mNeighbours;
@@ -124,11 +118,11 @@ private:
     /**
      * Evaluator to evaluate the topologies.
      */
-    boost::shared_ptr<Evaluator> mEvaluator;
+    boost::shared_ptr<AbstractEvaluator> mEvaluator;
     /**
      * @brief Generator creating the topologies.
      */
-    boost::shared_ptr<SceneModel::TopologyGenerator> mTopologyGenerator;
+    boost::shared_ptr<SceneModel::AbstractTopologyCreator> mTopologyCreator;
     /**
      * List of object evidence used as basis of the topologies.
      */
@@ -170,6 +164,11 @@ private:
      * Whether to revisit topologies already seen in this optimization run.
      */
     bool mRevisitTopologies;
+
+    /**
+     * Class used to print lines as headers, marked with dividers.
+     */
+    PrintHelper mPrintHelper;
 };
 
 }

@@ -26,9 +26,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/utility/TableHelper.hpp>
 #include <ISM/common_type/ObjectSet.hpp>
 
-#include <topology_generator/TopologyGenerator.h>
+#include <topology_creator/TopologyCreator.h>
 
 #include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
+
+#include "helper/PrintHelper.h"
 
 namespace ProbabilisticSceneRecognition {
 /**
@@ -44,9 +46,11 @@ public:
      * @param pFullyMeshedTopology                  fully meshed topology used to validate test sets.
      * @param pObjectMissingInTestSetProbability    probability with which an object is missing from a test set.
      */
-    TestSetGenerator(boost::shared_ptr<Evaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology,
+    TestSetGenerator(boost::shared_ptr<AbstractEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology,
                      double pObjectMissingInTestSetProbability):
-        mEvaluator(pEvaluator), mTypes(pObjectTypes), mFullyMeshedTopology(pFullyMeshedTopology), mObjectMissingInTestSetProbability(pObjectMissingInTestSetProbability) { }
+        mEvaluator(pEvaluator), mTypes(pObjectTypes), mFullyMeshedTopology(pFullyMeshedTopology), mObjectMissingInTestSetProbability(pObjectMissingInTestSetProbability),
+        mPrintHelper('+')
+    { }
 
     /**
      * Desctructor.
@@ -65,23 +69,23 @@ private:
     /**
      * The test sets which represent the considered scene.
      */
-    std::vector<std::vector<ISM::ObjectPtr>> mValidTestSets;
+    std::vector<boost::shared_ptr<TestSet>> mValidTestSets;
     /**
      * The test sets that resemble but do not represent the considered scene.
      */
-    std::vector<std::vector<ISM::ObjectPtr>> mInvalidTestSets;
+    std::vector<boost::shared_ptr<TestSet>> mInvalidTestSets;
 
     /**
      * Generate random test sets.
      * @param pExamplesList list of object observations serving as basis of the test sets.
      * @param pTestSetCount how many test sets to generate.
      */
-    std::vector<std::vector<ISM::ObjectPtr>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
+    std::vector<boost::shared_ptr<TestSet>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
     /**
      * Validate whether test sets represent scene.
      * @param pTestSets the test sets to validate.
      */
-    void validateSets(std::vector<std::vector<ISM::ObjectPtr>> pTestSets);
+    void validateSets(std::vector<boost::shared_ptr<TestSet>> pTestSets);
 
     /**
      * Set the pose of a given object relative to a reference object.
@@ -95,20 +99,19 @@ private:
      * @param filename  of the database file.
      * @return the test sets loaded from the file.
      */
-    std::vector<std::vector<ISM::ObjectPtr>> loadTestSetsFromFile(const std::string& filename);
+    std::vector<boost::shared_ptr<TestSet>> loadTestSetsFromFile(const std::string& pFilename);
 
     /**
-     * Print a divider to ros info stream to divide and mark selected output.
+     * Write generated tets sets to database file.
+     * @param filename  of the database file.
+     * @param testSets  the test sets to write to file
      */
-    void printDivider()
-    {
-        ROS_INFO_STREAM("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    }
+    void writeTestSetsToFile(const std::string& pFilename, const std::vector<boost::shared_ptr<TestSet>>& pTestSets);
 
     /**
      * Evaluator used to validate test sets.
      */
-    boost::shared_ptr<Evaluator> mEvaluator;
+    boost::shared_ptr<AbstractEvaluator> mEvaluator;
     /**
      * Types of objects appearing in test sets (once each).
      */
@@ -125,6 +128,11 @@ private:
      * ID of the scene to be learned.
      */
     std::string mSceneId;
+
+    /**
+     * Class used to print lines as headers, marked with dividers.
+     */
+    PrintHelper mPrintHelper;
 };
 
 }

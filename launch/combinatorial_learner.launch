@@ -5,7 +5,7 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
   <node name="js_probabilistic_scene_learner_and_inference" pkg="asr_psm" type="learner" output="screen">
     <!-- The list of basg files containing scene graphs that should be used for learning. -->
     <rosparam param="input_db_file">
-    /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/Scenes/experiment_1.sqlite
+    /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/Scenes/experiment_2_part_1_and_2.sqlite
     </rosparam>
     <!-- That's how the scene should be called. -->
     <param name="scene_model_name" value="advertisement"/>
@@ -26,13 +26,13 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <!-- The minimal number of kernels. -->
     <param name="kernels_min" value="1"/>
     <!-- The maximal number of kernels. -->
-    <param name="kernels_max" value="2"/>
+    <param name="kernels_max" value="1"/>
     <!-- The number of runs per kernel. -->
-    <param name="runs_per_kernel" value="2"/>
+    <param name="runs_per_kernel" value="3"/>
     <!-- The number of samples to gereate for every recorded sample. -->
-    <param name="synthetic_samples" value="1"/>
+    <param name="synthetic_samples" value="0"/>
     <!-- The position interval for the sample relaxiation (in meters). -->
-    <param name="interval_position" value="0.250"/>
+    <param name="interval_position" value="0.25"/>
     <!-- The orientation interval for the sample relaxiation (in degrees). -->
     <param name="interval_orientation" value="10"/>
     <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
