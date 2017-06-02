@@ -15,6 +15,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
+#pragma once
+
 #include <ISM/common_type/ObjectSet.hpp>
 
 namespace ProbabilisticSceneRecognition {
@@ -29,19 +31,38 @@ public:
     /**
      * Constructor.
      */
-    TestSet(): mObjectSet(new ISM::ObjectSet())
-    { }
+    TestSet();
 
     /**
      * Destructor.
      */
-    ~TestSet() { }
+    ~TestSet();
 
     /**
      * The set of objects this test set consists of.
      */
     ISM::ObjectSetPtr mObjectSet;
 
+    /**
+     * Set the results of the test of this set with the fully meshed topology.
+     * @param pFullyMeshedProbability           The probability of this set tested with the fully meshed topology.
+     * @param pFullyMeshedRecognitionRuntime    The recognition runtime of this test set when tested with the fully meshed topology.
+     */
+    void setFullyMeshedTestResult(double pFullyMeshedProbability, double pFullyMeshedRecognitionRuntime);
+
+    /**
+     * Get the probability of this set tested with the fully meshed topology.
+     * @return the probability of this set tested with the fully meshed topology.
+     */
+    double getFullyMeshedProbability() const;
+
+    /**
+     * Get the recognition runtime of this test set when tested with the fully meshed topology.
+     * @return the recognition runtime of this test set when tested with the fully meshed topology.
+     */
+    double getFullyMeshedRecognitionRuntime() const;
+
+private:
     /**
      * The probability of this set tested with the fully meshed topology.
      */
@@ -51,6 +72,12 @@ public:
      * The recognition runtime of this test set when tested with the fully meshed topology.
      */
     double mFullyMeshedRecognitionRuntime;
+
+    /**
+     * Whether this test set has been tested with the fully meshed topology,
+     * i.e. whether probability and recognition runtime above are valid.
+     */
+    bool mTestedWithFullyMeshed;
 
 };
 

@@ -15,64 +15,29 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#pragma once
-#include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.h"
 
 namespace ProbabilisticSceneRecognition {
 
-/**
- * This class represents a conditional probability of an evidences pose x given its parent evidence's pose p: P(x|p).
- * If there are several parents p1, p2, ..., it uses the minimum probability of the separate conditional probabilities:
- * min(P(x|p1), P(x|p2) ...).
- */
-class MinimumConditionalProbability: public ConditionalProbability {
-public:
-    /**
-     * Constructor.
-     */
-    MinimumConditionalProbability(): mProbability(1.0), mIsSet(false), mWasRead(false)
+    MinimumConditionalProbability::MinimumConditionalProbability(): mProbability(1.0), mIsSet(false), mWasRead(false)
     { }
-    /**
-     * Destructor.
-     */
-    ~MinimumConditionalProbability()
+
+    MinimumConditionalProbability::~MinimumConditionalProbability()
     { }
-    /**
-     * Add a value of a conditional probability.
-     * @param pProb the value of the conditional probability.
-     */
-    virtual void addProbability(double pProbability)
+
+    void MinimumConditionalProbability::addProbability(double pProbability)
     {
         if (mWasRead) throw std::runtime_error("In MinimumConditionalProbability::addProbability(): trying to add to a probability that has already been read.");
         if (pProbability < mProbability) mProbability = pProbability;   // set new minimum.
         mIsSet = true;
     }
 
-    /**
-     * Get the minimum value of the conditional probabilities.
-     * @return the minimum value of the conditional probabilities.
-     */
-    virtual double getProbability()
+    double MinimumConditionalProbability::getProbability()
     {
         if (!mIsSet) throw std::runtime_error("In MinimumConditionalProbability::getProbability(): trying to access probability that has not been set.");
         mWasRead = true;
         return mProbability;
     }
-
-private:
-    /**
-     * The current minimum value of the conditional probabilities.
-     */
-    double mProbability;
-    /**
-     * Whether a value for the conditional probability has been set.
-     */
-    bool mIsSet;
-    /**
-     * Whether this probability has already been read once. Adding to a probability that has already been read is forbidden.
-     */
-    bool mWasRead;
-};
 
 }
 

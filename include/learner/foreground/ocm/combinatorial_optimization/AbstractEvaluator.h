@@ -50,69 +50,49 @@ public:
      * Set valid test sets.
      * @param pValidTestSets    valid test sets to set.
      */
-    void setValidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pValidTestSets)
-    {
-        mValidTestSets = pValidTestSets;
-    }
+    void setValidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pValidTestSets);
 
     /**
      * Get valid test sets.
      * @return the valid test sets.
      */
-    std::vector<boost::shared_ptr<TestSet>> getValidTestSets()
-    {
-        return mValidTestSets;
-    }
+    std::vector<boost::shared_ptr<TestSet>> getValidTestSets();
 
     /**
      * Set invalid test sets.
      * @param pInvalidTestSets  invalid test sets to set.
      */
-    void setInvalidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pInvalidTestSets)
-    {
-        mInvalidTestSets = pInvalidTestSets;
-    }
+    void setInvalidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pInvalidTestSets);
 
     /**
      * Get invalid test sets.
      * @return the invalid test sets.
      */
-    std::vector<boost::shared_ptr<TestSet>> getInvalidTestSets()
-    {
-        return mInvalidTestSets;
-    }
+    std::vector<boost::shared_ptr<TestSet>> getInvalidTestSets();
 
     /**
      * Set recognition threshold.
      * @param pRecognitionThreshold recognition threshold to set.
      */
-    void setRecognitionThreshold(double pRecognitionThreshold)
-    {
-        mRecognitionThreshold = pRecognitionThreshold;
-    }
+    void setRecognitionThreshold(double pRecognitionThreshold);
 
     /**
      * Get recognition threshold.
      * @return the recognition threshold.
      */
-    double getRecognitionThreshold()
-    {
-        return mRecognitionThreshold;
-    }
+    double getRecognitionThreshold();
 
-    void eraseValidTestSet(unsigned int pIndex)
-    {
-        if (pIndex >= mValidTestSets.size())
-            throw std::runtime_error("In AbstractEvaluator::eraseValidTestSet(): index " + boost::lexical_cast<std::string>(pIndex) + " out of bounds.");
-        mValidTestSets.erase(mValidTestSets.begin() + pIndex);
-    }
+    /**
+     * erase the Valid Test Set at the given index.
+     * @param pIndex    index of the valid test set to erase.
+     */
+    void eraseValidTestSet(unsigned int pIndex);
 
-    void eraseInvalidTestSet(unsigned int pIndex)
-    {
-        if (pIndex >= mInvalidTestSets.size())
-            throw std::runtime_error("In AbstractEvaluator::eraseInvalidTestSet(): index " + boost::lexical_cast<std::string>(pIndex) + " out of bounds.");
-        mInvalidTestSets.erase(mInvalidTestSets.begin() + pIndex);
-    }
+    /**
+     * erase the invalid Test Set at the given index.
+     * @param pIndex    index of the invalid test set to erase.
+     */
+    void eraseInvalidTestSet(unsigned int pIndex);
 
 protected:
 

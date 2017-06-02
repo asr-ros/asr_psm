@@ -19,17 +19,34 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
+WeightedSum::WeightedSum(unsigned int minFalsePositives, unsigned int maxFalsePositives,
+            unsigned int minFalseNegatives, unsigned int maxFalseNegatives,
+        double minAverageRecognitionRuntime, double maxAverageRecognitionRuntime,
+        double alpha, double beta, double gamma)
+    : mMinFalsePositives(minFalsePositives)
+    , mMaxFalsePositives(maxFalsePositives)
+    , mMinFalseNegatives(minFalseNegatives)
+    , mMaxFalseNegatives(maxFalseNegatives)
+    , mMinAverageRecognitionRuntime(minAverageRecognitionRuntime)
+    , mMaxAverageRecognitionRuntime(maxAverageRecognitionRuntime)
+    , mAlpha(alpha)
+    , mBeta(beta)
+    , mGamma(gamma)
+{}
+
+WeightedSum::~WeightedSum()
+{ }
+
 // very similar to lib_ism:
 double WeightedSum::calculateCost(boost::shared_ptr<SceneModel::Topology> instance)
 {
-    if (!instance->mEvaluated) throw std::runtime_error("In WeightedSum::calculateCost(): given topology (" + instance->mIdentifier + ") has not been evaluated yet.");
     std::string fromEarlier = "";
-    if (instance->mCostValid) fromEarlier = " (from earlier)";
+    if (instance->isCostValid()) fromEarlier = " (from earlier)";
     else
     {
-        double normalisedFalsePositives = getNormalisedFalsePositives(instance->mFalsePositives);
-        double normalisedAverageRecognitionRuntime = getNormalisedAverageRecognitionRuntime(instance->mAverageRecognitionRuntime);
-        double normalisedFalseNegatives = getNormalisedFalseNegatives(instance->mFalseNegatives);
+        double normalisedFalsePositives = getNormalisedFalsePositives(instance->getFalsePositives());
+        double normalisedAverageRecognitionRuntime = getNormalisedAverageRecognitionRuntime(instance->getAverageRecognitionRuntime());
+        double normalisedFalseNegatives = getNormalisedFalseNegatives(instance->getFalseNegatives());
 
         double cost;
         if (normalisedFalsePositives < 0 || normalisedFalseNegatives < 0 || normalisedAverageRecognitionRuntime < 0)
@@ -41,12 +58,11 @@ double WeightedSum::calculateCost(boost::shared_ptr<SceneModel::Topology> instan
             cost = mAlpha * normalisedFalsePositives + mBeta * normalisedAverageRecognitionRuntime + mGamma * normalisedFalseNegatives;
         }
 
-        instance->mCost = cost;
-        instance->mCostValid = true;
+        instance->setCost(cost);
     }
-    ROS_INFO_STREAM("Cost of topology " << instance->mIdentifier << " is " << instance->mCost << fromEarlier);
+    ROS_INFO_STREAM("Cost of topology " << instance->mIdentifier << " is " << instance->getCost() << fromEarlier);
 
-    return instance->mCost;
+    return instance->getCost();
 }
 
 double WeightedSum::getNormalisedFalsePositives(unsigned int falsePositives)

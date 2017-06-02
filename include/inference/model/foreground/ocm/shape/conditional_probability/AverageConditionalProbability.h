@@ -30,34 +30,24 @@ public:
     /**
      * Constructor.
      */
-    AverageConditionalProbability(): mSum(0.0), mCount(0), mWasRead(false)
-    { }
+    AverageConditionalProbability();
+
     /**
      * Destructor.
      */
-    ~AverageConditionalProbability()
-    { }
+    ~AverageConditionalProbability();
+
     /**
      * Add a value of a conditional probability.
      * @param pProb the value of the conditional probability.
      */
-    virtual void addProbability(double pProbability)
-    {
-        if (mWasRead) throw std::runtime_error("In AverageConditionalProbability::addProbability(): trying to add to a probability that has already been read.");
-        mSum += pProbability;   // set new minimum.
-        mCount++;
-    }
+    virtual void addProbability(double pProbability);
 
     /**
      * Get the average value of the conditional probabilities.
      * @return the average value of the conditional probabilities.
      */
-    virtual double getProbability()
-    {
-        if (mCount == 0) throw std::runtime_error("In AverageConditionalProbability::getProbability(): trying to access probability that has not been set.");
-        mWasRead = true;
-        return mSum / mCount;
-    }
+    virtual double getProbability();
 
 private:
     /**

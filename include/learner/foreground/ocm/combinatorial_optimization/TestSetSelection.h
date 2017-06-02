@@ -33,14 +33,12 @@ public:
      * Constructor.
      * @param pEvaluator    the Evaluator that contains the test sets that should be filtered.
      */
-    TestSetSelection(boost::shared_ptr<AbstractEvaluator> pEvaluator):
-        mEvaluator(pEvaluator), mPrintHelper('=')
-    { }
+    TestSetSelection(boost::shared_ptr<AbstractEvaluator> pEvaluator);
 
     /**
      * Destructor.
      */
-    ~TestSetSelection() { }
+    ~TestSetSelection();
 
     /**
      * Removes unusable test sets from the evaluator.
@@ -50,6 +48,18 @@ public:
      * @param pMaxInvalidProbability    the maximum probability of the invalid test sets after the unsusable ones were removed.
      */
     void removeUnusableTestSets(double& pMinValidProbability, double& pMaxInvalidProbability);
+
+    /**
+     * Removes valid test sets below and invalid test sets above given recognition threshold.
+     * @param pRecognitionThreshold  threshold above which test sets are supposed to be classified as valid.
+     */
+    void removeMisclassifiedTestSets(double pRecognitionThreshold);
+
+    /**
+     * If there are more than X = pTestSetCount test sets, take only X.
+     * @param pTestSetCount number of test sets to take.
+     */
+    void takeXTestSets(unsigned int pTestSetCount);
 
 private:
 

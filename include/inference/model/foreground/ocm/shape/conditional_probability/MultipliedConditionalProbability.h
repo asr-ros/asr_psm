@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2017, Gaßner Nikolai, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -15,33 +15,54 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.h"
+#pragma once
+#include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
 
 namespace ProbabilisticSceneRecognition {
 
-  CombinatorialTrainer::CombinatorialTrainer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
-                                             std::vector<std::string> pObjectTypes)
-      : SceneModel::AbstractTrainer()
-  {
-    std::cout << "Learning tree with combinatorial optimization." << std::endl;
+/**
+ * This class represents a conditional probability of an evidences pose x given its parent evidence's pose p: P(x|p).
+ * If there are several parents p1, p2, ..., it uses the multiplied probability of the separate conditional probabilities:
+ * P(x|p1) * P(x|p2) * ...).
+ */
+class MultipliedConditionalProbability: public ConditionalProbability {
+public:
+    /**
+     * Constructor.
+     */
+    MultipliedConditionalProbability();
 
-    // Initilaize a source that translates evidence messages.
-    examplesListSource = boost::shared_ptr<SceneModel::ExamplesListSource>(new SceneModel::ExamplesListSource());
-    source = examplesListSource;
+    /**
+     * Destructor.
+     */
+    ~MultipliedConditionalProbability();
 
-    // Initialize the generator for building the tree using combinatorial optimization.
-    boost::shared_ptr<CombinatorialGraphGenerator> gen(new CombinatorialGraphGenerator(pLearners, pObjectTypes));
-    generator = gen;
+    /**
+     * Add a value of a conditional probability.
+     * @param pProb the value of the conditional probability.
+     */
+    virtual void addProbability(double pProbability);
 
-    std::cout << "Combinatorial optimization prepared." << std::endl;
-  }
+    /**
+     * Get the multiplied value of the conditional probabilities.
+     * @return the multiplied value of the conditional probabilities.
+     */
+    virtual double getProbability();
 
-  CombinatorialTrainer::~CombinatorialTrainer()
-  { }
-
-  void CombinatorialTrainer::addSceneGraphMessages(std::vector<ISM::ObjectSetPtr> pMessages)
-  {
-      examplesListSource->addSceneGraphMessage(pMessages);
-  }
+private:
+    /**
+     * The current multiplied value of the conditional probabilities.
+     */
+    double mProbability;
+    /**
+     * Whether a value for the conditional probability has been set.
+     */
+    bool mIsSet;
+    /**
+     * Whether this probability has already been read once. Adding to a probability that has already been read is forbidden.
+     */
+    bool mWasRead;
+};
 
 }
+

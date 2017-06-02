@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #pragma once
 #include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
+#include <cmath>
 
 namespace ProbabilisticSceneRecognition {
 
@@ -30,33 +31,25 @@ public:
     /**
      * Constructor.
      */
-    RootOfMultipliedConditionalProbability(): mProduct(1.0), mCount(0), mWasRead(false)
-    { }
+    RootOfMultipliedConditionalProbability();
+
     /**
      * Destructor.
      */
-    ~RootOfMultipliedConditionalProbability()
-    { }
+    ~RootOfMultipliedConditionalProbability();
+
     /**
      * Add a value of a conditional probability.
      * @param pProb the value of the conditional probability.
      */
-    virtual void addProbability(double pProbability)
-    {
-        if (mWasRead) throw std::runtime_error("In RootOfMultipliedConditionalProbability::addProbability(): trying to add to probability that has already been read once.");
-        mProduct *= pProbability;
-        mCount++;
-    }
+    virtual void addProbability(double pProbability);
+
     /**
      * Get the root of the multiplied value of the conditional probabilities.
      * @return the root of the multiplied value of the conditional probabilities.
      */
-    virtual double getProbability()
-    {
-        if (mCount == 0) throw std::runtime_error("In RootOfMultipliedConditionalProbability::getProbability(): trying to access probability that has not been set.");
-        mWasRead = true;
-        return pow(mProduct, 1.0/mCount);
-    }
+    virtual double getProbability();
+
 private:
     /**
      * The current multiplied value of the conditional probabilities.

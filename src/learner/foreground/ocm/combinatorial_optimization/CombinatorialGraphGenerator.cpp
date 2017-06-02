@@ -41,18 +41,11 @@ void CombinatorialGraphGenerator::buildTree(SceneModel::ObjectSetList pTrajector
 
     if (!optimizedTopology)
         throw std::runtime_error("no valid topology was found.");
-    if (!(optimizedTopology->mTree))
-        throw std::runtime_error("the topology selected through combinatorial optimization has no tree associated with it.");
 
-    boost::shared_ptr<SceneModel::TreeNode> optimizedTree = optimizedTopology->mTree;
-    while(optimizedTree->mParent)   // after rearrangement in learning, the pointer points to an inner node (through parent pointers, the whole tree is still intact)
-        optimizedTree = optimizedTree->mParent;
+    boost::shared_ptr<SceneModel::TreeNode> optimizedTree = optimizedTopology->getTree();
 
-    // Rearrange for given node type:
-    optimizedTree->setNewRootNodeByType(pType);
-
-    // set the resulting tree
-    pRoot = optimizedTree;
+    // Rearrange for given node type, set the tree:
+    pRoot = optimizedTree->setNewRootNodeByType(pType);
 }
 
 }

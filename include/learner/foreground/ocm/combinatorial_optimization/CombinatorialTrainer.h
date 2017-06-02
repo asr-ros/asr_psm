@@ -48,7 +48,7 @@ public:
   /**
    * Destructor.
    */
-  ~CombinatorialTrainer() { }
+  ~CombinatorialTrainer();
 
 
   /**

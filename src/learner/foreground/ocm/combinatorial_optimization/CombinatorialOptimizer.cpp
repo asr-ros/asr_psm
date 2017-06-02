@@ -73,7 +73,7 @@ namespace ProbabilisticSceneRecognition {
         // Try to get the probability threshold over which (>) a scene is considered as recognized.
         if(!mNodeHandle.getParam("recognition_threshold", baseRecognitionThreshold))
             throw std::runtime_error("Please specify parameter recognition_threshold when starting this node.");
-        double recognitionThreshold = std::pow(baseRecognitionThreshold, pObjectTypes.size() - 1);
+        mRecognitionThreshold = std::pow(baseRecognitionThreshold, pObjectTypes.size() - 1);
 
 
         bool quitAfterTestSetEvaluation;
@@ -82,7 +82,7 @@ namespace ProbabilisticSceneRecognition {
            throw std::runtime_error("Please specify parameter quit_after_test_set_evaluation when starting this node.");
 
         // Create evaluator
-        mEvaluator.reset(new Evaluator(pExamplesList, pLearners, recognitionThreshold));
+        mEvaluator.reset(new Evaluator(pExamplesList, pLearners, mRecognitionThreshold));
 
         boost::shared_ptr<SceneModel::AbstractTopologyCreator> topgen(new SceneModel::TopologyCreator(pObjectTypes, maximumNeighbourCount, removeRelations, swapRelations));
         mTopologyManager.reset(new TopologyManager(pExamplesList, pObjectTypes, topgen , mEvaluator));
@@ -91,19 +91,18 @@ namespace ProbabilisticSceneRecognition {
         if (!fullyMeshedTopology) throw std::runtime_error("In CombinatorialTrainer(): failed to get fully meshed topology from TopologyManager");
 
         // Create test set generator
-        int testSetCount;
         // Try to get the number of test sets to create.
-        if(!mNodeHandle.getParam("test_set_count", testSetCount))
+        if(!mNodeHandle.getParam("test_set_count", mTestSetCount))
            throw std::runtime_error("Please specify parameter test_set_count when starting this node.");
-        if (testSetCount < 1)
+        if (mTestSetCount < 0)
             throw std::runtime_error("Parameter test_set_count should be larger than 0 (cannont create a negative amount of tets sets).");
 
         TestSetGenerator testSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology, objectMissingInTestSetProbability);
-        testSetGenerator.generateTestSets(pExamplesList, testSetCount); // completes the evaluator
+        testSetGenerator.generateTestSets(pExamplesList, mTestSetCount); // completes the evaluator
         // evaluator complete
 
         // Do not change order of functions below!
-        initFullyMeshedTopology();
+        initFullyMeshedTopologyAndFilterLoadedTestSets();
 
         if (quitAfterTestSetEvaluation)
         {
@@ -127,16 +126,14 @@ namespace ProbabilisticSceneRecognition {
         if (!mCostFunction) throw std::runtime_error("In CombinatorialTrainer: cost function not initialised.");
         mBestOptimizedTopology = mTopologyManager->getFullyMeshedTopology();
         mCostFunction->calculateCost(mBestOptimizedTopology);
-        if (!mBestOptimizedTopology->mCostValid) throw std::runtime_error("In CombinatorialTrainer: fully meshed cost not valid.");
         std::vector<boost::shared_ptr<SceneModel::Topology>> starTopologies = mTopologyManager->getStarTopologies();
         for (boost::shared_ptr<SceneModel::Topology> star: starTopologies)
         {
             mCostFunction->calculateCost(star);
-            if (!star->mCostValid) throw std::runtime_error("In CombinatorialTrainer: star topology cost not valid.");
-            if (star->mCost < mBestOptimizedTopology->mCost)
+            if (star->getCost() < mBestOptimizedTopology->getCost())
                 mBestOptimizedTopology = star;
         }
-        ROS_INFO_STREAM("Found best topology from fully meshed and stars. Was " << mBestOptimizedTopology->mIdentifier << " with cost " << mBestOptimizedTopology->mCost);
+        ROS_INFO_STREAM("Found best topology from fully meshed and stars. Was " << mBestOptimizedTopology->mIdentifier << " with cost " << mBestOptimizedTopology->getCost());
 
         std::string neighbourhoodFunctionType;
         // Try to get the type of the neighbourhood function.
@@ -150,6 +147,9 @@ namespace ProbabilisticSceneRecognition {
            throw std::runtime_error("Please specify parameter optimization_algorithm when starting this node.");
         initOptimizationAlgorithm(optimizationAlgorithmType);
     }
+
+    CombinatorialOptimizer::~CombinatorialOptimizer()
+    { }
 
     boost::shared_ptr<SceneModel::Topology> CombinatorialOptimizer::runOptimization()
     {
@@ -186,41 +186,51 @@ namespace ProbabilisticSceneRecognition {
             throw std::runtime_error("In CombinatorialTrainer::runOptimization(): No best optimized topology found.");
 
         mPrintHelper.addLine("Combinatorial optimization complete.");
-        mPrintHelper.addLine("Optimal topology is " + mBestOptimizedTopology->mIdentifier + " with a cost of " + boost::lexical_cast<std::string>(mBestOptimizedTopology->mCost));
+        mPrintHelper.addLine("Optimal topology is " + mBestOptimizedTopology->mIdentifier + " with a cost of " + boost::lexical_cast<std::string>(mBestOptimizedTopology->getCost()));
         mPrintHelper.addLine("Optimization took " + boost::lexical_cast<std::string>(optimizationTime) + " milliseconds.");
         mPrintHelper.printAsHeader();
 
         return mBestOptimizedTopology;
     }
 
-    void CombinatorialOptimizer::initFullyMeshedTopology()
+    void CombinatorialOptimizer::initFullyMeshedTopologyAndFilterLoadedTestSets()
     {
         boost::shared_ptr<SceneModel::Topology> fm = mTopologyManager->getFullyMeshedTopology();
+
         // should already have been evaluated if test sets were not loaded from file; if topology was already evaluated, Evaluator returns immediately:
         // if evaluate() did not return immediately, which indicates that the test sets were loaded from file instead of created, look at probabilities to determine a better recognition threshold:
         if (mEvaluator->evaluate(fm, true))
-        {
+        {           
             TestSetSelection testSetSelection(mEvaluator);
-            double minValidProbability, maxInvalidProbability;
-            testSetSelection.removeUnusableTestSets(minValidProbability, maxInvalidProbability);
 
             if (mUseFlexibleRecognitionThreshold)
             {
+                double minValidProbability, maxInvalidProbability;
+                testSetSelection.removeUnusableTestSets(minValidProbability, maxInvalidProbability);
+
                 double flexibleRecognitionThreshold = ((minValidProbability - maxInvalidProbability) / 2) + maxInvalidProbability;
                 mEvaluator->setRecognitionThreshold(flexibleRecognitionThreshold);
-                mPrintHelper.printAsHeader("Recogntion threshold set to flexible " + boost::lexical_cast<std::string>(flexibleRecognitionThreshold));
+                mPrintHelper.printAsHeader("Recognition threshold set to flexible " + boost::lexical_cast<std::string>(flexibleRecognitionThreshold));
             }
+            else    // remove test sets that would be misclassified with this recognition threshold
+            {
+                testSetSelection.removeMisclassifiedTestSets(mRecognitionThreshold);
+            }
+
+            // if there is still more test sets left than asked for, take only X = mTestSetCount of them.
+            testSetSelection.takeXTestSets(mTestSetCount);
 
             // since the fully meshed topology was possibly run on different test sets, average recognition runtime needs to be recalculated:
             double recognitionRuntimeSum = 0;
             for (boost::shared_ptr<TestSet> valid: mEvaluator->getValidTestSets())
-                recognitionRuntimeSum += valid->mFullyMeshedRecognitionRuntime;
+                recognitionRuntimeSum += valid->getFullyMeshedRecognitionRuntime();
             for (boost::shared_ptr<TestSet> invalid: mEvaluator->getInvalidTestSets())
-                recognitionRuntimeSum += invalid->mFullyMeshedRecognitionRuntime;
-            fm->mAverageRecognitionRuntime = recognitionRuntimeSum / (mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size());
+                recognitionRuntimeSum += invalid->getFullyMeshedRecognitionRuntime();
+            fm->setEvaluationResult(recognitionRuntimeSum / (mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size()),  // new average recognition runtime
+                                    fm->getFalsePositives(), fm->getFalseNegatives());
         }
 
-        mMaxAverageRecognitionRuntime = fm->mAverageRecognitionRuntime;
+        mMaxAverageRecognitionRuntime = fm->getAverageRecognitionRuntime();
 
         mPrintHelper.addLine("Evaluation of fully meshed topology:");
         mPrintHelper.addLine("Average recognition runtime (maximum of all topologies) is " + boost::lexical_cast<std::string>(mMaxAverageRecognitionRuntime));
@@ -244,9 +254,9 @@ namespace ProbabilisticSceneRecognition {
             if (!star) throw std::runtime_error("In CombinatorialTrainer::initStarTopologies(): invalid star topology.");
 
             mEvaluator->evaluate(star);
-            double starFalsePositives = star->mFalsePositives;
-            double starAverageRecognitionRuntime = star->mAverageRecognitionRuntime;
-            double starFalseNegatives = star->mFalseNegatives;
+            double starFalsePositives = star->getFalsePositives();
+            double starAverageRecognitionRuntime = star->getAverageRecognitionRuntime();
+            double starFalseNegatives = star->getFalseNegatives();
             if (starFalsePositives > maxFalsePositives)
                 maxFalsePositives = starFalsePositives;     // find maximum
             if (starFalseNegatives > maxFalseNegatives)
@@ -406,18 +416,17 @@ namespace ProbabilisticSceneRecognition {
         mPrintHelper.printAsHeader("Optimizing from starting topology " + boost::lexical_cast<std::string>(pStartingTopologyNumber) + " (" + pStartingTopology->mIdentifier + ")");
 
         boost::shared_ptr<SceneModel::Topology> optimizedTopology = mOptimizationAlgorithm->optimize(pStartingTopology);
-        if (!optimizedTopology->mCostValid) throw std::runtime_error("In CombinatorialTrainer::runOptimization(): optimization returned topology without valid cost.");
 
-        if (!mBestOptimizedTopology || !mBestOptimizedTopology->mCostValid)
-            throw std::runtime_error("In CombinatorialTrainer::runOptimization(): no valid older best topology or cost.");
-        if (optimizedTopology->mCost <= mBestOptimizedTopology->mCost)
+        if (!mBestOptimizedTopology)
+            throw std::runtime_error("In CombinatorialTrainer::runOptimization(): no valid older best topology.");
+        if (optimizedTopology->getCost() <= mBestOptimizedTopology->getCost())
             mBestOptimizedTopology = optimizedTopology;
 
         mTopologyManager->printHistory(pStartingTopologyNumber);
         mTopologyManager->resetTopologies();    // set all cached topologies to "unvisited"
 
         mPrintHelper.addLine("Optimization from starting topology " + boost::lexical_cast<std::string>(pStartingTopologyNumber) + " (" + pStartingTopology->mIdentifier + ") complete.");
-        mPrintHelper.addLine("Best topology is " + optimizedTopology->mIdentifier + " with cost " + boost::lexical_cast<std::string>(optimizedTopology->mCost));
+        mPrintHelper.addLine("Best topology is " + optimizedTopology->mIdentifier + " with cost " + boost::lexical_cast<std::string>(optimizedTopology->getCost()));
         mPrintHelper.printAsHeader();
     }
 }

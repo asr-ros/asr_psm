@@ -19,6 +19,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
+    TestSetSelection::TestSetSelection(boost::shared_ptr<AbstractEvaluator> pEvaluator):
+        mEvaluator(pEvaluator), mPrintHelper('=')
+    { }
+
+    TestSetSelection::~TestSetSelection()
+    { }
+
     void TestSetSelection::removeUnusableTestSets(double& pMinValidProbability, double& pMaxInvalidProbability)
     {
         double minValidProbability;
@@ -30,7 +37,7 @@ namespace ProbabilisticSceneRecognition {
             unsigned int minValidIndex = mEvaluator->getValidTestSets().size();
             for (unsigned int i = 0; i < mEvaluator->getValidTestSets().size(); i++)
             {
-                double validProbability = mEvaluator->getValidTestSets()[i]->mFullyMeshedProbability;
+                double validProbability = mEvaluator->getValidTestSets()[i]->getFullyMeshedProbability();
                 if (validProbability <= minValidProbability)
                 {
                     minValidProbability = validProbability;
@@ -43,7 +50,7 @@ namespace ProbabilisticSceneRecognition {
             maxInvalidProbability = 0.0;
             unsigned int maxInvalidIndex = mEvaluator->getInvalidTestSets().size();
             for (unsigned int i = 0; i < mEvaluator->getInvalidTestSets().size(); i++) {
-                double invalidProbability = mEvaluator->getInvalidTestSets()[i]->mFullyMeshedProbability;
+                double invalidProbability = mEvaluator->getInvalidTestSets()[i]->getFullyMeshedProbability();
                 if (invalidProbability >= maxInvalidProbability)
                 {
                     maxInvalidProbability = invalidProbability;
@@ -58,7 +65,7 @@ namespace ProbabilisticSceneRecognition {
             double below = 0;
             for (boost::shared_ptr<TestSet> valid: mEvaluator->getValidTestSets())
             {
-                double validProbability = valid->mFullyMeshedProbability;
+                double validProbability = valid->getFullyMeshedProbability();
                 if (validProbability < maxInvalidProbability)
                     below++;
             }
@@ -66,7 +73,7 @@ namespace ProbabilisticSceneRecognition {
             double above = 0.0;
             for (boost::shared_ptr<TestSet> invalid: mEvaluator->getInvalidTestSets())
             {
-                double invalidProbability = invalid->mFullyMeshedProbability;
+                double invalidProbability = invalid->getFullyMeshedProbability();
                 if (invalidProbability > minValidProbability)
                     above++;
             }
@@ -106,6 +113,61 @@ namespace ProbabilisticSceneRecognition {
         // Set output parameters:
         pMinValidProbability = minValidProbability;
         pMaxInvalidProbability = maxInvalidProbability;
+    }
+
+    void TestSetSelection::removeMisclassifiedTestSets(double pRecognitionThreshold)
+    {
+        unsigned int validTestSetNumberBefore = mEvaluator->getValidTestSets().size();
+        unsigned int i = 0;
+        while (i < mEvaluator->getValidTestSets().size())
+        {
+            if (mEvaluator->getValidTestSets()[i]->getFullyMeshedProbability() <= pRecognitionThreshold)
+                mEvaluator->eraseValidTestSet(i);
+            else i++;
+        }
+
+        unsigned int invalidTestSetNumberBefore = mEvaluator->getInvalidTestSets().size();
+        unsigned int j = 0;
+        while (j < mEvaluator->getInvalidTestSets().size())
+        {
+            if (mEvaluator->getInvalidTestSets()[j]->getFullyMeshedProbability() > pRecognitionThreshold)
+                mEvaluator->eraseInvalidTestSet(j);
+            else j++;
+        }
+
+        ROS_INFO_STREAM("Removed " << validTestSetNumberBefore - mEvaluator->getValidTestSets().size() << " valid and "
+                        << invalidTestSetNumberBefore - mEvaluator->getInvalidTestSets().size() << " invalid misclassified test sets.");
+    }
+
+    void TestSetSelection::takeXTestSets(unsigned int pTestSetCount)
+    {
+        // Take only as many test sets as asked for, according to the fraction of the complete number of test sets each subset represents:
+        double fullTestSetCount = mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size();
+        if (fullTestSetCount > pTestSetCount)
+        {
+            double validFraction = ((double) mEvaluator->getValidTestSets().size()) / fullTestSetCount;
+            double invalidFraction = ((double) mEvaluator->getInvalidTestSets().size()) / fullTestSetCount;
+            unsigned int validTestSetCount = std::floor(validFraction * ((double) pTestSetCount));
+            unsigned int invalidTestSetCount = std::floor(invalidFraction * ((double) pTestSetCount));
+            unsigned int sum = validTestSetCount + invalidTestSetCount;
+            // Fill up the smaller subset so that the pTestSetCount is exactly reached:
+            if (sum < pTestSetCount)
+            {
+                if (validTestSetCount < invalidTestSetCount) validTestSetCount += pTestSetCount - sum;
+                else invalidTestSetCount += pTestSetCount - sum;
+            }
+
+            std::vector<boost::shared_ptr<TestSet>> validTestSets = mEvaluator->getValidTestSets();
+            validTestSets.resize(validTestSetCount);
+            mEvaluator->setValidTestSets(validTestSets);
+
+            std::vector<boost::shared_ptr<TestSet>> invalidTestSets = mEvaluator->getInvalidTestSets();
+            invalidTestSets.resize(invalidTestSetCount);
+            mEvaluator->setInvalidTestSets(invalidTestSets);
+
+            ROS_INFO_STREAM("Reset number of test sets to " << mEvaluator->getValidTestSets().size() << " valid and " << mEvaluator->getInvalidTestSets().size() << " invalid sets "
+                            << "(" << mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size() << "/" << pTestSetCount << ")");
+        }
     }
 
 }

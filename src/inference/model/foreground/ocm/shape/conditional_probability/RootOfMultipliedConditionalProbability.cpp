@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2017, Gaßner Nikolai, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -15,33 +15,29 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.h"
+#include "inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.h"
 
 namespace ProbabilisticSceneRecognition {
 
-  CombinatorialTrainer::CombinatorialTrainer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
-                                             std::vector<std::string> pObjectTypes)
-      : SceneModel::AbstractTrainer()
-  {
-    std::cout << "Learning tree with combinatorial optimization." << std::endl;
+    RootOfMultipliedConditionalProbability::RootOfMultipliedConditionalProbability(): mProduct(1.0), mCount(0), mWasRead(false)
+    { }
 
-    // Initilaize a source that translates evidence messages.
-    examplesListSource = boost::shared_ptr<SceneModel::ExamplesListSource>(new SceneModel::ExamplesListSource());
-    source = examplesListSource;
+    RootOfMultipliedConditionalProbability::~RootOfMultipliedConditionalProbability()
+    { }
 
-    // Initialize the generator for building the tree using combinatorial optimization.
-    boost::shared_ptr<CombinatorialGraphGenerator> gen(new CombinatorialGraphGenerator(pLearners, pObjectTypes));
-    generator = gen;
+    void RootOfMultipliedConditionalProbability::addProbability(double pProbability)
+    {
+        if (mWasRead) throw std::runtime_error("In RootOfMultipliedConditionalProbability::addProbability(): trying to add to probability that has already been read once.");
+        mProduct *= pProbability;
+        mCount++;
+    }
 
-    std::cout << "Combinatorial optimization prepared." << std::endl;
-  }
-
-  CombinatorialTrainer::~CombinatorialTrainer()
-  { }
-
-  void CombinatorialTrainer::addSceneGraphMessages(std::vector<ISM::ObjectSetPtr> pMessages)
-  {
-      examplesListSource->addSceneGraphMessage(pMessages);
-  }
+    double RootOfMultipliedConditionalProbability::getProbability()
+    {
+        if (mCount == 0) throw std::runtime_error("In RootOfMultipliedConditionalProbability::getProbability(): trying to access probability that has not been set.");
+        mWasRead = true;
+        return pow(mProduct, 1.0/mCount);
+    }
 
 }
+

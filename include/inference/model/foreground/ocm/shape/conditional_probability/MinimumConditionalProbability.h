@@ -22,45 +22,32 @@ namespace ProbabilisticSceneRecognition {
 
 /**
  * This class represents a conditional probability of an evidences pose x given its parent evidence's pose p: P(x|p).
- * If there are several parents p1, p2, ..., it uses the multiplied probability of the separate conditional probabilities:
- * P(x|p1) * P(x|p2) * ...).
+ * If there are several parents p1, p2, ..., it uses the minimum probability of the separate conditional probabilities:
+ * min(P(x|p1), P(x|p2) ...).
  */
-class MultipliedConditionalProbability: public ConditionalProbability {
+class MinimumConditionalProbability: public ConditionalProbability {
 public:
     /**
      * Constructor.
      */
-    MultipliedConditionalProbability(): mProbability(1.0), mIsSet(false), mWasRead(false)
-    { }
+    MinimumConditionalProbability();
+
     /**
      * Destructor.
      */
-    ~MultipliedConditionalProbability()
-    { }
+    ~MinimumConditionalProbability();
+
     /**
      * Add a value of a conditional probability.
      * @param pProb the value of the conditional probability.
      */
-    virtual void addProbability(double pProbability)
-    {
-        if (mWasRead) throw std::runtime_error("In MultipliedConditionalProbability::addProbability(): trying to add to probability that has already been read once.");
-        mProbability *= pProbability;
-        mIsSet = true;
-    }
-    /**
-     * Get the multiplied value of the conditional probabilities.
-     * @return the multiplied value of the conditional probabilities.
-     */
-    virtual double getProbability()
-    {
-        if (!mIsSet) throw std::runtime_error("In MultipliedConditionalProbability::getProbability(): trying to access probability that has not been set.");
-        //std::cout << "In this slot, " << mCount << " probabilities were multiplied to generate probability " << mProbability << std::endl;
-        mWasRead = true;
-        return mProbability;
-    }
+    virtual void addProbability(double pProbability);
+
+    virtual double getProbability();
+
 private:
     /**
-     * The current multiplied value of the conditional probabilities.
+     * The current minimum value of the conditional probabilities.
      */
     double mProbability;
     /**

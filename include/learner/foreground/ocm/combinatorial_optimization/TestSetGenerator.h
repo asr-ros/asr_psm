@@ -47,15 +47,12 @@ public:
      * @param pObjectMissingInTestSetProbability    probability with which an object is missing from a test set.
      */
     TestSetGenerator(boost::shared_ptr<AbstractEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology,
-                     double pObjectMissingInTestSetProbability):
-        mEvaluator(pEvaluator), mTypes(pObjectTypes), mFullyMeshedTopology(pFullyMeshedTopology), mObjectMissingInTestSetProbability(pObjectMissingInTestSetProbability),
-        mPrintHelper('+')
-    { }
+                     double pObjectMissingInTestSetProbability);
 
     /**
      * Desctructor.
      */
-    ~TestSetGenerator() { }
+    ~TestSetGenerator();
 
     /**
      * Generate and validate random test sets. Set evaluator's sets accordingly.

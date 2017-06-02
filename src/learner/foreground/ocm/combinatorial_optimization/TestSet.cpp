@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2017, Gaßner Nikolai, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -15,33 +15,36 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.h"
+#include "learner/foreground/ocm/combinatorial_optimization/TestSet.h"
 
 namespace ProbabilisticSceneRecognition {
 
-  CombinatorialTrainer::CombinatorialTrainer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
-                                             std::vector<std::string> pObjectTypes)
-      : SceneModel::AbstractTrainer()
-  {
-    std::cout << "Learning tree with combinatorial optimization." << std::endl;
+    TestSet::TestSet(): mObjectSet(new ISM::ObjectSet()), mTestedWithFullyMeshed(false)
+    { }
 
-    // Initilaize a source that translates evidence messages.
-    examplesListSource = boost::shared_ptr<SceneModel::ExamplesListSource>(new SceneModel::ExamplesListSource());
-    source = examplesListSource;
+    TestSet::~TestSet()
+    { }
 
-    // Initialize the generator for building the tree using combinatorial optimization.
-    boost::shared_ptr<CombinatorialGraphGenerator> gen(new CombinatorialGraphGenerator(pLearners, pObjectTypes));
-    generator = gen;
+    void TestSet::setFullyMeshedTestResult(double pFullyMeshedProbability, double pFullyMeshedRecognitionRuntime)
+    {
+        mFullyMeshedProbability = pFullyMeshedProbability;
+        mFullyMeshedRecognitionRuntime = pFullyMeshedRecognitionRuntime;
+        mTestedWithFullyMeshed = true;
+    }
 
-    std::cout << "Combinatorial optimization prepared." << std::endl;
-  }
+    double TestSet::getFullyMeshedProbability() const
+    {
+        if (!mTestedWithFullyMeshed)
+            throw std::runtime_error("In TestSet: trying to access fully meshed probability without having tested the set first.");
+        return mFullyMeshedProbability;
+    }
 
-  CombinatorialTrainer::~CombinatorialTrainer()
-  { }
-
-  void CombinatorialTrainer::addSceneGraphMessages(std::vector<ISM::ObjectSetPtr> pMessages)
-  {
-      examplesListSource->addSceneGraphMessage(pMessages);
-  }
+    double TestSet::getFullyMeshedRecognitionRuntime() const
+    {
+        if (!mTestedWithFullyMeshed)
+            throw std::runtime_error("In TestSet: trying to access fully meshed recognition runtime without having tested the set first.");
+        return mFullyMeshedRecognitionRuntime;
+    }
 
 }
+

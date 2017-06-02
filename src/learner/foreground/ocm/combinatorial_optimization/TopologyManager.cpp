@@ -54,7 +54,7 @@ boost::shared_ptr<SceneModel::Topology> TopologyManager::getNextNeighbour()
     mNeighbours.erase(mNeighbours.begin());
 
     // initialize neighbour:
-    if (!nextNeighbour->mTree) makeTree(nextNeighbour); // make sure the neighbour has a tree associated with it, which will be used by evaluator
+    if (!nextNeighbour->isTreeValid()) makeTree(nextNeighbour); // make sure the neighbour has a tree associated with it, which will be used by evaluator
     mEvaluator->evaluate(nextNeighbour);                // if nextNeighbour has already been evaluated, the Evaluator returns without rerunning the evaluation
 
     nextNeighbour->mUsedInOptimization = true;  // topology has been used in optimization
@@ -167,7 +167,7 @@ void TopologyManager::makeTree(boost::shared_ptr<SceneModel::Topology> pTopology
     tree->printTreeToConsole(0);
     std::cout << "---------------------" << std::endl;
 
-    pTopology->mTree = tree;
+    pTopology->setTree(tree);
 }
 
 void TopologyManager::resetTopologies()
@@ -192,9 +192,9 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
 
             for (unsigned int j = 0; j < step.size(); j++)
             {
-                if (step[j].first->mCostValid && step[j].first->mCost < overallBestCost)
+                if (step[j].first->isCostValid() && step[j].first->getCost() < overallBestCost) // because of first check, this doesn't throw if there has not been set a cost.
                 {
-                    overallBestCost = step[j].first->mCost;
+                    overallBestCost = step[j].first->getCost();
                     bestCostIndices.first = i;
                     bestCostIndices.second = j;
                 }
@@ -259,17 +259,18 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
                     std::pair<boost::shared_ptr<SceneModel::Topology>, bool> topologyPair = step[j];
                     boost::shared_ptr<SceneModel::Topology> topology = topologyPair.first;
                     documentation << topology->mIdentifier << ": ";
-                    if (topology->mEvaluated)
+                    if (topology->isEvaluated())
                     {
-                        documentation << topology->mFalsePositives << " false positives, " << topology->mFalseNegatives << " false negatives, " <<  topology->mAverageRecognitionRuntime << "s average recognition runtime.";
-                        if (topology->mCostValid)
+                        documentation << topology->getFalsePositives() << " false positives, " << topology->getFalseNegatives() << " false negatives, " <<  topology->getAverageRecognitionRuntime() << "s average recognition runtime.";
+                        if (topology->isCostValid())
                         {
-                            documentation << " cost: " << topology->mCost;
+                            documentation << " cost: " << topology->getCost();
                             if (topologyPair.second) documentation << "[selected]";
                             if (i == bestCostIndices.first && j == bestCostIndices.second) documentation << "(best)";
                         }
+                        else documentation << " <cost not calculated> ";
                     }
-                    else documentation << " - ";
+                    else documentation << " <not evaluated> ";
                     documentation << std::endl;
                 }
             }

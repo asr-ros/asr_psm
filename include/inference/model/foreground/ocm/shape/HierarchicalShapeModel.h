@@ -41,10 +41,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/common_type/Pose.hpp>
 
 // Algorithms to combine conditional probabilities with of multiple parents:
-#include "inference/model/foreground/ocm/shape/MinimumConditionalProbability.h"
-#include "inference/model/foreground/ocm/shape/MultipliedConditionalProbability.h"
-#include "inference/model/foreground/ocm/shape/RootOfMultipliedConditionalProbability.h"
-#include "inference/model/foreground/ocm/shape/AverageConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/conditional_probability/AverageConditionalProbability.h"
 
 namespace ProbabilisticSceneRecognition {
   

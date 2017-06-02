@@ -57,7 +57,7 @@ public:
     /**
      * Destructor.
      */
-    ~CombinatorialOptimizer() { }
+    ~CombinatorialOptimizer();
 
     /**
      * Perform optimization.
@@ -69,8 +69,9 @@ private:
     /**
      * Initialize the fully meshed topology used to divide the test sets into valid and invalid ones
      * and find the worst recognition runtime.
+     * Also deals with loaded test sets, if those were not created by the program.
      */
-    void initFullyMeshedTopology();
+    void initFullyMeshedTopologyAndFilterLoadedTestSets();
 
     /**
      * Initialize the star topologies used to find the worst false positive numbers
@@ -208,6 +209,16 @@ private:
      * Class used to print lines as headers, marked with dividers.
      */
     PrintHelper mPrintHelper;
+
+    /**
+     * How many test sets to use in optimization.
+     */
+    int mTestSetCount;
+
+    /**
+     * The probability above which a test set is considered as valid.
+     */
+    double mRecognitionThreshold;
 };
 
 }

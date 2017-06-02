@@ -44,22 +44,12 @@ public:
     WeightedSum(unsigned int minFalsePositives, unsigned int maxFalsePositives,
                 unsigned int minFalseNegatives, unsigned int maxFalseNegatives,
             double minAverageRecognitionRuntime, double maxAverageRecognitionRuntime,
-            double alpha, double beta, double gamma)
-        : mMinFalsePositives(minFalsePositives)
-        , mMaxFalsePositives(maxFalsePositives)
-        , mMinFalseNegatives(minFalseNegatives)
-        , mMaxFalseNegatives(maxFalseNegatives)
-        , mMinAverageRecognitionRuntime(minAverageRecognitionRuntime)
-        , mMaxAverageRecognitionRuntime(maxAverageRecognitionRuntime)
-        , mAlpha(alpha)
-        , mBeta(beta)
-        , mGamma(gamma)
-    {}
+            double alpha, double beta, double gamma);
 
     /**
      * Destructor.
      */
-    ~WeightedSum() { }
+    ~WeightedSum();
 
     /**
      * Calculate the cost of the topology as weighted sum of its number of false positives and average recognition runtime on test sets.

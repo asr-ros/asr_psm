@@ -85,13 +85,11 @@ bool Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool
 {
     if (!pTopology) throw std::runtime_error("In Evaluator::evaluate(): topology from argument is null pointer.");
 
-    if (pTopology->mEvaluated) return false;    // no new evaluation needed
+    if (pTopology->isEvaluated()) return false;    // no new evaluation needed
 
     mPrintHelper.printAsHeader("Evaluating topology " + pTopology->mIdentifier + ":");
 
-    if (!pTopology->mTree) throw std::runtime_error("In Evaluator::evaluate(): topology from argument has no tree associated with it.");
-
-    update(pTopology->mTree);
+    update(pTopology->getTree());
 
     if (mValidTestSets.empty() && mInvalidTestSets.empty()) throw std::runtime_error("In Evaluator::evaluate(): no test sets found.");
 
@@ -118,10 +116,7 @@ bool Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool
     ROS_INFO_STREAM("Evaluated topology " << pTopology->mIdentifier << " against " << mValidTestSets.size() << " valid and " << mInvalidTestSets.size() << " invalid test sets.");
     ROS_INFO_STREAM("Evaluation result: " << falsePositives << " false positives, " << falseNegatives << " false negatives, " << avgRuntime << "s average recognition runtime.");
 
-    pTopology->mFalsePositives = falsePositives;
-    pTopology->mAverageRecognitionRuntime = avgRuntime;
-    pTopology->mFalseNegatives = falseNegatives;
-    pTopology->mEvaluated = true;
+    pTopology->setEvaluationResult(avgRuntime, falsePositives, falseNegatives);
 
     xmlOutput(pTopology);
 
@@ -143,10 +138,7 @@ std::pair<double, double> Evaluator::recognize(boost::shared_ptr<TestSet> pEvide
     recognitionRuntime = seconds + useconds / 1000000;
 
     if (pFullyMeshed)
-    {
-        pEvidence->mFullyMeshedProbability = probability;
-        pEvidence->mFullyMeshedRecognitionRuntime = recognitionRuntime;
-    }
+        pEvidence->setFullyMeshedTestResult(probability, recognitionRuntime);
 
     return std::pair<double, double>(probability, recognitionRuntime);
 }
@@ -207,9 +199,9 @@ void Evaluator::xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology)
 
         mModel.add("<xmlattr>.run", mRunNumber);
         mModel.add("<xmlattr>.topology_id", pTopology->mIdentifier);
-        mModel.add("<xmlattr>.false_positives", pTopology->mFalsePositives);
-        mModel.add("<xmlattr>.false_negatives", pTopology->mFalseNegatives);
-        mModel.add("<xmlattr>.average_recognition_runtime", pTopology->mAverageRecognitionRuntime);
+        mModel.add("<xmlattr>.false_positives", pTopology->getFalsePositives());
+        mModel.add("<xmlattr>.false_negatives", pTopology->getFalseNegatives());
+        mModel.add("<xmlattr>.average_recognition_runtime", pTopology->getAverageRecognitionRuntime());
 
         extendedModel.add_child("evaluator_result", mModel);
 

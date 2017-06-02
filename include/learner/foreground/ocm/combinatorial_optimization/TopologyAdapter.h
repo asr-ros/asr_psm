@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <topology_creator/Topology.h>
 #include <ISM/combinatorial_trainer/Topology.hpp>
+#include <ISM/combinatorial_optimization/CostFunction.hpp>
 
 namespace ProbabilisticSceneRecognition
 {
@@ -45,6 +46,7 @@ private:
      * Id of the scene that is currently being recognized.
      */
     std::string mSceneId;
+
 public:
     /**
      * Returns the cost of a topology which has already been set before.
@@ -56,108 +58,32 @@ public:
          * @param instance  to return the cost of
          * @return          the cost of the instance
          */
-        double calculateCost(ISM::TopologyPtr instance)
-        {
-            return instance->cost;
-        }
+        double calculateCost(ISM::TopologyPtr instance);
     };
 
     /**
      * Constructor.
      */
-    TopologyAdapter(std::vector<std::string> pObjectTypes, std::string pSceneId):  mPSMTopologyIndex(0), mISMTopologyIndex(0), mSceneId(pSceneId)
-    {
-        // Generate all possible relations:
-        for (unsigned int i = 0; i < pObjectTypes.size() - 1; i++)
-            for (unsigned int j = i + 1; j < pObjectTypes.size(); j++)
-                mRelations.push_back(SceneModel::Relation(pObjectTypes[i], pObjectTypes[j]));
-    }
+    TopologyAdapter(std::vector<std::string> pObjectTypes, std::string pSceneId);
+
     /**
      * Destructor.
      */
-    ~TopologyAdapter()
-    { }
+    ~TopologyAdapter();
 
-    ISM::TopologyPtr psmToIsm(boost::shared_ptr<SceneModel::Topology> pPsmTopology)
-    {
-        ISM::TopologyPtr ismTopology(new ISM::Topology());
+    /**
+     * Transforms a PSM SceneModel::Topology into an ISM::Topology.
+     * @param pPsmTopology  PSM SceneModel::Topology to transform.
+     * @return ISM::Topology.
+     */
+    ISM::TopologyPtr psmToIsm(boost::shared_ptr<SceneModel::Topology> pPsmTopology);
 
-        ismTopology->index = mISMTopologyIndex;
-        mISMTopologyIndex++;
-
-        if (pPsmTopology->mCostValid)
-            ismTopology->cost = pPsmTopology->mCost;
-        else throw std::runtime_error("In TopologyAdapter: Cannot transform PSM Topology with invalid cost to ISM Topology.");
-
-        // It is unknown whether an ism tree created for this topology would be valid.
-        /* Validity of the psm relation tree use instead.
-        if (pPsmTopology->mTree)
-            ismTopology->isValid = true;
-        else*/
-        // always assumed to be invalid.
-        ismTopology->isValid = false;
-
-        ismTopology->identifier = pPsmTopology->mIdentifier;
-
-        if (!pPsmTopology->mEvaluated)
-            throw std::runtime_error("In TopologyAdapter: Cannot transform PSM Topology that has not been evaluated into ISM topology.");
-
-        ismTopology->evaluationResult.falsePositives = pPsmTopology->mFalsePositives;
-        ismTopology->evaluationResult.falseNegatives = pPsmTopology->mFalseNegatives;
-        ismTopology->evaluationResult.averageRecognitionRuntime = pPsmTopology->mAverageRecognitionRuntime;
-
-        // go over the relations and enumerate them according to their index in the list of all relations
-        for (unsigned int relationIndex = 0; relationIndex < mRelations.size(); relationIndex++)
-        {
-            std::string objectA = mRelations[relationIndex].getObjectTypeA();
-            std::string objectB = mRelations[relationIndex].getObjectTypeB();
-            for (boost::shared_ptr<SceneModel::Relation> relation: pPsmTopology->mRelations)
-            {
-                if (relation->containsObject(objectA) && relation->containsObject(objectB))
-                {
-                    ISM::TrackPtr trackA(new ISM::Track(objectA));
-                    ISM::TrackPtr trackB(new ISM::Track(objectB));
-                    ISM::ObjectRelationPtr ismRelation(new ISM::ObjectRelation(trackA, trackB, mSceneId));
-                    ismTopology->objectRelations[relationIndex] = ismRelation;
-                }
-            }
-        }
-
-        return ismTopology;
-    }
-
-    boost::shared_ptr<SceneModel::Topology> ismToPsm(ISM::TopologyPtr pIsmTopology)
-    {
-        boost::shared_ptr<SceneModel::Topology> psmTopology(new SceneModel::Topology());
-
-        // Most likely not used in PSM optimization
-        psmTopology->mUsedInOptimization = false;
-
-        //mTree does not get assigned any value. Could make a tree with TopologyManager, but seems unneccessary here.
-
-        psmTopology->mCost = pIsmTopology->cost;
-        psmTopology->mCostValid = true;
-
-        psmTopology->mFalseNegatives = pIsmTopology->evaluationResult.falseNegatives;
-        psmTopology->mFalsePositives = pIsmTopology->evaluationResult.falsePositives;
-        psmTopology->mAverageRecognitionRuntime = pIsmTopology->evaluationResult.averageRecognitionRuntime;
-        psmTopology->mEvaluated = true;
-
-        // Note that this identifier may not be compatible with the ones assigned in PSM, for example in TopologyManager.
-        psmTopology->mIdentifier = pIsmTopology->identifier;
-
-        for (std::pair<unsigned int, ISM::ObjectRelationPtr> relation: pIsmTopology->objectRelations)
-        {
-            std::string objectTypeA = relation.second->getObjectTypeA();   // Note that ISM distinguishes between an object's type and its id, whereas in PSM, there can only be one object of each type anyways.
-            std::string objectTypeB = relation.second->getObjectTypeB();
-            boost::shared_ptr<SceneModel::Relation> psmRelation(new SceneModel::Relation(objectTypeA, objectTypeB));
-            psmTopology->mRelations.push_back(psmRelation);
-        }
-    }
-
-
-
-
+    /**
+     * Transforms an ISM::Topology into a PSM SceneModel::Topology.
+     * @param pIsmTopology  ISM::Topology to transform.
+     * @return PSM Topology.
+     */
+    boost::shared_ptr<SceneModel::Topology> ismToPsm(ISM::TopologyPtr pIsmTopology);
 };
 
 }

@@ -55,6 +55,11 @@ add_library(psm_inference  src/inference.cpp
 			    src/inference/model/foreground/ocm/appearance/AppearanceTermEvaluator.cpp src/inference/model/foreground/ocm/occlusion/OcclusionTermEvaluator.cpp src/inference/model/foreground/ocm/TermEvaluator.cpp
 			    
 			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
+			    
+			    src/inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/AverageConditionalProbability.cpp
 			    )
 			    
 target_link_libraries(psm_inference  
@@ -104,13 +109,16 @@ add_executable(learner src/learner.cpp
 			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			     
 			     src/learner/foreground/ocm/combinatorial_optimization/WeightedSum.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialGraphGenerator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialOptimizer.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/TestSetSelection.cpp)
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSetSelection.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSet.cpp)
 target_link_libraries(learner
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
@@ -136,13 +144,16 @@ add_executable(learner_batch src/learner_batch.cpp
 			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			     
 			     src/learner/foreground/ocm/combinatorial_optimization/WeightedSum.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialGraphGenerator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialOptimizer.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/TestSetSelection.cpp)
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSetSelection.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TestSet.cpp)
 target_link_libraries(learner_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
@@ -174,6 +185,11 @@ add_executable(inference src/inference.cpp
 			    src/inference/model/foreground/ocm/appearance/AppearanceTermEvaluator.cpp src/inference/model/foreground/ocm/occlusion/OcclusionTermEvaluator.cpp src/inference/model/foreground/ocm/TermEvaluator.cpp
 			    
 			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
+			    
+			    src/inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/AverageConditionalProbability.cpp
 			    )
 
 target_link_libraries(inference 
@@ -205,7 +221,12 @@ add_executable(inference_batch src/inference_batch.cpp
 			    src/inference/model/foreground/ocm/OcmSceneObjectContent.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModel.cpp src/inference/model/foreground/ocm/shape/ShapeTermEvaluator.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.cpp src/inference/model/foreground/ocm/shape/GaussianMixtureDistribution.cpp src/inference/model/foreground/ocm/shape/GaussianKernel.cpp
 			    src/inference/model/foreground/ocm/appearance/AppearanceTermEvaluator.cpp src/inference/model/foreground/ocm/occlusion/OcclusionTermEvaluator.cpp src/inference/model/foreground/ocm/TermEvaluator.cpp
 			    
-			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp)
+			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
+			    
+			    src/inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.cpp
+			    src/inference/model/foreground/ocm/shape/conditional_probability/AverageConditionalProbability.cpp)
 target_link_libraries(inference_batch
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}  
