@@ -19,24 +19,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-    RootOfMultipliedConditionalProbability::RootOfMultipliedConditionalProbability(): mProduct(1.0), mCount(0), mWasRead(false)
+    RootOfMultipliedConditionalProbability::RootOfMultipliedConditionalProbability(): ConditionalProbability()
     { }
 
     RootOfMultipliedConditionalProbability::~RootOfMultipliedConditionalProbability()
     { }
 
-    void RootOfMultipliedConditionalProbability::addProbability(double pProbability)
+    double RootOfMultipliedConditionalProbability::calculateProbability()
     {
-        if (mWasRead) throw std::runtime_error("In RootOfMultipliedConditionalProbability::addProbability(): trying to add to probability that has already been read once.");
-        mProduct *= pProbability;
-        mCount++;
-    }
-
-    double RootOfMultipliedConditionalProbability::getProbability()
-    {
-        if (mCount == 0) throw std::runtime_error("In RootOfMultipliedConditionalProbability::getProbability(): trying to access probability that has not been set.");
-        mWasRead = true;
-        return pow(mProduct, 1.0/mCount);
+        double product = 1.0;
+        for (std::pair<std::string, double> probability: ConditionalProbability::mParentProbabilities)
+            product *= probability.second;
+        return std::pow(product, 1.0 / ((double) ConditionalProbability::mParentProbabilities.size())); // check in parent class makes sure that size is not 0.
     }
 
 }

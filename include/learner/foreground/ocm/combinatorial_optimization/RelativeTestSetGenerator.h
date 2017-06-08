@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -16,34 +16,39 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 */
 
 #pragma once
-#include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
+
+#include "learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.h"
 
 namespace ProbabilisticSceneRecognition {
 
 /**
- * This class represents a conditional probability of an evidences pose x given its parent evidence's pose p: P(x|p).
- * If there are several parents p1, p2, ..., it uses the multiplied probability of the separate conditional probabilities:
- * P(x|p1) * P(x|p2) * ...).
+ * Generates test sets by randomly picking poses for each object from different points in time on the given trajectories.
+ * Uses their poses relative to a random reference object. The pose of the reference is also relative to itself.
  */
-class MultipliedConditionalProbability: public ConditionalProbability {
+class RelativeTestSetGenerator: public TestSetGenerator {
+
 public:
     /**
-     * Constructor.
+     * Constructor
+     * @param pEvaluator                            evaluator used to validate test sets.
+     * @param pObjectTypes                          types of objects appearing in test sets (once each).
+     * @param pFullyMeshedTopology                  fully meshed topology used to validate test sets.
      */
-    MultipliedConditionalProbability();
+    RelativeTestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology);
 
     /**
      * Destructor.
      */
-    ~MultipliedConditionalProbability();
+    ~RelativeTestSetGenerator();
 
 private:
     /**
-     * Calculate the probability from the parent probabilities.
-     * @return the probability calculated from the parent probabilities.
+     * Generate random test sets.
+     * @param pExamplesList list of object observations serving as basis of the test sets.
+     * @param pTestSetCount number of test sets to generate.
      */
-    virtual double calculateProbability();
+    virtual std::vector<boost::shared_ptr<TestSet>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
+
 };
 
 }
-

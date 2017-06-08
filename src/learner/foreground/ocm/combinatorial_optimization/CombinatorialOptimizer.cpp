@@ -60,11 +60,6 @@ namespace ProbabilisticSceneRecognition {
         if (maximumNeighbourCount < 1)
             throw std::runtime_error("Parameter maximum_neighbour_count should be larger than 0 (cannot use a negative amount of neighbours).");
 
-        double objectMissingInTestSetProbability;
-        // Try to get the probability for each object that, in a newly generated test set, this object is missing.
-        if(!mNodeHandle.getParam("object_missing_in_test_set_probability", objectMissingInTestSetProbability))
-           throw std::runtime_error("Please specify parameter object_missing_in_test_set_probability when starting this node.");
-
         // Try to get whether to use a flexible threshold:
         if(!mNodeHandle.getParam("flexible_recognition_threshold", mUseFlexibleRecognitionThreshold))
            throw std::runtime_error("Please specify parameter flexible_recognition_threshold when starting this node.");
@@ -81,32 +76,22 @@ namespace ProbabilisticSceneRecognition {
         if(!mNodeHandle.getParam("quit_after_test_set_evaluation", quitAfterTestSetEvaluation))
            throw std::runtime_error("Please specify parameter quit_after_test_set_evaluation when starting this node.");
 
+        // Do not change order of functions below!
+
         // Create evaluator
-        mEvaluator.reset(new Evaluator(pExamplesList, pLearners, mRecognitionThreshold));
+        mEvaluator.reset(new TopologyEvaluator(pExamplesList, pLearners, mRecognitionThreshold));
 
         boost::shared_ptr<SceneModel::AbstractTopologyCreator> topgen(new SceneModel::TopologyCreator(pObjectTypes, maximumNeighbourCount, removeRelations, swapRelations));
         mTopologyManager.reset(new TopologyManager(pExamplesList, pObjectTypes, topgen , mEvaluator));
 
-        boost::shared_ptr<SceneModel::Topology> fullyMeshedTopology = mTopologyManager->getFullyMeshedTopology();
-        if (!fullyMeshedTopology) throw std::runtime_error("In CombinatorialTrainer(): failed to get fully meshed topology from TopologyManager");
-
-        // Create test set generator
-        // Try to get the number of test sets to create.
-        if(!mNodeHandle.getParam("test_set_count", mTestSetCount))
-           throw std::runtime_error("Please specify parameter test_set_count when starting this node.");
-        if (mTestSetCount < 0)
-            throw std::runtime_error("Parameter test_set_count should be larger than 0 (cannont create a negative amount of tets sets).");
-
-        TestSetGenerator testSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology, objectMissingInTestSetProbability);
-        testSetGenerator.generateTestSets(pExamplesList, mTestSetCount); // completes the evaluator
+        initTestSets(pObjectTypes, pExamplesList);
         // evaluator complete
 
-        // Do not change order of functions below!
         initFullyMeshedTopologyAndFilterLoadedTestSets();
 
         if (quitAfterTestSetEvaluation)
         {
-            ROS_INFO_STREAM("TEST SET EVALUATION COMPLETE: QUITTING EARLY. Recognition threshold: " << mEvaluator->getRecognitionThreshold());
+            ROS_INFO_STREAM("TEST SET EVALUATION COMPLETE: QUITTING EARLY.");
             exit (EXIT_SUCCESS);
         }
 
@@ -126,14 +111,32 @@ namespace ProbabilisticSceneRecognition {
         if (!mCostFunction) throw std::runtime_error("In CombinatorialTrainer: cost function not initialised.");
         mBestOptimizedTopology = mTopologyManager->getFullyMeshedTopology();
         mCostFunction->calculateCost(mBestOptimizedTopology);
+
         std::vector<boost::shared_ptr<SceneModel::Topology>> starTopologies = mTopologyManager->getStarTopologies();
-        for (boost::shared_ptr<SceneModel::Topology> star: starTopologies)
+        boost::shared_ptr<SceneModel::Topology> bestStar = starTopologies[0];
+        mCostFunction->calculateCost(bestStar);
+        for (unsigned int i = 1; i < starTopologies.size(); i++)
         {
+            boost::shared_ptr<SceneModel::Topology> star = starTopologies[i];
             mCostFunction->calculateCost(star);
-            if (star->getCost() < mBestOptimizedTopology->getCost())
-                mBestOptimizedTopology = star;
+            if (star->getCost() < bestStar->getCost())
+                bestStar = star;
         }
+        if (bestStar->getCost() < mBestOptimizedTopology->getCost())
+            mBestOptimizedTopology = bestStar;
+
         ROS_INFO_STREAM("Found best topology from fully meshed and stars. Was " << mBestOptimizedTopology->mIdentifier << " with cost " << mBestOptimizedTopology->getCost());
+
+        bool optimizeStarTopologies;
+        // Try to get whether to optimize only the star topologies.
+        if(!mNodeHandle.getParam("optimize_star_topologies", optimizeStarTopologies))
+           throw std::runtime_error("Please specify parameter optimize_star_topologies when starting this node.");
+
+        if (optimizeStarTopologies)
+        {
+            ROS_INFO_STREAM("Best star is " << bestStar->mIdentifier << " with cost " << bestStar->getCost());
+            mBestStarIfRequested = bestStar;
+        }
 
         std::string neighbourhoodFunctionType;
         // Try to get the type of the neighbourhood function.
@@ -153,6 +156,9 @@ namespace ProbabilisticSceneRecognition {
 
     boost::shared_ptr<SceneModel::Topology> CombinatorialOptimizer::runOptimization()
     {
+        if (mBestStarIfRequested)
+            return mBestStarIfRequested;
+
         mPrintHelper.printAsHeader("Starting optimization.");
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();   // Get the start time.
         if (mStartingTopologies.empty()) throw std::runtime_error("No starting topologies found.");
@@ -193,16 +199,61 @@ namespace ProbabilisticSceneRecognition {
         return mBestOptimizedTopology;
     }
 
+    void CombinatorialOptimizer::initTestSets(const std::vector<std::string>& pObjectTypes, const std::vector<boost::shared_ptr<ISM::ObjectSet>>& pExamplesList)
+    {
+        // Try to get the number of test sets to use.
+        if(!mNodeHandle.getParam("test_set_count", mTestSetCount))
+           throw std::runtime_error("Please specify parameter test_set_count when starting this node.");
+        if (mTestSetCount < 0)
+            throw std::runtime_error("Parameter test_set_count should be larger than 0 (cannot use a negative amount of tets sets).");
+
+        // Try to get the number of test sets to load.
+        if(!mNodeHandle.getParam("loaded_test_set_count", mLoadedTestSetCount))
+           throw std::runtime_error("Please specify parameter loaded_test_set_count when starting this node.");
+        if (mLoadedTestSetCount < 0)
+            throw std::runtime_error("Parameter loaded_test_set_count should be larger than 0 (cannot load a negative amount of tets sets).");
+        if (mLoadedTestSetCount < mTestSetCount)
+        {
+            mLoadedTestSetCount = mTestSetCount;
+            ROS_INFO_STREAM("Warning: loaded_test_set_count was smaller than test_set_count. Was changed to be equal.");
+        }
+
+        boost::shared_ptr<SceneModel::Topology> fullyMeshedTopology = mTopologyManager->getFullyMeshedTopology();
+        if (!fullyMeshedTopology) throw std::runtime_error("In CombinatorialTrainer(): failed to get fully meshed topology from TopologyManager");
+
+        // Create test set generator
+        // Try to get the test set generator type.
+        std::string testSetGeneratorType;
+        if(!mNodeHandle.getParam("test_set_generator_type", testSetGeneratorType))
+           throw std::runtime_error("Please specify parameter test_set_generator_type when starting this node.");
+
+        boost::shared_ptr<TestSetGenerator> testSetGenerator;
+        if (testSetGeneratorType == "absolute")
+            testSetGenerator.reset(new AbsoluteTestSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology));
+        else if (testSetGeneratorType == "relative")
+            testSetGenerator.reset(new RelativeTestSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology));
+        else if (testSetGeneratorType == "reference")
+            testSetGenerator.reset(new ReferenceTestSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology));
+        else
+            throw std::runtime_error("In CombinatorialOptimizer(): " + testSetGeneratorType + " is not a valid test_set_generator_type. "
+                                     + "Valid types are absolute, relative, reference.");
+
+        testSetGenerator->generateTestSets(pExamplesList, mTestSetCount); // completes the evaluator
+    }
+
     void CombinatorialOptimizer::initFullyMeshedTopologyAndFilterLoadedTestSets()
     {
         boost::shared_ptr<SceneModel::Topology> fm = mTopologyManager->getFullyMeshedTopology();
 
+        TestSetSelection testSetSelection(mEvaluator);
+
+        // Take more sets than the test set count to restrict runtime while at the same time accounting for test set removal:
+        testSetSelection.takeXTestSets(mLoadedTestSetCount);
+
         // should already have been evaluated if test sets were not loaded from file; if topology was already evaluated, Evaluator returns immediately:
         // if evaluate() did not return immediately, which indicates that the test sets were loaded from file instead of created, look at probabilities to determine a better recognition threshold:
         if (mEvaluator->evaluate(fm, true))
-        {           
-            TestSetSelection testSetSelection(mEvaluator);
-
+        {
             if (mUseFlexibleRecognitionThreshold)
             {
                 double minValidProbability, maxInvalidProbability;
@@ -218,6 +269,7 @@ namespace ProbabilisticSceneRecognition {
             }
 
             // if there is still more test sets left than asked for, take only X = mTestSetCount of them.
+            // if test sets were not loaded but created, there are exactly testSetCount of them in the first place.
             testSetSelection.takeXTestSets(mTestSetCount);
 
             // since the fully meshed topology was possibly run on different test sets, average recognition runtime needs to be recalculated:
@@ -227,7 +279,7 @@ namespace ProbabilisticSceneRecognition {
             for (boost::shared_ptr<TestSet> invalid: mEvaluator->getInvalidTestSets())
                 recognitionRuntimeSum += invalid->getFullyMeshedRecognitionRuntime();
             fm->setEvaluationResult(recognitionRuntimeSum / (mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size()),  // new average recognition runtime
-                                    fm->getFalsePositives(), fm->getFalseNegatives());
+                                    0, 0); // since the test sets which would lead to false positives or negatives were specifically removed, there are none such.
         }
 
         mMaxAverageRecognitionRuntime = fm->getAverageRecognitionRuntime();

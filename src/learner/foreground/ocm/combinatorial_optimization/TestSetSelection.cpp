@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-    TestSetSelection::TestSetSelection(boost::shared_ptr<AbstractEvaluator> pEvaluator):
+    TestSetSelection::TestSetSelection(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator):
         mEvaluator(pEvaluator), mPrintHelper('=')
     { }
 

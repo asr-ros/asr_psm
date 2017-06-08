@@ -37,31 +37,13 @@ public:
      */
     ~AverageConditionalProbability();
 
-    /**
-     * Add a value of a conditional probability.
-     * @param pProb the value of the conditional probability.
-     */
-    virtual void addProbability(double pProbability);
-
-    /**
-     * Get the average value of the conditional probabilities.
-     * @return the average value of the conditional probabilities.
-     */
-    virtual double getProbability();
-
 private:
     /**
-     * The current sum of the conditional probabilities.
+     * Calculate the probability from the parent probabilities.
+     * @return the probability calculated from the parent probabilities.
      */
-    double mSum;
-    /**
-     * The number of probabilities added.
-     */
-    unsigned int mCount;
-    /**
-     * Whether this probability has already been read once. Adding to a probability that has already been read is forbidden.
-     */
-    bool mWasRead;
+    virtual double calculateProbability();
+
 };
 
 }

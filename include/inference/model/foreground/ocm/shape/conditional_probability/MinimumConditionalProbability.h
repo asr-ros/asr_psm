@@ -37,27 +37,13 @@ public:
      */
     ~MinimumConditionalProbability();
 
-    /**
-     * Add a value of a conditional probability.
-     * @param pProb the value of the conditional probability.
-     */
-    virtual void addProbability(double pProbability);
-
-    virtual double getProbability();
-
 private:
     /**
-     * The current minimum value of the conditional probabilities.
+     * Calculate the probability from the parent probabilities.
+     * @return the probability calculated from the parent probabilities.
      */
-    double mProbability;
-    /**
-     * Whether a value for the conditional probability has been set.
-     */
-    bool mIsSet;
-    /**
-     * Whether this probability has already been read once. Adding to a probability that has already been read is forbidden.
-     */
-    bool mWasRead;
+    virtual double calculateProbability();
+
 };
 
 }

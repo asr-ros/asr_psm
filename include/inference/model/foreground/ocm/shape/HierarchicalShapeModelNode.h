@@ -136,6 +136,12 @@ namespace ProbabilisticSceneRecognition {
      */
     std::string getSceneObjectType() { return mSceneObject; }
 
+    /**
+     * set the type of the node's parent.
+     * @param pParentObject the type of the node's parent.
+     */
+    void setParentObjectType(const std::string& pParentObject) { mParentObject = pParentObject; }
+
   private:
     
     /**
@@ -200,9 +206,14 @@ namespace ProbabilisticSceneRecognition {
     boost::shared_ptr<HierarchicalShapeModelNode> mReferencedNode;
 
     /**
-     * Whether this node has already calculated its probability before.
+     * Whether this node was visited through a not cut path before
+     * (that is a path through the tree that does not contain an assignment to the null object)
      */
     bool mWasVisited;
 
+    /**
+     * The type of the parent object of this node.
+     */
+    std::string mParentObject;
   };
 }

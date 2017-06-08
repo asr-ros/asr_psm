@@ -24,15 +24,15 @@
     <!-- The minimal number of kernels. -->
     <param name="kernels_min" value="1"/>
     <!-- The maximal number of kernels. -->
-    <param name="kernels_max" value="2"/>
+    <param name="kernels_max" value="1"/>
     <!-- The number of runs per kernel. -->
     <param name="runs_per_kernel" value="2"/>
     <!-- The number of samples to gereate for every recorded sample. -->
-    <param name="synthetic_samples" value="1"/>
+    <param name="synthetic_samples" value="2"/>
     <!-- The position interval for the sample relaxiation (in meters). -->
     <param name="interval_position" value="0.250"/>
     <!-- The orientation interval for the sample relaxiation (in degrees). -->
-    <param name="interval_orientation" value="10"/>
+    <param name="interval_orientation" value="20"/>
     <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
     <param name="orientation_plot_path" value="UNDEFINED"/>
     <!-- Max angle deviation for the tree generation. -->

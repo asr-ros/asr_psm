@@ -35,7 +35,7 @@ namespace ProbabilisticSceneRecognition {
 /**
  * Tests learned models of topologies against valid and invalid test sets.
  */
-class AbstractEvaluator {
+class AbstractTopologyEvaluator {
 public:
 
     /**

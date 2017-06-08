@@ -17,7 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #pragma once
 
-#include "learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/AbstractTopologyEvaluator.h"
 #include "helper/PrintHelper.h"
 
 namespace ProbabilisticSceneRecognition {
@@ -33,7 +33,7 @@ public:
      * Constructor.
      * @param pEvaluator    the Evaluator that contains the test sets that should be filtered.
      */
-    TestSetSelection(boost::shared_ptr<AbstractEvaluator> pEvaluator);
+    TestSetSelection(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator);
 
     /**
      * Destructor.
@@ -66,7 +66,7 @@ private:
     /**
      * The evaluator contains the test sets that should be filtered.
      */
-    boost::shared_ptr<AbstractEvaluator> mEvaluator;
+    boost::shared_ptr<AbstractTopologyEvaluator> mEvaluator;
 
     /**
      * Helper used to print information as headers, marked with special dividers.

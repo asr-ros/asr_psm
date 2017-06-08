@@ -15,13 +15,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
+#include "learner/foreground/ocm/combinatorial_optimization//TopologyEvaluator.h"
 
 namespace ProbabilisticSceneRecognition {
 
-Evaluator::Evaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
+TopologyEvaluator::TopologyEvaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                      std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold):
-    AbstractEvaluator(), mExamplesList(pExamplesList), mLearners(pLearners), mRunNumber(0), mPrintHelper('-')
+    AbstractTopologyEvaluator(), mExamplesList(pExamplesList), mLearners(pLearners), mRunNumber(0), mPrintHelper('-')
 {
     mRecognitionThreshold = pRecognitionThreshold;
 
@@ -74,39 +74,48 @@ Evaluator::Evaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesLis
         throw std::runtime_error("Please specify parameter sigma_multiplicator when starting this node.");
 }
 
-Evaluator::~Evaluator() {
+TopologyEvaluator::~TopologyEvaluator() {
     if (mCreateRuntimeLog && mRuntimeLogger.is_open())
     {
         mRuntimeLogger.close();
     }
 }
 
-bool Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool pFullyMeshed)
+bool TopologyEvaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool pFullyMeshed)
 {
-    if (!pTopology) throw std::runtime_error("In Evaluator::evaluate(): topology from argument is null pointer.");
+    if (!pTopology) throw std::runtime_error("In TopologyEvaluator::evaluate(): topology from argument is null pointer.");
 
     if (pTopology->isEvaluated()) return false;    // no new evaluation needed
 
     mPrintHelper.printAsHeader("Evaluating topology " + pTopology->mIdentifier + ":");
 
+    // learn partial model:
     update(pTopology->getTree());
 
-    if (mValidTestSets.empty() && mInvalidTestSets.empty()) throw std::runtime_error("In Evaluator::evaluate(): no test sets found.");
+    // output partial model:
+    xmlOutput(pTopology);
+
+    if (mValidTestSets.empty() && mInvalidTestSets.empty()) throw std::runtime_error("In TopologyEvaluator::evaluate(): no test sets found.");
 
     unsigned int falseNegatives = 0;
     unsigned int falsePositives = 0;
     double recognitionRuntimeSum = 0;
 
-    for (boost::shared_ptr<TestSet> valid: mValidTestSets)
+    for (unsigned int i = 0; i < mValidTestSets.size(); i++)
     {
+        boost::shared_ptr<TestSet> valid = mValidTestSets[i];
+        ROS_INFO_STREAM("Evaluating topology " << pTopology->mIdentifier << " against valid test set " << i << "/" << mValidTestSets.size());
         std::pair<double, double> recognitionResult = recognize(valid, pFullyMeshed);
         if (recognitionResult.first <= mRecognitionThreshold) falseNegatives++; // did not recognize a valid scene.
         recognitionRuntimeSum += recognitionResult.second;
     }
 
-    for (boost::shared_ptr<TestSet> invalid: mInvalidTestSets)
+    for (unsigned int j = 0; j < mInvalidTestSets.size(); j++)
     {
+        boost::shared_ptr<TestSet> invalid = mInvalidTestSets[j];
+        ROS_INFO_STREAM("Evaluating topology " << pTopology->mIdentifier << " against invalid test set " << j << "/" << mInvalidTestSets.size());
         std::pair<double, double> recognitionResult = recognize(invalid, pFullyMeshed);
+        ROS_INFO_STREAM("Evaluated topology " << pTopology->mIdentifier << " against invalid test set " << j << "/" << mInvalidTestSets.size());
         if (recognitionResult.first > mRecognitionThreshold) falsePositives++; // did recognize an invalid scene.
         recognitionRuntimeSum += recognitionResult.second;
     }
@@ -118,19 +127,17 @@ bool Evaluator::evaluate(boost::shared_ptr<SceneModel::Topology> pTopology, bool
 
     pTopology->setEvaluationResult(avgRuntime, falsePositives, falseNegatives);
 
-    xmlOutput(pTopology);
-
     return true;    // was evaluated.
 }
 
-std::pair<double, double> Evaluator::recognize(boost::shared_ptr<TestSet> pEvidence, bool pFullyMeshed)
+std::pair<double, double> TopologyEvaluator::recognize(boost::shared_ptr<TestSet> pEvidence, bool pFullyMeshed)
 {
     struct timeval start;
     struct timeval end;
 
     gettimeofday(&start, NULL); // get start time
     double probability = getProbability(pEvidence);
-    gettimeofday(&end, NULL);   // get the stop time
+    gettimeofday(&end, NULL);   // get the stop time;
 
     double recognitionRuntime, seconds, useconds;
     seconds = end.tv_sec - start.tv_sec;
@@ -143,7 +150,7 @@ std::pair<double, double> Evaluator::recognize(boost::shared_ptr<TestSet> pEvide
     return std::pair<double, double>(probability, recognitionRuntime);
 }
 
-double Evaluator::getProbability(boost::shared_ptr<TestSet> pEvidence)
+double TopologyEvaluator::getProbability(boost::shared_ptr<TestSet> pEvidence)
 {
     std::vector<ISM::Object> evidence;
     for (ISM::ObjectPtr objPtr: pEvidence->mObjectSet->objects)
@@ -159,7 +166,7 @@ double Evaluator::getProbability(boost::shared_ptr<TestSet> pEvidence)
     return mForegroundSceneContent.getSceneProbability(); // Foreground scene probability for partial model;
 }
 
-void Evaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
+void TopologyEvaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
 {
     // reset mModel:
     mModel = boost::property_tree::ptree();
@@ -191,7 +198,7 @@ void Evaluator::update(boost::shared_ptr<SceneModel::TreeNode> pTree)
     // because of this and since the complete model is only assembled at the very end, only a partial model is used here.
 }
 
-void Evaluator::xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology)
+void TopologyEvaluator::xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology)
 {
     if (mXmlOutput != "none")
     {
@@ -199,21 +206,18 @@ void Evaluator::xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology)
 
         mModel.add("<xmlattr>.run", mRunNumber);
         mModel.add("<xmlattr>.topology_id", pTopology->mIdentifier);
-        mModel.add("<xmlattr>.false_positives", pTopology->getFalsePositives());
-        mModel.add("<xmlattr>.false_negatives", pTopology->getFalseNegatives());
-        mModel.add("<xmlattr>.average_recognition_runtime", pTopology->getAverageRecognitionRuntime());
 
-        extendedModel.add_child("evaluator_result", mModel);
+        extendedModel.add_child("partial_model", mModel);
 
         if (mXmlOutput == "screen")
         {
-            std::cout << "Partial model in Evaluator run " << mRunNumber << ":" << std::cout;
+            std::cout << "Partial model in TopologyEvaluator run " << mRunNumber << ":" << std::cout;
             write_xml(std::cout, extendedModel);
             std::cout << std::endl;
         }
         else if (mXmlOutput == "file")
         {
-            std::string xmlFileName = mXmlFilePath + "evaluated_tree_" + boost::lexical_cast<std::string>(mRunNumber);
+            std::string xmlFileName = mXmlFilePath + "partial_model" + boost::lexical_cast<std::string>(mRunNumber);
             write_xml(xmlFileName, extendedModel);
         }
         else throw std::runtime_error("Parameter xml_output has invalid value " + mXmlOutput);

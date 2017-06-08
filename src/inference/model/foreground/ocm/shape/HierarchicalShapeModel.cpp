@@ -50,7 +50,7 @@ namespace ProbabilisticSceneRecognition {
     mChildren.push_back(boost::shared_ptr<HierarchicalShapeModelNode>(new HierarchicalShapeModelNode(v.second, id)));
     }
 
-    // Assign references based on the IDs:
+    // Assign references based on the IDs and set parent types:
     std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> nodesToVisit;
     for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
         nodesToVisit.push_back(child);
@@ -137,30 +137,34 @@ namespace ProbabilisticSceneRecognition {
           for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
               conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new AverageConditionalProbability());
       else throw std::runtime_error("In HierarchicalShapeModel::calculateProbabilityForHypothesis(): conditional probability algorithm type "
-                                    + mConditionalProbabilityAlgorithm + " is invalid. Valid types are minimum.");
+                                    + mConditionalProbabilityAlgorithm + " is invalid. Valid types are minimum, multiplied, root_of_multiplied, average.");
 
       // set probability of reference object (represented by this class):
-      conditionalProbabilities[0]->addProbability(rootResult);
+      conditionalProbabilities[0]->setProbability("Root", rootResult);
 
       // Iterate over all children, assign the given evidence to them and evaluate
       for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
       {	
+          child->setParentObjectType(mVisualizer->getSceneObjectName());
+
 	// Update the transformation from world coordinates to parent coordinates.
     child->setAbsoluteParentPose(mAbsolutePose);
 	
 	// If zero-object was assigned to child, continue iterating down the tree to set the right slot id,
-	// but don't use the probabilities based on the occluded subtree.
-    //result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0);
+    // but don't use the probabilities based on the occluded subtree.
     result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0, conditionalProbabilities);
       }
 
       double slotProduct = 1.0;
-      for (boost::shared_ptr<ConditionalProbability> cP: conditionalProbabilities)
-          slotProduct *= cP->getProbability();
-      // keeping the old result around for comparison:
-      /*if (slotProduct != result) std::cout << slotProduct << " (min), " << result << " (mul)" << std::endl;
-      else std::cout << slotProduct << "(min&mul)" << std::endl;*/
-      result = slotProduct; // overwriting it for output.
+      for (boost::shared_ptr<ConditionalProbability> cP: conditionalProbabilities) {
+        double slotProbability = cP->getProbability();
+        ROS_DEBUG_STREAM("Parent probabilities: " << cP->printParentProbabilities() << " => " << slotProbability);
+        slotProduct *= slotProbability;
+      }
+      // keep the old result around for comparison:
+      ROS_DEBUG_STREAM("Product of all probabilities: " << result << ". Product of conditional probabilities: " << slotProduct);
+
+      result = slotProduct; // overwrite it for output.
       
       // Forward position of this primary scene object to visualizer.
       mVisualizer->setBestPoseCandidate(mAbsolutePose);

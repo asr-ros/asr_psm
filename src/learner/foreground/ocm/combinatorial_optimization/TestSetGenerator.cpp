@@ -19,122 +19,61 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-TestSetGenerator::TestSetGenerator(boost::shared_ptr<AbstractEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology,
-                 double pObjectMissingInTestSetProbability):
-    mEvaluator(pEvaluator), mTypes(pObjectTypes), mFullyMeshedTopology(pFullyMeshedTopology), mObjectMissingInTestSetProbability(pObjectMissingInTestSetProbability),
+TestSetGenerator::TestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology):
+    mEvaluator(pEvaluator), mTypes(pObjectTypes), mFullyMeshedTopology(pFullyMeshedTopology),
     mPrintHelper('+')
-{ }
+{
+    ros::NodeHandle nodeHandle("~");
+
+    // Try to get the valid test set source database filename:
+    if(!nodeHandle.getParam("valid_test_set_db_filename", mValidTestSetDbFilename))
+        throw std::runtime_error("Please specifiy parameter valid_test_set_db_filename when starting this node.");
+    // Try to get the invalid test set source database filename:
+    if(!nodeHandle.getParam("invalid_test_set_db_filename", mInvalidTestSetDbFilename))
+        throw std::runtime_error("Please specifiy parameter invalid_test_set_db_filename when starting this node.");
+    // Try to get the valid test set target database filename:
+    if(!nodeHandle.getParam("write_valid_test_sets_filename", mWriteValidTestSetsFilename))
+        throw std::runtime_error("Please specifiy parameter write_valid_test_sets_filename when starting this node.");
+    // Try to get the invalid test set target database filename:
+    if(!nodeHandle.getParam("write_invalid_test_sets_filename", mWriteInvalidTestSetsFilename))
+        throw std::runtime_error("Please specifiy parameter write_invalid_test_sets_filename when starting this node.");
+
+    // Try to get the probability for each object that, in a newly generated test set, this object is missing.
+    if(!nodeHandle.getParam("object_missing_in_test_set_probability", mObjectMissingInTestSetProbability))
+       throw std::runtime_error("Please specify parameter object_missing_in_test_set_probability when starting this node.");
+}
 
 TestSetGenerator::~TestSetGenerator()
 { }
 
-void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
-                                        unsigned int pTestSetCount)
+void TestSetGenerator::generateTestSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
 {
-    ros::NodeHandle nodeHandle("~");
-    std::string validTestSetDbFilename, invalidTestSetDbFilename, writeValidTestSetsFilename, writeInvalidTestSetsFilename;
-    // Try to get the valid test set source database filename:
-    if(!nodeHandle.getParam("valid_test_set_db_filename", validTestSetDbFilename))
-        throw std::runtime_error("Please specifiy parameter valid_test_set_db_filename when starting this node.");
-    // Try to get the invalid test set source database filename:
-    if(!nodeHandle.getParam("invalid_test_set_db_filename", invalidTestSetDbFilename))
-        throw std::runtime_error("Please specifiy parameter invalid_test_set_db_filename when starting this node.");
-    // Try to get the valid test set target database filename:
-    if(!nodeHandle.getParam("write_valid_test_sets_filename", writeValidTestSetsFilename))
-        throw std::runtime_error("Please specifiy parameter write_valid_test_sets_filename when starting this node.");
-    // Try to get the invalid test set target database filename:
-    if(!nodeHandle.getParam("write_invalid_test_sets_filename", writeInvalidTestSetsFilename))
-        throw std::runtime_error("Please specifiy parameter write_invalid_test_sets_filename when starting this node.");
     mSceneId = pExamplesList[0]->mIdentifier;
 
     // if the file names are empty: generate new test sets.
-    if (validTestSetDbFilename == "" || invalidTestSetDbFilename == "")
+    if (mValidTestSetDbFilename == "" || mInvalidTestSetDbFilename == "")
     {
-        validateSets(generateRandomSets(pExamplesList, pTestSetCount));
-        if (writeValidTestSetsFilename != "")
-            writeTestSetsToFile(writeValidTestSetsFilename, mValidTestSets);
-        if (writeInvalidTestSetsFilename != "")
-            writeTestSetsToFile(writeInvalidTestSetsFilename, mInvalidTestSets);
+        std::vector<boost::shared_ptr<TestSet>> randomTestSets = generateRandomSets(pExamplesList, pTestSetCount);
+
+        // if requested, simulate occlusion:
+        if (mObjectMissingInTestSetProbability > 0)
+            randomTestSets = simulateOcclusion(randomTestSets);
+
+        validateSets(randomTestSets);
+
+        if (mWriteValidTestSetsFilename != "")
+            writeTestSetsToFile(mWriteValidTestSetsFilename, mValidTestSets);
+        if (mWriteInvalidTestSetsFilename != "")
+            writeTestSetsToFile(mWriteInvalidTestSetsFilename, mInvalidTestSets);
     }
     else // get the test sets from the databases. Might be more than pTestSetCount.
     {
-        mValidTestSets = loadTestSetsFromFile(validTestSetDbFilename);
-        mInvalidTestSets = loadTestSetsFromFile(invalidTestSetDbFilename);
+        mValidTestSets = loadTestSetsFromFile(mValidTestSetDbFilename);
+        mInvalidTestSets = loadTestSetsFromFile(mInvalidTestSetDbFilename);
     }
 
     mEvaluator->setValidTestSets(mValidTestSets);    // update with newfound valid test sets
     mEvaluator->setInvalidTestSets(mInvalidTestSets);    // initialize properly
-}
-
-std::vector<boost::shared_ptr<TestSet>> TestSetGenerator::generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount)
-{
-    mPrintHelper.printAsHeader("Generating " + boost::lexical_cast<std::string>(pTestSetCount) + " random test sets.");
-
-    std::random_device rd;
-    boost::mt19937  eng;    // Mersenne Twister
-    eng.seed(rd());
-    boost::uniform_int<> dist(0,RAND_MAX);  // Normal Distribution
-    boost::variate_generator<boost::mt19937,boost::uniform_int<>>  gen(eng,dist);  // Variate generator
-
-    ROS_INFO_STREAM("Found " << mTypes.size() << " object types.");
-
-    std::vector<boost::shared_ptr<TestSet>> testSets;
-
-    for (unsigned int i = 0; i < pTestSetCount; i++)
-    {
-        boost::shared_ptr<TestSet> testSet(new TestSet());
-
-
-        unsigned int randomTimestep = gen() % pExamplesList.size();
-        unsigned int randomObjectIndex = gen() % pExamplesList[randomTimestep]->objects.size();
-        ISM::ObjectPtr referenceObject = pExamplesList[randomTimestep]->objects[randomObjectIndex];
-        //setPoseOfObjectRelativeToReference(referenceObject, referenceObject);
-        testSet->mObjectSet->insert(referenceObject);
-
-        for (std::string objectType: mTypes)
-        {
-            if (objectType == referenceObject->type)
-                continue;
-            else
-            {
-                unsigned int occurs;
-                if (mObjectMissingInTestSetProbability > 1)
-                    throw std::runtime_error("parameter object_missing_in_test_set_probability should not be larger than 1.");
-                if (mObjectMissingInTestSetProbability > 0)
-                    occurs = gen() % (int) ((double) 1.0 / mObjectMissingInTestSetProbability);   // only with a certain probability: object ccurs
-                else occurs = 1;
-
-                if (occurs != 0)             // object does occur
-                {
-                    ISM::ObjectPtr object;
-
-                    unsigned int counter = 0;
-                    while (!object && counter < pExamplesList.size())   // does not iterate over all timesteps; using example list size to scale
-                    {
-                        unsigned int newRandomTimestep = gen() % pExamplesList.size();
-                        for (ISM::ObjectPtr currentObject: pExamplesList[newRandomTimestep]->objects)
-                        {
-                            if (currentObject->type == objectType)
-                            {
-                                object = currentObject;
-                                break;
-                            }
-                        }
-                        counter++;
-                    }
-
-                    if (!object)
-                        throw std::runtime_error("In TestSetGenerator::generateTestSets(): Failed to find object of type " + objectType + " in evidence list.");
-                    //setPoseOfObjectRelativeToReference(object, referenceObject);
-                    testSet->mObjectSet->insert(object);
-                }
-            }
-        }
-
-        testSets.push_back(testSet);
-    }
-
-    return testSets;
 }
 
 void TestSetGenerator::validateSets(std::vector<boost::shared_ptr<TestSet>> pTestSets)
@@ -157,7 +96,6 @@ void TestSetGenerator::validateSets(std::vector<boost::shared_ptr<TestSet>> pTes
     double maxProbability = 0;
     double minProbability = 2;  // Minumum probability greater than zero. Set higher than possible maximum so it will be lowered in each case, and if invalid probability 2 is returned, this indicates that no probability > 0 was found.
     unsigned int zeroSets = 0;
-    pTestSets = mEvaluator->getValidTestSets();
     for (boost::shared_ptr<TestSet> testSet: pTestSets)
     {
         double probability = testSet->getFullyMeshedProbability();
@@ -197,43 +135,6 @@ void TestSetGenerator::setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject
     ISM::PosePtr newPose;
     pObject->pose->convertPoseIntoFrame(pReference->pose, newPose);
     pObject->pose = newPose;
-    /*
-    std::vector<geometry_msgs::PoseWithCovariance> newPoses;
-    for (geometry_msgs::PoseWithCovariance refPose: pReference.sampledPoses)
-    {
-        Eigen::Vector3d refPosePosition(refPose.pose.position.x, refPose.pose.position.y, refPose.pose.position.z);
-        Eigen::Quaterniond refPoseOrientation(refPose.pose.orientation.w, refPose.pose.orientation.x, refPose.pose.orientation.y, refPose.pose.orientation.z);
-        for (geometry_msgs::PoseWithCovariance objectPose: pObject.sampledPoses)
-        {
-            Eigen::Vector3d objectPosePosition(objectPose.pose.position.x, objectPose.pose.position.y, objectPose.pose.position.z);
-            Eigen::Quaterniond objectPoseOrientation(objectPose.pose.orientation.w, objectPose.pose.orientation.x, objectPose.pose.orientation.y, objectPose.pose.orientation.z);
-            // compare ISM::GeometryHelper
-            if ((refPosePosition - objectPosePosition).norm() == 0) {
-                //avoid special case
-                objectPosePosition.x() = (objectPosePosition.x() + 0.0000001);
-            }
-            Eigen::Vector3d objToRefVector = refPosePosition - objectPosePosition;
-            Eigen::Vector3d refToObjVector = objToRefVector * -1.0;
-            Eigen::Quaternion<double> p = objectPoseOrientation;
-            Eigen::Quaternion<double> r = refPoseOrientation;
-
-            //rotate everything relative to ref pose
-            Eigen::Quaternion<double> refToObjectPoseQuat = (r.inverse()) * p;
-
-            geometry_msgs::PoseWithCovariance newPose;
-            newPose.pose.position.x = refToObjVector.x();
-            newPose.pose.position.y = refToObjVector.y();
-            newPose.pose.position.z = refToObjVector.z();
-            newPose.pose.orientation.w = refToObjectPoseQuat.w();
-            newPose.pose.orientation.x = refToObjectPoseQuat.x();
-            newPose.pose.orientation.y = refToObjectPoseQuat.y();
-            newPose.pose.orientation.z = refToObjectPoseQuat.z();
-
-            newPoses.push_back(newPose);
-        }
-    }
-
-    pObject.sampledPoses = newPoses;*/
 }
 
 std::vector<boost::shared_ptr<TestSet>> TestSetGenerator::loadTestSetsFromFile(const std::string& pFilename)
@@ -279,18 +180,8 @@ void TestSetGenerator::writeTestSetsToFile(const std::string& pFilename, const s
             localTableHelper->dropTables();
             localTableHelper->createTablesIfNecessary();
             localTableHelper->insertRecordedPattern(mSceneId);
-            std::vector<ISM::ObjectSetPtr> objectSets;
             for (boost::shared_ptr<TestSet> testSet: pTestSets)
-            {
-                ISM::ObjectSetPtr objectSet(new ISM::ObjectSet());
-                for (ISM::ObjectPtr object: testSet->mObjectSet->objects)
-                    objectSet->insert(object);
-                objectSets.push_back(objectSet);
-            }
-
-            for (unsigned int i = 0; i < objectSets.size(); ++i)
-                localTableHelper->insertRecordedObjectSet(objectSets[i], mSceneId);
-
+                localTableHelper->insertRecordedObjectSet(testSet->mObjectSet, mSceneId);
         }
         catch (soci::soci_error& e)
         {
@@ -299,6 +190,48 @@ void TestSetGenerator::writeTestSetsToFile(const std::string& pFilename, const s
         }
     }
     ROS_INFO_STREAM("Wrote " << pTestSets.size() << " test sets.");
+}
+
+std::vector<boost::shared_ptr<TestSet>> TestSetGenerator::simulateOcclusion(std::vector<boost::shared_ptr<TestSet>> pCompleteTestSets)
+{
+    if (mObjectMissingInTestSetProbability == 0)
+        return pCompleteTestSets;
+
+    ROS_INFO_STREAM("Simulating occlusion by removing random object observations from test sets.");
+
+    unsigned int removed = 0;
+
+    std::random_device rd;
+    boost::mt19937  eng;    // Mersenne Twister
+    eng.seed(rd());
+    boost::uniform_int<> dist(0,RAND_MAX);  // Normal Distribution
+    boost::variate_generator<boost::mt19937,boost::uniform_int<>>  gen(eng,dist);  // Variate generator
+
+    if (mObjectMissingInTestSetProbability < 0 ||  mObjectMissingInTestSetProbability > 1)
+        throw std::runtime_error("parameter object_missing_in_test_set_probability should be in interval [0,1].");
+
+    for (boost::shared_ptr<TestSet> testSet: pCompleteTestSets)
+    {
+        // The first object in each test set is treated as the reference object, which is not allowed to be occluded, so i starts at 1.
+        // This also prevents empty test sets.
+        unsigned int i = 1;
+        unsigned int occurs;
+
+        while (i < testSet->mObjectSet->objects.size())
+        {
+            occurs = gen() % (int) ((double) 1.0 / mObjectMissingInTestSetProbability);   // only with a certain probability: object i occurs
+
+            if (occurs != 0)             // if object i does occur, move to next one
+                i++;
+            else
+            {
+                testSet->mObjectSet->objects.erase(testSet->mObjectSet->objects.begin() + i);    // otherwise erase it from test set.
+                removed++;
+            }
+        }
+    }
+    ROS_INFO_STREAM("Removed " << removed << " object observations.");
+    return pCompleteTestSets;
 }
 
 }

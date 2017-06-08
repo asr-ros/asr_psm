@@ -15,51 +15,51 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/AbstractTopologyEvaluator.h"
 
 namespace ProbabilisticSceneRecognition {
 
-    void AbstractEvaluator::setValidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pValidTestSets)
+    void AbstractTopologyEvaluator::setValidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pValidTestSets)
     {
         mValidTestSets = pValidTestSets;
     }
 
-    std::vector<boost::shared_ptr<TestSet>> AbstractEvaluator::getValidTestSets()
+    std::vector<boost::shared_ptr<TestSet>> AbstractTopologyEvaluator::getValidTestSets()
     {
         return mValidTestSets;
     }
 
-    void AbstractEvaluator::setInvalidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pInvalidTestSets)
+    void AbstractTopologyEvaluator::setInvalidTestSets(const std::vector<boost::shared_ptr<TestSet>>& pInvalidTestSets)
     {
         mInvalidTestSets = pInvalidTestSets;
     }
 
-    std::vector<boost::shared_ptr<TestSet>> AbstractEvaluator::getInvalidTestSets()
+    std::vector<boost::shared_ptr<TestSet>> AbstractTopologyEvaluator::getInvalidTestSets()
     {
         return mInvalidTestSets;
     }
 
-    void AbstractEvaluator::setRecognitionThreshold(double pRecognitionThreshold)
+    void AbstractTopologyEvaluator::setRecognitionThreshold(double pRecognitionThreshold)
     {
         mRecognitionThreshold = pRecognitionThreshold;
     }
 
-    double AbstractEvaluator::getRecognitionThreshold()
+    double AbstractTopologyEvaluator::getRecognitionThreshold()
     {
         return mRecognitionThreshold;
     }
 
-    void AbstractEvaluator::eraseValidTestSet(unsigned int pIndex)
+    void AbstractTopologyEvaluator::eraseValidTestSet(unsigned int pIndex)
     {
         if (pIndex >= mValidTestSets.size())
-            throw std::runtime_error("In AbstractEvaluator::eraseValidTestSet(): index " + boost::lexical_cast<std::string>(pIndex) + " out of bounds.");
+            throw std::runtime_error("In AbstractTopologyEvaluator::eraseValidTestSet(): index " + boost::lexical_cast<std::string>(pIndex) + " out of bounds.");
         mValidTestSets.erase(mValidTestSets.begin() + pIndex);
     }
 
-    void AbstractEvaluator::eraseInvalidTestSet(unsigned int pIndex)
+    void AbstractTopologyEvaluator::eraseInvalidTestSet(unsigned int pIndex)
     {
         if (pIndex >= mInvalidTestSets.size())
-            throw std::runtime_error("In AbstractEvaluator::eraseInvalidTestSet(): index " + boost::lexical_cast<std::string>(pIndex) + " out of bounds.");
+            throw std::runtime_error("In AbstractTopologyEvaluator::eraseInvalidTestSet(): index " + boost::lexical_cast<std::string>(pIndex) + " out of bounds.");
         mInvalidTestSets.erase(mInvalidTestSets.begin() + pIndex);
     }
 

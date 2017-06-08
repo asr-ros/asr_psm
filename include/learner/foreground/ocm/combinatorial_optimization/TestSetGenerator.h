@@ -28,7 +28,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <topology_creator/TopologyCreator.h>
 
-#include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/TopologyEvaluator.h"
 
 #include "helper/PrintHelper.h"
 
@@ -44,10 +44,8 @@ public:
      * @param pEvaluator                            evaluator used to validate test sets.
      * @param pObjectTypes                          types of objects appearing in test sets (once each).
      * @param pFullyMeshedTopology                  fully meshed topology used to validate test sets.
-     * @param pObjectMissingInTestSetProbability    probability with which an object is missing from a test set.
      */
-    TestSetGenerator(boost::shared_ptr<AbstractEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology,
-                     double pObjectMissingInTestSetProbability);
+    TestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology);
 
     /**
      * Desctructor.
@@ -57,32 +55,18 @@ public:
     /**
      * Generate and validate random test sets. Set evaluator's sets accordingly.
      * @param pExamplesList list of object observations serving as basis of the test sets.
-     * @param pTestSetCount how many test sets to generate.
+     * @param pTestSetCount number of test sets to generate.
      */
     void generateTestSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
 
-private:
-
-    /**
-     * The test sets which represent the considered scene.
-     */
-    std::vector<boost::shared_ptr<TestSet>> mValidTestSets;
-    /**
-     * The test sets that resemble but do not represent the considered scene.
-     */
-    std::vector<boost::shared_ptr<TestSet>> mInvalidTestSets;
+protected:
 
     /**
      * Generate random test sets.
      * @param pExamplesList list of object observations serving as basis of the test sets.
-     * @param pTestSetCount how many test sets to generate.
+     * @param pTestSetCount number of test sets to generate.
      */
-    std::vector<boost::shared_ptr<TestSet>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
-    /**
-     * Validate whether test sets represent scene.
-     * @param pTestSets the test sets to validate.
-     */
-    void validateSets(std::vector<boost::shared_ptr<TestSet>> pTestSets);
+    virtual std::vector<boost::shared_ptr<TestSet>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount) = 0;
 
     /**
      * Set the pose of a given object relative to a reference object.
@@ -90,6 +74,34 @@ private:
      * @param pReference    the reference object.
      */
     void setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject, ISM::ObjectPtr pReference);
+
+    /**
+     * Class used to print lines as headers, marked with dividers.
+     */
+    PrintHelper mPrintHelper;
+
+    /**
+     * Types of objects appearing in test sets (once each).
+     */
+    std::vector<std::string> mTypes;
+
+private:
+
+    /**
+     * The test sets which represent the considered scene.
+     */
+    std::vector<boost::shared_ptr<TestSet>> mValidTestSets;
+
+    /**
+     * The test sets that resemble but do not represent the considered scene.
+     */
+    std::vector<boost::shared_ptr<TestSet>> mInvalidTestSets;
+
+    /**
+     * Validate whether test sets represent scene.
+     * @param pTestSets the test sets to validate.
+     */
+    void validateSets(std::vector<boost::shared_ptr<TestSet>> pTestSets);
 
     /**
      * Load test sets from database file.
@@ -106,30 +118,52 @@ private:
     void writeTestSetsToFile(const std::string& pFilename, const std::vector<boost::shared_ptr<TestSet>>& pTestSets);
 
     /**
+     * Simulate Occlusion of objects by cutting them from the test sets with a certain probability.
+     * @param pCompleteTestSets The test sets containing all objects each.
+     * @return Tets sets with missing objects.
+     */
+    std::vector<boost::shared_ptr<TestSet>> simulateOcclusion(std::vector<boost::shared_ptr<TestSet>> pCompleteTestSets);
+
+    /**
      * Evaluator used to validate test sets.
      */
-    boost::shared_ptr<AbstractEvaluator> mEvaluator;
-    /**
-     * Types of objects appearing in test sets (once each).
-     */
-    std::vector<std::string> mTypes;
+    boost::shared_ptr<AbstractTopologyEvaluator> mEvaluator;
+
     /**
      * Fully meshed topology used to validate test sets.
      */
     boost::shared_ptr<SceneModel::Topology> mFullyMeshedTopology;
+
     /**
-     * Probability with which an object is missing from a test set.
+     * Database file to load the valid test sets from. New test sets are created if this is set to ''.
      */
-    double mObjectMissingInTestSetProbability;
+    std::string mValidTestSetDbFilename;
+
+    /**
+     * Database file to load the invalid test sets from. New test sets are created if this is set to ''.
+     */
+    std::string mInvalidTestSetDbFilename;
+
+    /**
+     * Database file to write newly created valid testsets to. Test sets are not written if they were loaded from files or this parameter is set to ''.
+     */
+    std::string mWriteValidTestSetsFilename;
+
+    /**
+     * Database file to write newly created invalid testsets to. Test sets are not written if they were loaded from files or this parameter is set to ''.
+     */
+    std::string mWriteInvalidTestSetsFilename;
+
     /**
      * ID of the scene to be learned.
      */
     std::string mSceneId;
 
     /**
-     * Class used to print lines as headers, marked with dividers.
+     * Probability with which an object does not appear in a test set. set to 0 to have all objects appear in each test set
      */
-    PrintHelper mPrintHelper;
+    double mObjectMissingInTestSetProbability;
+
 };
 
 }

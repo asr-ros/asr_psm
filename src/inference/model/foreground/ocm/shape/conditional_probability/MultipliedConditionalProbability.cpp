@@ -19,25 +19,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-    MultipliedConditionalProbability::MultipliedConditionalProbability(): mProbability(1.0), mIsSet(false), mWasRead(false)
+    MultipliedConditionalProbability::MultipliedConditionalProbability(): ConditionalProbability()
     { }
 
     MultipliedConditionalProbability::~MultipliedConditionalProbability()
     { }
 
-    void MultipliedConditionalProbability::addProbability(double pProbability)
+    double MultipliedConditionalProbability::calculateProbability()
     {
-        if (mWasRead) throw std::runtime_error("In MultipliedConditionalProbability::addProbability(): trying to add to probability that has already been read once.");
-        mProbability *= pProbability;
-        mIsSet = true;
-    }
-
-    double MultipliedConditionalProbability::getProbability()
-    {
-        if (!mIsSet) throw std::runtime_error("In MultipliedConditionalProbability::getProbability(): trying to access probability that has not been set.");
-        //std::cout << "In this slot, " << mCount << " probabilities were multiplied to generate probability " << mProbability << std::endl;
-        mWasRead = true;
-        return mProbability;
+        double product = 1.0;
+        for (std::pair<std::string, double> probability: ConditionalProbability::mParentProbabilities)
+            product *= probability.second;
+        return product;
     }
 
 }

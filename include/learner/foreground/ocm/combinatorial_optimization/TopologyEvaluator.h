@@ -17,18 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #pragma once
 
-#include <trainer/TopologyTreeTrainer.h>
-#include <topology_creator/Topology.h>
-
-#include <boost/property_tree/xml_parser.hpp>
-
-#include <ISM/common_type/ObjectSet.hpp>
-
-#include "learner/foreground/ForegroundSceneLearner.h"
-#include "learner/foreground/ocm/SceneObjectLearner.h"
-#include "learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.h"
-
-#include "inference/model/foreground/ForegroundSceneContent.h"
+#include "learner/foreground/ocm/combinatorial_optimization/AbstractTopologyEvaluator.h"
 
 #include "helper/PrintHelper.h"
 
@@ -38,7 +27,7 @@ namespace ProbabilisticSceneRecognition {
 /**
  * Tests learned models of topologies against valid and invalid test sets.
  */
-class Evaluator: public AbstractEvaluator {
+class TopologyEvaluator: public AbstractTopologyEvaluator {
 public:
 
     /**
@@ -47,13 +36,13 @@ public:
      * @param pLearners             learners to learn models to test.
      * @param pRecognitionThreshold the threshold above (>) which a scene is considered recognized.
      */
-    Evaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
+    TopologyEvaluator(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
               std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners, double pRecognitionThreshold);
 
     /**
      * Desctuctor.
      */
-    ~Evaluator();
+    ~TopologyEvaluator();
 
     /**
      * Evaluate model learned on topology against test sets, write results to topology.

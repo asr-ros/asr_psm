@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #pragma once
 #include <stdexcept>
+#include <map>
 
 namespace ProbabilisticSceneRecognition {
 
@@ -25,16 +26,56 @@ namespace ProbabilisticSceneRecognition {
  */
 class ConditionalProbability {
 public:
+
+    /**
+     * Constructor.
+     */
+    ConditionalProbability();
+
+    /**
+     * Destructor.
+     */
+    ~ConditionalProbability();
+
     /**
      * Add a value to the conditional probability.
+     * @param pParentId the parent to set the probability for.
      * @param pProb the value of the conditional probability.
      */
-    virtual void addProbability(double pProbability) = 0;
+    void setProbability(std::string pParentId, double pProbability);
+
     /**
      * Get the value of the conditional probability.
      * @return the value of the conditional probability.
      */
-    virtual double getProbability() = 0;
+    double getProbability();
+
+    /**
+     * Returns the list of probabilities by parent ids as a string.
+     * @return list of probabilities by parent ids as a string.
+     */
+    std::string printParentProbabilities();
+
+protected:
+
+    /**
+     * Calculate the probability from the parent probabilities.
+     * @return the probability calculated from the parent probabilities.
+     */
+    virtual double calculateProbability() = 0;
+
+    /**
+     * Probabilities by parent ids.
+     */
+    std::map<std::string, double> mParentProbabilities;
+
+private:
+
+    /**
+     * Whether this probability has already been read once. Adding to a probability that has already been read is forbidden.
+     */
+    bool mWasRead;
+
 };
 
 }

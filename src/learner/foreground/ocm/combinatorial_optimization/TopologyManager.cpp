@@ -22,7 +22,7 @@ namespace ProbabilisticSceneRecognition {
 TopologyManager::TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                 const std::vector<std::string>& pObjectTypes,
                 boost::shared_ptr<SceneModel::AbstractTopologyCreator> pTopologyCreator,
-                boost::shared_ptr<AbstractEvaluator> pEvaluator):
+                boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator):
     mEvaluator(pEvaluator), mTopologyCreator(pTopologyCreator), mExamplesList(pExamplesList), mObjectTypes(pObjectTypes), mHistoryIndex(0), mPrintHelper('#')
 {
     ros::NodeHandle nodeHandle("~");
@@ -277,7 +277,10 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
             documentation << divider.str() << "best cost overall: " << overallBestCost  << std::endl << divider.str();
 
             if (mHistoryOutput == "screen") // print to console:
+            {
+                mPrintHelper.printAsHeader("History:");
                 std::cout << documentation.str();
+            }
             else if (mHistoryOutput == "txt")
             {
                 std::string filename = mHistoryFilePath + "history_of_run_" + boost::lexical_cast<std::string>(pRunNumber) + ".txt";

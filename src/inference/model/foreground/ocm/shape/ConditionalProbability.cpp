@@ -15,24 +15,43 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 */
 
-#include "inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.h"
+#include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
 
 namespace ProbabilisticSceneRecognition {
 
-    MinimumConditionalProbability::MinimumConditionalProbability(): ConditionalProbability()
-    { }
+ConditionalProbability::ConditionalProbability(): mWasRead(false)
+{ }
 
-    MinimumConditionalProbability::~MinimumConditionalProbability()
-    { }
+ConditionalProbability::~ConditionalProbability()
+{ }
 
-    double MinimumConditionalProbability::calculateProbability()
-    {
-        double minimum = 1.0;
-        for (std::pair<std::string, double> probability: ConditionalProbability::mParentProbabilities)
-            if (probability.second < minimum)
-                minimum = probability.second;
-        return minimum;
-    }
+void ConditionalProbability::setProbability(std::string pParentId, double pProbability)
+{
+    if (mWasRead) throw std::runtime_error("In ConditionalProbability::setProbability(" + pParentId + ", "
+                                           + std::to_string(pProbability) + "): trying to add to a probability that has already been read.");
+    mParentProbabilities[pParentId] = pProbability; // overwrites older probabilities.
+}
+
+double ConditionalProbability::getProbability()
+{
+    // to increase speed: if there is only one parent anyways, return its probability immediately.
+    if (mParentProbabilities.size() == 1)
+        return mParentProbabilities.begin()->second;
+
+    if (mParentProbabilities.empty())
+        throw std::runtime_error("In MinimumConditionalProbability::getProbability(): trying to access probability that has not been set.");
+
+    mWasRead = true;
+    return calculateProbability();
+}
+
+std::string ConditionalProbability::printParentProbabilities()
+{
+    std::string result;
+    for (std::pair<std::string, double> parentProbability: mParentProbabilities)
+        result += "(" + parentProbability.first + ", " + std::to_string(parentProbability.second) + ")";
+    return result;
+}
 
 }
 

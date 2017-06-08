@@ -24,7 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/utility/SVGHelper.hpp>
 #include <ISM/common_type/ObjectSet.hpp>
 
-#include "learner/foreground/ocm/combinatorial_optimization/Evaluator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/TopologyEvaluator.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.h"
 
 #include "helper/PrintHelper.h"
@@ -48,7 +48,7 @@ public:
     TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList,
                     const std::vector<std::string>& pObjectTypes,
                     boost::shared_ptr<SceneModel::AbstractTopologyCreator> pTopologyCreator,
-                    boost::shared_ptr<AbstractEvaluator> pEvaluator);
+                    boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator);
 
     /**
      * Desctructor.
@@ -118,7 +118,7 @@ private:
     /**
      * Evaluator to evaluate the topologies.
      */
-    boost::shared_ptr<AbstractEvaluator> mEvaluator;
+    boost::shared_ptr<AbstractTopologyEvaluator> mEvaluator;
     /**
      * @brief Generator creating the topologies.
      */

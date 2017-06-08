@@ -56,6 +56,7 @@ add_library(psm_inference  src/inference.cpp
 			    
 			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			    
+			    src/inference/model/foreground/ocm/shape/ConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.cpp
@@ -109,9 +110,12 @@ add_executable(learner src/learner.cpp
 			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			     
 			     src/learner/foreground/ocm/combinatorial_optimization/WeightedSum.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/AbstractTopologyEvaluator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TopologyEvaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/AbsoluteTestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/RelativeTestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/ReferenceTestSetGenerator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp
@@ -144,9 +148,12 @@ add_executable(learner_batch src/learner_batch.cpp
 			     src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			     
 			     src/learner/foreground/ocm/combinatorial_optimization/WeightedSum.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/AbstractEvaluator.cpp
-			     src/learner/foreground/ocm/combinatorial_optimization/Evaluator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/AbstractTopologyEvaluator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/TopologyEvaluator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/AbsoluteTestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/RelativeTestSetGenerator.cpp
+			     src/learner/foreground/ocm/combinatorial_optimization/ReferenceTestSetGenerator.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyAdapter.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/TopologyManager.cpp
 			     src/learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.cpp
@@ -186,6 +193,7 @@ add_executable(inference src/inference.cpp
 			    
 			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			    
+			    src/inference/model/foreground/ocm/shape/ConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.cpp
@@ -223,6 +231,7 @@ add_executable(inference_batch src/inference_batch.cpp
 			    
 			    src/helper/MappedProbabilityTable.cpp src/helper/ProbabilityTable.cpp src/helper/MathHelper.cpp src/helper/SerializationHelper.cpp src/helper/ObjectTransformation.cpp
 			    
+			    src/inference/model/foreground/ocm/shape/ConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/MinimumConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/MultipliedConditionalProbability.cpp
 			    src/inference/model/foreground/ocm/shape/conditional_probability/RootOfMultipliedConditionalProbability.cpp

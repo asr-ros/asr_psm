@@ -31,6 +31,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/combinatorial_optimization/WeightedSum.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TestSetGenerator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/AbsoluteTestSetGenerator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/RelativeTestSetGenerator.h"
+#include "learner/foreground/ocm/combinatorial_optimization/ReferenceTestSetGenerator.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TopologyManager.h"
 #include "learner/foreground/ocm/combinatorial_optimization/TestSetSelection.h"
 
@@ -66,6 +69,14 @@ public:
     boost::shared_ptr<SceneModel::Topology> runOptimization();
 
 private:
+
+    /**
+     * Initialize a test set generator and set evaluator test sets.
+     * @param pObjectTypes  All possible object types appearing in the relation graphs (once each)
+     * @param pExamplesList The list of evidences to train on.
+     */
+    void initTestSets(const std::vector<std::string>& pObjectTypes, const std::vector<boost::shared_ptr<ISM::ObjectSet>>& pExamplesList);
+
     /**
      * Initialize the fully meshed topology used to divide the test sets into valid and invalid ones
      * and find the worst recognition runtime.
@@ -134,7 +145,7 @@ private:
     /**
      * Evaluator used to check the learned models of the topologies against the test sets.
      */
-    boost::shared_ptr<AbstractEvaluator> mEvaluator;
+    boost::shared_ptr<AbstractTopologyEvaluator> mEvaluator;
 
     /**
      * The cost function used to judge topologies.
@@ -196,6 +207,12 @@ private:
     boost::shared_ptr<SceneModel::Topology> mBestOptimizedTopology;
 
     /**
+     * The best star topology. This pointer only gets set when it was requested via parameter optimize_star_topologies
+     * that only star topologies are compared (for testing purposes).
+     */
+    boost::shared_ptr<SceneModel::Topology> mBestStarIfRequested;
+
+    /**
      * Probability that, in HillClimbing, a random restart is performed. Set to 0 for all other algorithms.
      */
     double mRandomRestartProbability;
@@ -214,6 +231,12 @@ private:
      * How many test sets to use in optimization.
      */
     int mTestSetCount;
+
+    /**
+     * How many test sets loaded from the database to use at first.
+     * Reduced to test_set_count later, but since some loaded sets may be misclassified and removed, it can be useful to load more than test_set_count.
+     */
+    int mLoadedTestSetCount;
 
     /**
      * The probability above which a test set is considered as valid.

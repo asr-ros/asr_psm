@@ -20,24 +20,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 namespace ProbabilisticSceneRecognition {
 
 
-    AverageConditionalProbability::AverageConditionalProbability(): mSum(0.0), mCount(0), mWasRead(false)
+    AverageConditionalProbability::AverageConditionalProbability(): ConditionalProbability()
     { }
 
     AverageConditionalProbability::~AverageConditionalProbability()
     { }
 
-    void AverageConditionalProbability::addProbability(double pProbability)
+    double AverageConditionalProbability::calculateProbability()
     {
-        if (mWasRead) throw std::runtime_error("In AverageConditionalProbability::addProbability(): trying to add to a probability that has already been read.");
-        mSum += pProbability;   // set new minimum.
-        mCount++;
-    }
-
-    double AverageConditionalProbability::getProbability()
-    {
-        if (mCount == 0) throw std::runtime_error("In AverageConditionalProbability::getProbability(): trying to access probability that has not been set.");
-        mWasRead = true;
-        return mSum / mCount;
+        double sum = 0.0;
+        for (std::pair<std::string, double> probability: ConditionalProbability::mParentProbabilities)
+            sum += probability.second;
+        return sum / ((double) ConditionalProbability::mParentProbabilities.size());    // check in parent class makes sure that size is not 0.
     }
 
 }
