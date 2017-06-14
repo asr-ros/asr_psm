@@ -19,8 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-TestSetGenerator::TestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology):
-    mEvaluator(pEvaluator), mTypes(pObjectTypes), mFullyMeshedTopology(pFullyMeshedTopology),
+TestSetGenerator::TestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology, const std::vector<std::string>& pObjectTypes):
+    mEvaluator(pEvaluator), mFullyMeshedTopology(pFullyMeshedTopology), mTypes(pObjectTypes),
     mPrintHelper('+')
 {
     ros::NodeHandle nodeHandle("~");

@@ -22,10 +22,11 @@ namespace ProbabilisticSceneRecognition {
 
     CombinatorialOptimizer::CombinatorialOptimizer(std::vector<boost::shared_ptr<SceneObjectLearner>> pLearners,
                                                std::vector<std::string> pObjectTypes, std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList):
-        mMinFalsePositives(0), mMinFPInitialized(true), // No false positives found, like in fully meshed.
-        mMinFalseNegatives(0), mMinFNInitialized(true),                             // No false negatives found, like in fully meshed.
-        mMinAverageRecognitionRuntime(0.0), mMinTimeInitialized(true),  // minimum recognition runtime is not really limited
-        mMaxTimeInitialized(false), mMaxFPInitialized(false), mMaxFNInitialized(false),
+        mMinFalsePositives(0), // No false positives found, like in fully meshed.
+        mMinFalseNegatives(0), // No false negatives found, like in fully meshed.
+        mMinAverageRecognitionRuntime(0.0), // minimum recognition runtime is not really limited
+        mMinFPInitialized(true), mMinFNInitialized(true), mMinTimeInitialized(true),
+        mMaxFPInitialized(false), mMaxFNInitialized(false), mMaxTimeInitialized(false),
         mRandomRestartProbability(0.0),  // no random restart by default.
         mPrintHelper('=')
     {
@@ -229,11 +230,11 @@ namespace ProbabilisticSceneRecognition {
 
         boost::shared_ptr<TestSetGenerator> testSetGenerator;
         if (testSetGeneratorType == "absolute")
-            testSetGenerator.reset(new AbsoluteTestSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology));
+            testSetGenerator.reset(new AbsoluteTestSetGenerator(mEvaluator, fullyMeshedTopology, pObjectTypes));
         else if (testSetGeneratorType == "relative")
-            testSetGenerator.reset(new RelativeTestSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology));
+            testSetGenerator.reset(new RelativeTestSetGenerator(mEvaluator, fullyMeshedTopology, pObjectTypes));
         else if (testSetGeneratorType == "reference")
-            testSetGenerator.reset(new ReferenceTestSetGenerator(mEvaluator, pObjectTypes, fullyMeshedTopology));
+            testSetGenerator.reset(new ReferenceTestSetGenerator(mEvaluator, fullyMeshedTopology, pObjectTypes));
         else
             throw std::runtime_error("In CombinatorialOptimizer(): " + testSetGeneratorType + " is not a valid test_set_generator_type. "
                                      + "Valid types are absolute, relative, reference.");

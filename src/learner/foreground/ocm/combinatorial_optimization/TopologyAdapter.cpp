@@ -100,6 +100,8 @@ boost::shared_ptr<SceneModel::Topology> TopologyAdapter::ismToPsm(ISM::TopologyP
         boost::shared_ptr<SceneModel::Relation> psmRelation(new SceneModel::Relation(objectTypeA, objectTypeB));
         psmTopology->mRelations.push_back(psmRelation);
     }
+
+    return psmTopology;
 }
 
 }

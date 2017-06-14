@@ -83,9 +83,25 @@ private:
     void xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopology);
 
     /**
+     * List of object observations (evidences) to train on.
+     */
+    std::vector<boost::shared_ptr<ISM::ObjectSet>> mExamplesList;
+
+    /**
      * Learners to learn models to test.
      */
     std::vector<boost::shared_ptr<SceneObjectLearner>> mLearners;
+
+    /**
+     * Number of the current evaluator run, increased whenever evaluate() is called.
+     * Used in file names when mXmlOutput is "file".
+     */
+    unsigned int mRunNumber;
+
+    /**
+     * Class used to print lines as headers, marked with dividers.
+     */
+    PrintHelper mPrintHelper;
 
     /**
      * A logger for the runtimes for the scene objects.
@@ -102,10 +118,6 @@ private:
      * from { "powerset", "summarized", "multiplied", "maximum" }
      */
     std::string mInferenceAlgorithm;
-    /**
-     * List of object observations (evidences) to train on.
-     */
-    std::vector<boost::shared_ptr<ISM::ObjectSet>> mExamplesList;
 
     /**
      * Type of output of the learned model in xml format.
@@ -117,12 +129,6 @@ private:
      * If pXmlOutput is "file", the path where to store the files.
      */
     std::string mXmlFilePath;
-
-    /**
-     * Number of the current evaluator run, increased whenever evaluate() is called.
-     * Used in file names when mXmlOutput is "file".
-     */
-    unsigned int mRunNumber;
 
     /**
      * xml property tree describing the partial model learned on the current topoloy.
@@ -159,12 +165,7 @@ private:
     /**
      * Visualizer for the ForegroundSceneContent.
      */
-    boost::shared_ptr<Visualization::ProbabilisticSceneVisualization> mVisualizer;
-
-    /**
-     * Class used to print lines as headers, marked with dividers.
-     */
-    PrintHelper mPrintHelper;
+    boost::shared_ptr<Visualization::ProbabilisticSceneVisualization> mVisualizer;   
 };
 
 }

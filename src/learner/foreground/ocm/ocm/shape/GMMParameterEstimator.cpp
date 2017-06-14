@@ -159,7 +159,7 @@ namespace ProbabilisticSceneRecognition {
                 else
                 {
                     ROS_INFO_STREAM("Training unsuccessful. Repeating cycle.");
-                    if (timer == (mAttemptsPerRun / 2) + 1 && mAttemptsPerRun != 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
+                    if ((unsigned int) timer == (mAttemptsPerRun / 2) + 1 && mAttemptsPerRun != 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
                     {
                         ROS_INFO_STREAM("Attempting to learn diagonal covariance matrix instead of generic one.");
                         useGenericMatrices = false;
@@ -216,7 +216,7 @@ namespace ProbabilisticSceneRecognition {
     unsigned int numberOfKernels = mBestGMM.getNumberOfKernels();
 
     // Iterate over all Gaussian Kernels:
-    for (unsigned int i; i < numberOfKernels; i++)
+    for (unsigned int i = 0; i < numberOfKernels; i++)
     {
         // Extract the mean and covariance of the kernel.
         PSMLearner::GaussianKernel kernel = mBestGMM.getKernels().at(i);
@@ -230,10 +230,10 @@ namespace ProbabilisticSceneRecognition {
         // Draw samples
         std::vector<Eigen::VectorXd> samples(sampleAmount);
         // Fill std::vector with Eigen::vectors of the correct size
-        for (int s = 0; s < sampleAmount; s++) samples.at(s) = Eigen::VectorXd(mean->size());
+        for (unsigned int s = 0; s < sampleAmount; s++) samples.at(s) = Eigen::VectorXd(mean->size());
         MathHelper::drawNormal(*mean, *cov, sampleAmount, samples);
 
-        for (int i = 0; i < sampleAmount; i++)
+        for (unsigned int i = 0; i < sampleAmount; i++)
         {
             Eigen::VectorXd sample = samples[i];
 
@@ -330,9 +330,9 @@ namespace ProbabilisticSceneRecognition {
           }
           Eigen::MatrixXd cov(cvcov.rows, cvcov.cols);
           // Check symmetry of matrix:
-          for (unsigned int j = 0; j < cvcov.rows; j++)
+          for (int j = 0; j < cvcov.rows; j++)
           {
-              for (unsigned int k = j; k < cvcov.cols; k++)
+              for (int k = j; k < cvcov.cols; k++)
               {
                   double entry = cvcov.at<double>(j,k);
                   if (j != k)   // if not on diagonal:
@@ -384,17 +384,17 @@ namespace ProbabilisticSceneRecognition {
 
       // Fill the output parameters
       llk = 0;
-      for (unsigned int i = 0; i < loglikelihoods.rows; i++) llk += loglikelihoods.at<double>(i,0); // llk is sum of the loglikelihoods for each sample
+      for (int i = 0; i < loglikelihoods.rows; i++) llk += loglikelihoods.at<double>(i,0); // llk is sum of the loglikelihoods for each sample
 
       // model:
       // extract weights
       cv::Mat cvweights = myEM.get<cv::Mat>("weights");
       std::vector<double> weights(cvweights.cols);
-      for (unsigned int i = 0; i < cvweights.cols; i++) weights.at(i) = cvweights.at<double>(i);
+      for (int i = 0; i < cvweights.cols; i++) weights.at(i) = cvweights.at<double>(i);
       // extract means
       cv::Mat cvmeans = myEM.get<cv::Mat>("means");
       std::vector<boost::shared_ptr<Eigen::VectorXd>> means(cvmeans.rows);
-      for (unsigned int i = 0; i < cvmeans.rows; i++)
+      for (int i = 0; i < cvmeans.rows; i++)
       {
           Eigen::VectorXd mean(cvmeans.cols);
           for (int j = 0; j < cvmeans.cols; j++) mean[j] = cvmeans.at<double>(i, j);

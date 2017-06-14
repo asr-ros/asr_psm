@@ -34,6 +34,8 @@ void ConditionalProbability::setProbability(std::string pParentId, double pProba
 
 double ConditionalProbability::getProbability()
 {
+    mWasRead = true;
+
     // to increase speed: if there is only one parent anyways, return its probability immediately.
     if (mParentProbabilities.size() == 1)
         return mParentProbabilities.begin()->second;
@@ -41,7 +43,6 @@ double ConditionalProbability::getProbability()
     if (mParentProbabilities.empty())
         throw std::runtime_error("In MinimumConditionalProbability::getProbability(): trying to access probability that has not been set.");
 
-    mWasRead = true;
     return calculateProbability();
 }
 

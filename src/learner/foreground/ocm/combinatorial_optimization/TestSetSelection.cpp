@@ -28,12 +28,11 @@ namespace ProbabilisticSceneRecognition {
 
     void TestSetSelection::removeUnusableTestSets(double& pMinValidProbability, double& pMaxInvalidProbability)
     {
-        double minValidProbability;
-        double maxInvalidProbability;
+        double minValidProbability = 1.0;
+        double maxInvalidProbability = 0.0;
         unsigned int size = mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size();
         for (unsigned int counter = 0; counter < size; counter++)
         {
-            minValidProbability = 1.0;
             unsigned int minValidIndex = mEvaluator->getValidTestSets().size();
             for (unsigned int i = 0; i < mEvaluator->getValidTestSets().size(); i++)
             {
@@ -47,7 +46,6 @@ namespace ProbabilisticSceneRecognition {
             if (minValidIndex == mEvaluator->getValidTestSets().size())
                 throw std::runtime_error("In CombinatorialTrainer::initFullyMeshedTopology(): No minimum valid probability could be found.");
 
-            maxInvalidProbability = 0.0;
             unsigned int maxInvalidIndex = mEvaluator->getInvalidTestSets().size();
             for (unsigned int i = 0; i < mEvaluator->getInvalidTestSets().size(); i++) {
                 double invalidProbability = mEvaluator->getInvalidTestSets()[i]->getFullyMeshedProbability();

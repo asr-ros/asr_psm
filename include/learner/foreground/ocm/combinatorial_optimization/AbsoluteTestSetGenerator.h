@@ -31,10 +31,10 @@ public:
     /**
      * Constructor
      * @param pEvaluator                            evaluator used to validate test sets.
-     * @param pObjectTypes                          types of objects appearing in test sets (once each).
      * @param pFullyMeshedTopology                  fully meshed topology used to validate test sets.
+     * @param pObjectTypes                          types of objects appearing in test sets (once each).
      */
-    AbsoluteTestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology);
+    AbsoluteTestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology, const std::vector<std::string>& pObjectTypes);
 
     /**
      * Destructor.

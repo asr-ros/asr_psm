@@ -42,10 +42,10 @@ public:
     /**
      * Constructor
      * @param pEvaluator                            evaluator used to validate test sets.
-     * @param pObjectTypes                          types of objects appearing in test sets (once each).
      * @param pFullyMeshedTopology                  fully meshed topology used to validate test sets.
+     * @param pObjectTypes                          types of objects appearing in test sets (once each).
      */
-    TestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology);
+    TestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology, const std::vector<std::string>& pObjectTypes);
 
     /**
      * Desctructor.
@@ -59,43 +59,7 @@ public:
      */
     void generateTestSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount);
 
-protected:
-
-    /**
-     * Generate random test sets.
-     * @param pExamplesList list of object observations serving as basis of the test sets.
-     * @param pTestSetCount number of test sets to generate.
-     */
-    virtual std::vector<boost::shared_ptr<TestSet>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount) = 0;
-
-    /**
-     * Set the pose of a given object relative to a reference object.
-     * @param pObject       the object to have its pose transformed.
-     * @param pReference    the reference object.
-     */
-    void setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject, ISM::ObjectPtr pReference);
-
-    /**
-     * Class used to print lines as headers, marked with dividers.
-     */
-    PrintHelper mPrintHelper;
-
-    /**
-     * Types of objects appearing in test sets (once each).
-     */
-    std::vector<std::string> mTypes;
-
 private:
-
-    /**
-     * The test sets which represent the considered scene.
-     */
-    std::vector<boost::shared_ptr<TestSet>> mValidTestSets;
-
-    /**
-     * The test sets that resemble but do not represent the considered scene.
-     */
-    std::vector<boost::shared_ptr<TestSet>> mInvalidTestSets;
 
     /**
      * Validate whether test sets represent scene.
@@ -124,6 +88,24 @@ private:
      */
     std::vector<boost::shared_ptr<TestSet>> simulateOcclusion(std::vector<boost::shared_ptr<TestSet>> pCompleteTestSets);
 
+protected:
+
+    /**
+     * Generate random test sets.
+     * @param pExamplesList list of object observations serving as basis of the test sets.
+     * @param pTestSetCount number of test sets to generate.
+     */
+    virtual std::vector<boost::shared_ptr<TestSet>> generateRandomSets(std::vector<boost::shared_ptr<ISM::ObjectSet>> pExamplesList, unsigned int pTestSetCount) = 0;
+
+    /**
+     * Set the pose of a given object relative to a reference object.
+     * @param pObject       the object to have its pose transformed.
+     * @param pReference    the reference object.
+     */
+    void setPoseOfObjectRelativeToReference(ISM::ObjectPtr pObject, ISM::ObjectPtr pReference);
+
+private:
+
     /**
      * Evaluator used to validate test sets.
      */
@@ -133,6 +115,16 @@ private:
      * Fully meshed topology used to validate test sets.
      */
     boost::shared_ptr<SceneModel::Topology> mFullyMeshedTopology;
+
+    /**
+     * The test sets which represent the considered scene.
+     */
+    std::vector<boost::shared_ptr<TestSet>> mValidTestSets;
+
+    /**
+     * The test sets that resemble but do not represent the considered scene.
+     */
+    std::vector<boost::shared_ptr<TestSet>> mInvalidTestSets;
 
     /**
      * Database file to load the valid test sets from. New test sets are created if this is set to ''.
@@ -163,6 +155,18 @@ private:
      * Probability with which an object does not appear in a test set. set to 0 to have all objects appear in each test set
      */
     double mObjectMissingInTestSetProbability;
+
+protected:
+
+    /**
+     * Types of objects appearing in test sets (once each).
+     */
+    std::vector<std::string> mTypes;
+
+    /**
+     * Class used to print lines as headers, marked with dividers.
+     */
+    PrintHelper mPrintHelper;
 
 };
 

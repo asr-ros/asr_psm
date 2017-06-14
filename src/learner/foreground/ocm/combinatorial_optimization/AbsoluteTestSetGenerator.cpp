@@ -19,8 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-AbsoluteTestSetGenerator::AbsoluteTestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, const std::vector<std::string>& pObjectTypes, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology):
-    TestSetGenerator(pEvaluator, pObjectTypes, pFullyMeshedTopology)
+AbsoluteTestSetGenerator::AbsoluteTestSetGenerator(boost::shared_ptr<AbstractTopologyEvaluator> pEvaluator, boost::shared_ptr<SceneModel::Topology> pFullyMeshedTopology, const std::vector<std::string>& pObjectTypes):
+    TestSetGenerator(pEvaluator, pFullyMeshedTopology, pObjectTypes)
 { }
 
 AbsoluteTestSetGenerator::~AbsoluteTestSetGenerator()

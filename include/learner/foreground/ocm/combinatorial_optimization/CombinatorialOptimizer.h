@@ -168,26 +168,6 @@ private:
     boost::shared_ptr<ISM::OptimizationAlgorithm<boost::shared_ptr<SceneModel::Topology>>> mOptimizationAlgorithm;
 
     /**
-     * Maximum average recognition runtime.
-     * All topologies with average runtimes above can be replaced by the fully meshed one, which has no false positives.
-     */
-    double mMaxAverageRecognitionRuntime;   // set in initFullyMeshed
-    /**
-     * Maximum number of false positives.
-     * All topologies with more can be replaced with a star topology, which will be faster.
-     */
-    unsigned int mMaxFalsePositives;        // set in initStar
-
-    /**
-     * Maximum number of false negatives.
-     * All topologies with more can be replaced with a star topology, which will be faster.
-     */
-    unsigned int mMaxFalseNegatives;        // set in initStar
-    /**
-     * Minimum average recognition runtime.
-     */
-    double mMinAverageRecognitionRuntime;   // set in initStar
-    /**
      * Minimum number of false positives. Set to 0.
      */
     unsigned int mMinFalsePositives;        // set in ctor
@@ -195,11 +175,29 @@ private:
      * Minimum number of false negatives. Set to 0.
      */
     unsigned int mMinFalseNegatives;        // set in ctor
-
+    /**
+     * Minimum average recognition runtime.
+     */
+    double mMinAverageRecognitionRuntime;   // set in ctor
+    /**
+     * Maximum number of false positives.
+     * All topologies with more can be replaced with a star topology, which will be faster.
+     */
+    unsigned int mMaxFalsePositives;        // set in initStar
+    /**
+     * Maximum number of false negatives.
+     * All topologies with more can be replaced with a star topology, which will be faster.
+     */
+    unsigned int mMaxFalseNegatives;        // set in initStar
+    /**
+     * Maximum average recognition runtime.
+     * All topologies with average runtimes above can be replaced by the fully meshed one, which has no false positives.
+     */
+    double mMaxAverageRecognitionRuntime;   // set in initFullyMeshed
     /**
      * Whether the maxima and minima have been properly initialized yet.
      */
-    bool mMaxTimeInitialized, mMinTimeInitialized, mMaxFPInitialized, mMinFPInitialized, mMaxFNInitialized, mMinFNInitialized;
+    bool mMinFPInitialized, mMinFNInitialized, mMinTimeInitialized, mMaxFPInitialized, mMaxFNInitialized, mMaxTimeInitialized;
 
     /**
      * The best topology considered so far.
