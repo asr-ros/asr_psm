@@ -47,7 +47,7 @@ namespace ProbabilisticSceneRecognition {
     ROS_INFO_STREAM("Iterating over existence hypothesis.");
     
     // We iterate over the power set over the scene objects.
-    for(unsigned int i = 1; i < (1 << mSceneObjects->size()); ++i)
+    for(unsigned int i = 1; i < ((unsigned int) 1 << mSceneObjects->size()); ++i)
     {
       // String containing the subset for debugging.
       std::string subset;
