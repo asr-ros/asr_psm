@@ -24,7 +24,7 @@ using namespace ISM;
 using namespace ProbabilisticSceneRecognition;
 
 std::vector<unsigned> objectCounts = {
-    5//, 10, 15
+    5, 6, 7, 10, 15
 };
 
 std::vector<unsigned> timestepCounts = {
@@ -530,6 +530,7 @@ int main(int argc, char *argv[])
     boost::filesystem::create_directories(outputPath);
 
   ros::init(argc, argv, "performance_test");
+  ros::NodeHandle nh;   // necessary to show ros streams
 
   setDefaultParameters();
 
