@@ -83,6 +83,12 @@ namespace ProbabilisticSceneRecognition {
 	* Bool to decide if difference based inference shall be used
 	*/
 	bool difference_based;
+
+
+    /**
+    * The path to the database which contains the samples
+    */
+    std::string dataBaseName;
     
   private:
     

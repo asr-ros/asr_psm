@@ -5,6 +5,8 @@
     <param name="plot" value="true"/>
     <!-- Set true, to use difference based inference. -->
     <param name="difference_based" value="true"/>
+    <!-- Path to the DB containing table with samples of the scene-->
+    <param name="sample_database_name" value="/home/SMBAD/students/link/DB.sqlite"/>
     <!-- The topic to get the the AsrObject messages from. -->
     <param name="object_topic" value="/stereo/objects"/>
     <!-- The topic to get the the AsrSceneGraph messages from. -->

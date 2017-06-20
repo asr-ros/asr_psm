@@ -48,6 +48,11 @@ namespace ProbabilisticSceneRecognition {
 	if (!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/difference_based", difference_based))
 		throw std::runtime_error("Please specify parameter " + std::string("difference_based") + " when starting this node.");
 
+    if(difference_based)
+        // Try to get the DBfile name of the sample database.
+        if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/sample_database_name", dataBaseName))
+          throw std::runtime_error("Please specify parameter " + std::string("sample_database_name") + " when starting this node with " + std::string("difference_based") + " == TRUE.");
+
     // Try to get the clearance for plotting the scene probabilties.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/plot", showPlot))
       throw std::runtime_error("Please specify parameter " + std::string("plot") + " when starting this node.");
