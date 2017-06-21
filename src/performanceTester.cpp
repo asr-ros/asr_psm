@@ -24,7 +24,7 @@ using namespace ISM;
 using namespace ProbabilisticSceneRecognition;
 
 std::vector<unsigned> objectCounts = {
-    5, 6, 7, 10, 15
+    5, 6//, 7, 10, 15
 };
 
 std::vector<unsigned> timestepCounts = {
@@ -82,7 +82,7 @@ void setDefaultParameters()
     nh.setParam("scale_factor", scale);
     sigma = 3.0;
     nh.setParam("sigma_multiplicator", sigma);
-    nh.setParam("attempts_per_run", 10);
+    nh.setParam("attempts_per_run", 100);
 
     //SHARED PARAMETERS:
     nh.setParam("targeting_help", false);
@@ -258,7 +258,7 @@ void initRandomScenes()
 
 void initTestSets()
 {
-    std::string testSetFolderPath = outputPath + "/" + testSetFolder;
+    std::string testSetFolderPath = outputPath + "/" + testSetFolder + "1";
 
     if(!boost::filesystem::exists(testSetFolderPath))
         boost::filesystem::create_directories(testSetFolderPath);
@@ -529,7 +529,7 @@ int main(int argc, char *argv[])
   if(!boost::filesystem::exists(outputPath))
     boost::filesystem::create_directories(outputPath);
 
-  ros::init(argc, argv, "performance_test");
+  ros::init(argc, argv, "performance_test" + treeAlgorithm);
   ros::NodeHandle nh;   // necessary to show ros streams
 
   setDefaultParameters();

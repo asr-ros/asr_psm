@@ -14,7 +14,7 @@ maximum_neighbour_count: 100 #maximum number of neighbours to select in each ste
 #cost function parameters:
 cost_function: WeightedSum #type of the cost function to use. no other types available.
 false_positives_weight: 5 #the weight to give the number of false positives in the weighted sum.
-avg_recognition_time_weight: 1 #the weight to give the average recognition runtime in the weighted sum.
+avg_recognition_time_weight: 100 #the weight to give the average recognition runtime in the weighted sum.
 false_negatives_weight: 5 #the weight to give the number of false negatives in the weighted sum.
 
 #test set generator parameters:
@@ -28,9 +28,11 @@ valid_test_set_db_filename: ''
 invalid_test_set_db_filename: ''
 #/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/testsets/TestSets/invalidTestSets_experiment_2_part_1_and_2.sqlite
 #database file to load the invalid test sets from. New test sets are created if this is set to ''.
-loaded_test_set_count: 10 # how many test sets loaded from the database to use at first. Reduced to test_set_count later, but since some loaded sets may be misclassified and removed, it can be useful to load more than test_set_count (loaded_test_set_count should be bigger than or equal to test_set_count for this reason).
-write_valid_test_sets_filename: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/new_testsets/validTestSets_experiment_2_part_1_and_2_abs_nn.sqlite #database file to write newly created valid testsets to. Test sets are not written if they were loaded from files above or this parameter is set to ''.
-write_invalid_test_sets_filename: /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/new_testsets/invalidTestSets_experiment_2_part_1_and_2_abs_nn.sqlite #database file to write newly created invalid testsets to. Test sets are not written if they were loaded from files above or this parameter is set to ''.
+loaded_test_set_count: 1000 # how many test sets loaded from the database to use at first. Reduced to test_set_count later, but since some loaded sets may be misclassified and removed, it can be useful to load more than test_set_count (loaded_test_set_count should be bigger than or equal to test_set_count for this reason).
+write_valid_test_sets_filename: ''
+#/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/new_testsets/validTestSets_experiment_2_part_1_and_2_abs_nn.sqlite #database file to write newly created valid testsets to. Test sets are not written if they were loaded from files above or this parameter is set to ''.
+write_invalid_test_sets_filename: ''
+#/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/new_testsets/invalidTestSets_experiment_2_part_1_and_2_abs_nn.sqlite #database file to write newly created invalid testsets to. Test sets are not written if they were loaded from files above or this parameter is set to ''.
 
 #miscellaneous parameters:
 conditional_probability_algorithm: minimum #algorithm used to determine probabilities depending on multiple parents.#from "minimum", "multiplied", "root_of_multiplied", "average"  

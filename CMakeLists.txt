@@ -279,3 +279,10 @@ target_link_libraries(performanceTest
   psm_inference
   ism
 )
+
+add_executable(scene_example_generator src/scene_example_generator.cpp)
+target_link_libraries(scene_example_generator
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ism
+)
