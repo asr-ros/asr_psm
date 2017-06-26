@@ -57,7 +57,7 @@ namespace ProbabilisticSceneRecognition {
     unsigned int numberOfSceneObjects = pEvidenceList.size();
     
     // We iterate over the power set over the scene objects.
-    for(unsigned int i = 1; i < (unsigned int) (1 << numberOfSceneObjects); ++i)
+    for(unsigned int i = 1; i < ((unsigned int) 1 << numberOfSceneObjects); ++i)
     {
       // String containing the subset for debugging.
       std::string subset;

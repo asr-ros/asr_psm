@@ -135,7 +135,7 @@ namespace ProbabilisticSceneRecognition {
     // Learn a GMM for every number of kernels up to the maximal size.
     for(unsigned int i = 0; i < mNumberKernels; i++)
     {
-      bool learningCycleCompleted = false;
+        bool learningCycleCompleted = false;
 
         // generate mNumberOfRuns models and pick the best.
         for(unsigned int run = 0; run < mNumberOfRuns; run++)
@@ -151,7 +151,7 @@ namespace ProbabilisticSceneRecognition {
             {
                 unsigned int offset  = i * mNumberOfRuns + run;
 
-                if(runExpectationMaximization(mData, mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset], useGenericMatrices))
+                if(runExpectationMaximization(mData,mNumberKernelsMin + i, nparams[offset], llk[offset], bic[offset], model[offset], useGenericMatrices))
                 {
                     learningCycleCompleted = true;
                     break;
@@ -159,7 +159,7 @@ namespace ProbabilisticSceneRecognition {
                 else
                 {
                     ROS_INFO_STREAM("Training unsuccessful. Repeating cycle.");
-                    if ((unsigned int) timer == (mAttemptsPerRun / 2) + 1 && mAttemptsPerRun != 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
+                    if (timer == (int) (mAttemptsPerRun / 2) + 1 && mAttemptsPerRun != 1) // at halfway point: switch to less precise but more stable diagonal matrices instead of generic ones
                     {
                         ROS_INFO_STREAM("Attempting to learn diagonal covariance matrix instead of generic one.");
                         useGenericMatrices = false;

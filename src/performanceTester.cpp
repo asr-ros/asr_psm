@@ -24,7 +24,7 @@ using namespace ISM;
 using namespace ProbabilisticSceneRecognition;
 
 std::vector<unsigned> objectCounts = {
-    5, 6//, 7, 10, 15
+    5, 6, 7 //, 10, 15
 };
 
 std::vector<unsigned> timestepCounts = {
@@ -293,8 +293,8 @@ void trainScenes()
         nh.setParam("valid_test_set_db_filename", testSets[i * 2]);
         nh.setParam("invalid_test_set_db_filename", testSets[i * 2 + 1]);
 
-        nh.setParam("xml_file_path", outputPath + "/" + demoName);
-        nh.setParam("optimization_history_file_path", outputPath + "/" + demoName);
+        nh.setParam("xml_file_path", outputPath + "/" + demoName + "/");
+        nh.setParam("optimization_history_file_path", outputPath + "/" + demoName + "/");
         std::cout << "Writing partial models and optimization histories into folder " << outputPath << "/" << demoName << std::endl;
 
         os << demoRecordings[i] << ", ";
@@ -303,53 +303,6 @@ void trainScenes()
     writeFile(outputPath, "trainingTime.csv", os);
 
 }
-
-//void clearRefs()
-//{
-//    std::string testSetFolderPath = outputPath + "/" + testSetFolderNoRefs;
-
-//    if(!boost::filesystem::exists(testSetFolderPath))
-//        boost::filesystem::create_directories(testSetFolderPath);
-
-//    for (unsigned int i = 0; i < demoRecordings.size(); ++i) {
-//        path demoRecording(demoRecordings[i]);
-//        std::string additionalInfo = "";
-//        if (treeAlgorithm == "combinatorial_optimization") additionalInfo = "_" + optimizationAlgorithm;
-//        std::string trainedScenePath = outputPath + "/" + demoRecording.stem().string() + "_" + treeAlgorithm + additionalInfo + ".xml" ;
-
-// //		TableHelperPtr tableHelper = TableHelperPtr(new TableHelper(trainedScenePath));
-// //		std::vector<std::string> refs = tableHelper->getRefs();
-
-//        std::string validTestSets = testSets[i * 2];
-//        std::string invalidTestSets = testSets[i * 2 + 1];
-
-//        std::string validTestSetsNoRefs = testSetFolderPath + "/" + validTestSetPref + demoRecordingsNames[i];
-//        std::string invalidTestSetsNoRefs = testSetFolderPath + "/" + invalidTestSetPref + demoRecordingsNames[i];
-
-//        //if (!boost::filesystem::exists(validTestSetsNoRefs))
-//        //{
-//        //	boost::filesystem::copy(validTestSets, validTestSetsNoRefs);
-//        //}
-
-//        //if (!boost::filesystem::exists(invalidTestSetsNoRefs))
-//        //{
-//        //	boost::filesystem::copy(invalidTestSets, invalidTestSetsNoRefs);
-//        //}
-
-//        //TableHelperPtr val = TableHelperPtr(new TableHelper(validTestSetsNoRefs));
-//        //TableHelperPtr inv = TableHelperPtr(new TableHelper(invalidTestSetsNoRefs));
-
-//        //for (std::string ref : refs)
-//        //{
-//        //	std::cout << ref << std::endl;
-//        //	val->deleteObject(ref);
-//        //	inv->deleteObject(ref);
-//        //}
-
-//        testSetsNoRefs.push_back(validTestSetsNoRefs);
-//        testSetsNoRefs.push_back(invalidTestSetsNoRefs);
-//    }
-//}
 
 PatternNameToObjectSet loadTestSetsFromDB(std::string fileName, std::string patternName)
 {
@@ -524,7 +477,7 @@ void testPerformance()
 int main(int argc, char *argv[])
 {
 
-  outputPath = "/home/SMBAD/students/nikolai/catkin_ws/src/ilcasRosFull/perception/scene_recognition/asr_lib_ism/libism/rsc/performanceTestRessources";
+  outputPath = "/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/performanceTestRessources";
 
   if(!boost::filesystem::exists(outputPath))
     boost::filesystem::create_directories(outputPath);

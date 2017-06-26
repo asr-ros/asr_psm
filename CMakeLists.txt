@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.4.6)
 project(asr_psm)
 
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 # Set compiler flags to enable the C++11 standard.
 add_definitions("-std=c++0x")
 
@@ -22,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(cmake_modules)
 # include Eigen library
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS
   iostreams
@@ -73,14 +77,14 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES psm_inference
   CATKIN_DEPENDS rospy roscpp rosbag roslib asr_msgs std_msgs tf visualization_msgs asr_psm_visualizations asr_relation_graph_generator asr_resources_for_psm
-  DEPENDS Eigen Boost
+  DEPENDS Boost #Eigen
 )
 
 
 include_directories(
   include
   ${Boost_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   
 )
