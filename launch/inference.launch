@@ -3,8 +3,6 @@
   <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
     <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
     <param name="plot" value="true"/>
-    <!-- Set true, to use difference based inference. -->
-    <param name="difference_based" value="true"/>
     <!-- Path to the DB containing table with samples of the scene-->
     <param name="sample_database_name" value="/home/SMBAD/students/link/DB.sqlite"/>
     <!-- The topic to get the the AsrObject messages from. -->
@@ -12,7 +10,7 @@
     <!-- The topic to get the the AsrSceneGraph messages from. -->
     <param name="scene_graph_topic" value="/scene_graphs"/>
     <!-- Path to the file containing the probabilistic scene model.-->
-    <param name="scene_model_filename" value="/home/SMBAD/students/link/ilcasRosFull/src/perception/scene_recognition/psm/data/advertisement.xml"/>
+    <param name="scene_model_filename" value="/home/SMBAD/students/link/ilcasRosFull/src/asr_psm/data/advertisement.xml"/>
     <!--The name of the frame the objects should be transformed to. -->
     <param name="base_frame_id" value="/PTU"/>
     <!-- The visualization is pretty small, this scale factor enlarges it. -->
@@ -23,8 +21,8 @@
     <param name="targeting_help" value="false"/>
     <!-- The timeout for object evidences in milliseconds. -->
     <param name="evidence_timeout" value="100"/>
-    <!-- The name of the inference algorithm. There are 'powerset', 'summarized', 'multiplied' and 'maximum'. -->
-    <param name="inference_algorithm" value="maximum"/>
+    <!-- The name of the inference algorithm. There are 'powerset', 'summarized', 'multiplied', 'difference' and 'maximum'. -->
+    <param name="inference_algorithm" value="difference"/>
     <!-- The path to the directory that should hold the log files containing the runtimes of the different scenes. -->
     <!-- To deactivate logging, remove this line from the launch file. Runtime will then be printed to console. -->
     <!--<param name="runtime_log_path" value="/media/data_ext/data/gehrung/evaluation"/>-->

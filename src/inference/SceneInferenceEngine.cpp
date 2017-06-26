@@ -44,14 +44,7 @@ namespace ProbabilisticSceneRecognition {
     // This factor determines the radii of the covariance ellipse.
     double sigmaMultiplicator;
     
-	// Try to get difference_based bool.
-	if (!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/difference_based", difference_based))
-		throw std::runtime_error("Please specify parameter " + std::string("difference_based") + " when starting this node.");
 
-    if(difference_based)
-        // Try to get the DBfile name of the sample database.
-        if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/sample_database_name", dataBaseName))
-          throw std::runtime_error("Please specify parameter " + std::string("sample_database_name") + " when starting this node with " + std::string("difference_based") + " == TRUE.");
 
     // Try to get the clearance for plotting the scene probabilties.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/plot", showPlot))
@@ -88,12 +81,24 @@ namespace ProbabilisticSceneRecognition {
     // Try to get the name of the inference algorithm.
     if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/inference_algorithm", inferenceAlgorithm))
        throw std::runtime_error("Please specify parameter " + std::string("inference_algorithm") + " when starting this node.");
+
+    if(inferenceAlgorithm.compare("difference") == 0)
+        // Try to get the DBfile name of the sample database.
+        if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/sample_database_name", dataBaseName))
+          throw std::runtime_error("Please specify parameter " + std::string("sample_database_name") + " when starting this node with " + std::string("difference_based") + " == TRUE.");
+
     
     // Initialize the transformations of objects into the given frame.
     mObjectTransform.setBaseFrame(baseFrameId);
-    
+
+
     // Initialize the scene model with the parameters given on startup of this node.
+    if(inferenceAlgorithm.compare("difference") == 0){
+    loadSceneModel(sceneModelFileName, inferenceAlgorithm + dataBaseName);
+    }
+    else {
     loadSceneModel(sceneModelFileName, inferenceAlgorithm);
+    }
     
     // Initialize the visualization chain.
     initializeVisualizationChain(scaleFactor, sigmaMultiplicator, baseFrameId);

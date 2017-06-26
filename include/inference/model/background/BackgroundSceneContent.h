@@ -39,6 +39,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "inference/model/background/SummarizedBackgroundInferenceAlgorithm.h"
 #include "inference/model/background/MultipliedBackgroundInferenceAlgorithm.h"
 #include "inference/model/background/MaximumBackgroundInferenceAlgorithm.h"
+#include "inference/model/background/DifferenceBackgroundInferenceAlgorithm.h"
 
 #include <ISM/common_type/Object.hpp>
 

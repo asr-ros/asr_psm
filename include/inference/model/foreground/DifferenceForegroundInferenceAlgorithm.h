@@ -18,13 +18,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #pragma once
 
 // Global includes
+#include <string>
 #include <vector>
-#include <fstream>
-#include <iostream>
 
 // Package includes
-#include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <asr_msgs/AsrObject.h>
@@ -32,73 +29,68 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
 // Local includes
-#include "inference/model/SceneContent.h"
-
-#include "inference/model/foreground/PowerSetForegroundInferenceAlgorithm.h"
-#include "inference/model/foreground/SummarizedForegroundInferenceAlgorithm.h"
-#include "inference/model/foreground/MultipliedForegroundInferenceAlgorithm.h"
-#include "inference/model/foreground/MaximumForegroundInferenceAlgorithm.h"
-#include "inference/model/foreground/DifferenceForegroundInferenceAlgorithm.h"
-
-#include "inference/model/foreground/SceneObjectDescription.h"
+#include "inference/model/foreground/ForegroundInferenceAlgorithm.h"
 
 #include <ISM/common_type/Object.hpp>
+
+
+#include <ISM/utility/TableHelper.hpp>
+#include <ISM/common_type/RecordedPattern.hpp>
 
 namespace ProbabilisticSceneRecognition {
   
   /**
-   * This subclass of SceneContent class represents a foreground scene. A foreground scene is a scene that contains a model for describing object relations.
+   * Implementation of the abstract ForegroundInferenceAlgorithm class. It evaluates all foreground scene objects and takes the one with the best score.
    *
    * @author Joachim Gehrung
    * @version See SVN
    */
-  class ForegroundSceneContent : public SceneContent {
+  class DifferenceForegroundInferenceAlgorithm : public ForegroundInferenceAlgorithm {
   public:
     
     /**
      * Constructor.
+     * 
+     * @param pSceneObjects The scene objects associated with this foreground scene.
      */
-    ForegroundSceneContent();
+    DifferenceForegroundInferenceAlgorithm(boost::shared_ptr<std::vector<boost::shared_ptr<SceneObjectDescription> > >& pSceneObjects, std::string pDataBaseName);
     
     /**
      * Destructor.
      */
-    ~ForegroundSceneContent();
+    ~DifferenceForegroundInferenceAlgorithm();
     
     /**
-     * Loads the model from an XML file.
-     * 
-     * @param pPt Data structure for performing XML operations.
-     */
-    void load(boost::property_tree::ptree& pPt);
-    
-    /**
-     * Initializes the inference algorithms. The algorithm that should be used is determined by the given string.
-     * 
-     * @param pAlgorithm The name of the inference algorithm that should be used.
-     */
-    void initializeInferenceAlgorithms(std::string pAlgorithm);
-    
-    /**
-     * Initializes the visualization mechanism.
-     * 
-     * @param mSuperior The superior visualizer coordinating the scene visualizers.
-     */
-    void initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticSceneVisualization> mSuperior);
-    
-    /**
-     * Updates the model with new evidence.
+     * Executes the inference based on the given evidence.
      * 
      * @param pEvidenceList A list containing all evidences.
      * @param pRuntimeLogger A file handle for runtime logging.
      */
-    void update(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
-    
-  protected:
+    void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
+
     
     /**
-     * The scene objects associated with this foreground scene.
+     * Returns the probability calculated by the inference process.
+     * 
+     * @return Probability for this scene.
      */
-    boost::shared_ptr<std::vector<boost::shared_ptr<SceneObjectDescription> > > mSceneObjects;
+    double getProbability();
+    
+  private:
+    
+    /**
+     * The probability calculated by this algorithm.
+     */
+    double mProbability;
+
+    /**
+     * The database name of samples of the scene.
+     */
+    std::string mDataBaseName;
+
+    /**
+     * TableHelper to extract Objects from ".sqlite"-file.
+     */
+    boost::shared_ptr<ISM::TableHelper> tableHelper;
   };
 }

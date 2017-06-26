@@ -79,11 +79,6 @@ namespace ProbabilisticSceneRecognition {
      */
     SceneModelDescription getModel() {return mModel;}
 
-	/**
-	* Bool to decide if difference based inference shall be used
-	*/
-	bool difference_based;
-
 
     /**
     * The path to the database which contains the samples

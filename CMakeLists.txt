@@ -41,7 +41,8 @@ add_library(psm_inference  src/inference.cpp
 			    src/inference/model/background/PowerSetBackgroundInferenceAlgorithm.cpp
 			    src/inference/model/background/SummarizedBackgroundInferenceAlgorithm.cpp
 			    src/inference/model/background/MultipliedBackgroundInferenceAlgorithm.cpp
-			    src/inference/model/background/MaximumBackgroundInferenceAlgorithm.cpp
+                            src/inference/model/background/MaximumBackgroundInferenceAlgorithm.cpp
+                            src/inference/model/background/DifferenceBackgroundInferenceAlgorithm.cpp
 			    
 			    src/inference/model/foreground/ForegroundSceneContent.cpp
 			    src/inference/model/foreground/ForegroundInferenceAlgorithm.cpp
@@ -49,6 +50,7 @@ add_library(psm_inference  src/inference.cpp
 			    src/inference/model/foreground/SummarizedForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/MultipliedForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/MaximumForegroundInferenceAlgorithm.cpp
+                            src/inference/model/foreground/DifferenceForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/SceneObjectDescription.cpp src/inference/model/foreground/SceneObjectContent.cpp
 
 			    src/inference/model/foreground/ocm/OcmSceneObjectContent.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModel.cpp src/inference/model/foreground/ocm/shape/ShapeTermEvaluator.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.cpp src/inference/model/foreground/ocm/shape/GaussianMixtureDistribution.cpp src/inference/model/foreground/ocm/shape/GaussianKernel.cpp
@@ -138,6 +140,7 @@ add_executable(inference src/inference.cpp
 			    src/inference/model/background/SummarizedBackgroundInferenceAlgorithm.cpp
 			    src/inference/model/background/MultipliedBackgroundInferenceAlgorithm.cpp
 			    src/inference/model/background/MaximumBackgroundInferenceAlgorithm.cpp
+                            src/inference/model/background/DifferenceBackgroundInferenceAlgorithm.cpp
 			    
 			    src/inference/model/foreground/ForegroundSceneContent.cpp
 			    src/inference/model/foreground/ForegroundInferenceAlgorithm.cpp
@@ -145,6 +148,7 @@ add_executable(inference src/inference.cpp
 			    src/inference/model/foreground/SummarizedForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/MultipliedForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/MaximumForegroundInferenceAlgorithm.cpp
+                            src/inference/model/foreground/DifferenceForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/SceneObjectDescription.cpp src/inference/model/foreground/SceneObjectContent.cpp
 
 			    src/inference/model/foreground/ocm/OcmSceneObjectContent.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModel.cpp src/inference/model/foreground/ocm/shape/ShapeTermEvaluator.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.cpp src/inference/model/foreground/ocm/shape/GaussianMixtureDistribution.cpp src/inference/model/foreground/ocm/shape/GaussianKernel.cpp
@@ -170,6 +174,7 @@ add_executable(inference_batch src/inference_batch.cpp
 			    src/inference/model/background/SummarizedBackgroundInferenceAlgorithm.cpp
 			    src/inference/model/background/MultipliedBackgroundInferenceAlgorithm.cpp
 			    src/inference/model/background/MaximumBackgroundInferenceAlgorithm.cpp
+                            src/inference/model/background/DifferenceBackgroundInferenceAlgorithm.cpp
 			    
 			    src/inference/model/foreground/ForegroundSceneContent.cpp
 			    src/inference/model/foreground/ForegroundInferenceAlgorithm.cpp
@@ -177,6 +182,7 @@ add_executable(inference_batch src/inference_batch.cpp
 			    src/inference/model/foreground/SummarizedForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/MultipliedForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/MaximumForegroundInferenceAlgorithm.cpp
+                            src/inference/model/foreground/DifferenceForegroundInferenceAlgorithm.cpp
 			    src/inference/model/foreground/SceneObjectDescription.cpp src/inference/model/foreground/SceneObjectContent.cpp
 
 			    src/inference/model/foreground/ocm/OcmSceneObjectContent.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModel.cpp src/inference/model/foreground/ocm/shape/ShapeTermEvaluator.cpp src/inference/model/foreground/ocm/shape/HierarchicalShapeModelNode.cpp src/inference/model/foreground/ocm/shape/GaussianMixtureDistribution.cpp src/inference/model/foreground/ocm/shape/GaussianKernel.cpp

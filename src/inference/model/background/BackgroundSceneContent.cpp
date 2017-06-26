@@ -44,6 +44,8 @@ namespace ProbabilisticSceneRecognition {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new MultipliedBackgroundInferenceAlgorithm()));
     } else if(pAlgorithm.compare("maximum") == 0) {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new MaximumBackgroundInferenceAlgorithm()));
+    } else if(pAlgorithm.substr(0,10).compare("difference") == 0) {
+      setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new DifferenceBackgroundInferenceAlgorithm()));
     } else {
       throw std::invalid_argument("Unable to procees loading. The inference algorithm of type '" + pAlgorithm + "' is unknown to the scene of type 'background'.");
     }
