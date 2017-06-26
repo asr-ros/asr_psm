@@ -36,6 +36,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <ISM/utility/TableHelper.hpp>
 #include <ISM/common_type/RecordedPattern.hpp>
+#include <Eigen/Geometry>
 
 namespace ProbabilisticSceneRecognition {
   
@@ -67,6 +68,19 @@ namespace ProbabilisticSceneRecognition {
      * @param pRuntimeLogger A file handle for runtime logging.
      */
     void doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger);
+
+    /**
+     * returns the difference between the constellation of pRoot-pTar and pDiffRoot-pDiffTar
+     */
+    double differenceBetween(ISM::Object pRoot, ISM::Object pTar, ISM::Object pDiffRoot, ISM::Object pDiffTar);
+
+    /**
+     * Executes the inference based on the given evidence.
+     *
+     * @param pList A list containing all objects to search in.
+     * @param pTypeAndObservedId A combination of type and id.
+     */
+    ISM::Object findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId);
 
     
     /**

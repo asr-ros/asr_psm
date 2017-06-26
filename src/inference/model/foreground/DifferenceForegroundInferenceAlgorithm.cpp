@@ -33,7 +33,7 @@ namespace ProbabilisticSceneRecognition {
   void DifferenceForegroundInferenceAlgorithm::doInference(std::vector<ISM::Object> pEvidenceList, std::ofstream& pRuntimeLogger)
   {
     ROS_INFO_STREAM("Calculating scene probability.");
-    
+
     // Iterate over all scene objects, evaluate them and summarize the results.
     mProbability = 0.0;
 
@@ -42,38 +42,65 @@ namespace ProbabilisticSceneRecognition {
 
       for(auto patternName : tableHelper->getRecordedPatternNames())
       {
+          double maxProbability = 0.0;
           ISM::RecordedPatternPtr pattern = tableHelper->getRecordedPattern(patternName);
           for(ISM::ObjectSetPtr objectSet : pattern->objectSets)
-          {
-              ROS_INFO_STREAM("blabla" << pattern->name);
-        //      objectSet->mIdentifier = pattern->name;
-     //         mSceneModelLearner->addExample(objectSet);
+          {              // - -- - -- - - - -- - - -- - - -- - - - - - -- - - - object set vorher nach typ sortieren!
+             for(auto object : objectSet->objects) {
+                 ROS_INFO_STREAM("Current Object to be checked is " << object->type << object->observedId);
+                 std::string objectType = object->type + object->observedId;
+                 std::string currentType = "";
+                 double testProbability = 1.0;
+                 double innerMaxProbability = 0.0;
+                 ISM::Object currentReferenceObject = findObjectOfType(pEvidenceList, objectType);
+                 ISM::Object currentInnerReferenceObject;
+
+                 for(auto innerObject : objectSet->objects) {
+                     std::string innerType = innerObject->type + innerObject->observedId;
+                     if(objectType.compare(innerType) != 0)
+                     {
+                        if(currentType.compare("") == 0){
+                            currentType = innerType;
+                            currentInnerReferenceObject = findObjectOfType(pEvidenceList, currentType);
+                            }
+                        else if(currentType.compare(innerType) != 0) {
+                            currentType = innerType;
+                            if(innerMaxProbability != 0.0)
+                                testProbability *= innerMaxProbability;
+                            innerMaxProbability = 0.0;
+                            currentInnerReferenceObject = findObjectOfType(pEvidenceList, currentType);
+                        }
+                        double innerTestProbability = differenceBetween(currentReferenceObject, currentInnerReferenceObject, *object, *innerObject); // funktion einfügen "berechneWahrscheinlichkeit evidence - innerObject"
+                        if(innerTestProbability > innerMaxProbability)
+                            innerMaxProbability = innerTestProbability;
+                     }
+                 }
+
+                 if(testProbability > maxProbability)
+                     maxProbability = testProbability;
+             }
           }
       }
 
 
-
-
-    /*for(boost::shared_ptr<SceneObjectDescription> sceneObject : *mSceneObjects)
-    {
-      // Update the scene objects with the new evidence.
-      sceneObject->update(pEvidenceList, pRuntimeLogger);
-      
-      mProbability = std::max(mProbability, sceneObject->getSceneObjectProbability() * sceneObject->getSceneObjectPriori());
-    }
-    
-    // Iterate over all scene objects and mark the best one.
-    bool done = false;
-    for(boost::shared_ptr<SceneObjectDescription> sceneObject : *mSceneObjects)
-    {
-      if(sceneObject->getSceneObjectProbability() * sceneObject->getSceneObjectPriori() == mProbability && !done)
-      {
-	sceneObject->setBestStatus(true);
-	done = true;
-      } else
-	sceneObject->setBestStatus(false);
-    }*/
     ROS_INFO_STREAM(" > Difference based scene probability is: '" << mProbability << "'.");
+  }
+
+  double DifferenceForegroundInferenceAlgorithm::differenceBetween(ISM::Object pRoot, ISM::Object pTar, ISM::Object pDiffRoot, ISM::Object pDiffTar) {
+      //ISM::Point point = new ISM::Point(pRoot.pose->point->eigen - pTar.pose->point->eigen - (pDiffRoot.pose->point->eigen - pDiffTar.pose->point->eigen));
+      //ISM::Quaternion quat;// = pRoot.pose->quat->eigen - pTar.pose->quat->eigen - (pDiffRoot.pose->quat->eigen - pDiffTar.pose->quat->eigen);
+
+      return 0.0;
+  }
+
+  ISM::Object DifferenceForegroundInferenceAlgorithm::findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId) {
+      for(ISM::Object object : pList) {
+          if(pTypeAndObservedId.compare(object.type + object.observedId) == 0) {
+              return object;
+          }
+      }
+      return *(new ISM::Object());
+
   }
   
   double DifferenceForegroundInferenceAlgorithm::getProbability()
