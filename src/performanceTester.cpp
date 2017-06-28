@@ -258,7 +258,7 @@ void initRandomScenes()
 
 void initTestSets()
 {
-    std::string testSetFolderPath = outputPath + "/" + testSetFolder + "1";
+    std::string testSetFolderPath = outputPath + "/" + testSetFolder;
 
     if(!boost::filesystem::exists(testSetFolderPath))
         boost::filesystem::create_directories(testSetFolderPath);
