@@ -5,14 +5,14 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
   <node name="js_probabilistic_scene_learner_and_inference" pkg="asr_psm" type="learner" output="screen">
     <!-- The list of basg files containing scene graphs that should be used for learning. -->
     <rosparam param="input_db_file">
-    /home/SMBAD/students/nikolai/example_test.sqlite
+    /home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/falsepositive/falsepositive_learningdata.sqlite
     </rosparam>
     <!-- That's how the scene should be called. -->
-    <param name="scene_model_name" value="example_test_comb_opt"/>
+    <param name="scene_model_name" value="falsepositive"/>
     <!-- The type of the scene that should be learned. -->
     <param name="scene_model_type" value="ocm"/>
     <!-- That's where the resulting model xml file should be stored. -->
-    <param name="scene_model_directory" value="$(find asr_psm)/data"/>
+    <param name="scene_model_directory" value="$(find psm_evaluation)/falsepositive"/>
     <!-- The volume of the workspace we're working in in qubic meters. -->
     <param name="workspace_volume" value="8.0"/>
     <!-- Static break ratio for the tree generation. -->
@@ -26,15 +26,15 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <!-- The minimal number of kernels. -->
     <param name="kernels_min" value="1"/>
     <!-- The maximal number of kernels. -->
-    <param name="kernels_max" value="3"/>
+    <param name="kernels_max" value="2"/>
     <!-- The number of runs per kernel. -->
-    <param name="runs_per_kernel" value="2"/>
+    <param name="runs_per_kernel" value="3"/>
     <!-- The number of samples to gereate for every recorded sample. -->
     <param name="synthetic_samples" value="1"/>
     <!-- The position interval for the sample relaxiation (in meters). -->
     <param name="interval_position" value="0.25"/>
     <!-- The orientation interval for the sample relaxiation (in degrees). -->
-    <param name="interval_orientation" value="20"/>
+    <param name="interval_orientation" value="10"/>
     <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
     <param name="orientation_plot_path" value="UNDEFINED"/>
     <!-- Max angle deviation for the tree generation. -->
@@ -48,7 +48,7 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <!-- How often the learner attempts to learn a valid model in each run until it gives up and throws an error.
     After half the attempts, the learner switches from a generic to a less precise but more stable diagonal matrix as base for the covariance matrices.
     Use "2" if each matrix type should be tried exactly once and "1" if only a generic matrix should be used once. -->
-    <param name="attempts_per_run" value="10" />
+    <param name="attempts_per_run" value="100" />
     
     <!-- INFERENCE PARAMETERS: -->
     <!-- Set true, to overwrite the visualization of results and plot the target distributions instead. -->
@@ -61,7 +61,7 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <!--<param name="runtime_log_path" value="/media/data_ext/data/gehrung/evaluation"/>-->
     
     <!-- The type of the relation tree trainer. There are "tree" - Hierarchical tree with agglomerative clustering (old method), "fullymeshed" - fully meshed topology, "combinatorial_optimization" -->
-    <param name="relation_tree_trainer_type" value="combinatorial_optimization"/>
+    <param name="relation_tree_trainer_type" value="tree"/>
     <!--Load some parameters for the combinatorial optimization trainer. -->
     <rosparam file="$(find asr_psm)/launch/combinatorial_optimization.yaml"/>
   </node>

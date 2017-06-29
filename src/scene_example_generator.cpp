@@ -28,10 +28,12 @@ ISM::PosePtr generatePose(double x, double y, double z = 0.0, double w = 1.0, do
 
 int main(int argc, char* argv[]) {
 
-    unsigned int stepsPerHalfTrajectory = 100;
-    std::string dbfilename = "/home/SMBAD/students/nikolai/example_test.sqlite";
-    std::string evidencefilename = "/home/SMBAD/students/nikolai/example_evidence.sqlite";
-    std::string sceneName = "test";
+    unsigned int stepsPerHalfTrajectory = 200;
+    std::string sceneName = "falsepositive";
+    std::string folder = "/home/SMBAD/students/nikolai/catkin_ws/src/psm_evaluation/" + sceneName + "/";
+
+    std::string dbfilename = folder + sceneName + "_learningdata.sqlite";
+    std::string evidencefilename = folder + sceneName + "_evidence.sqlite";
 
     // Three poses that form the basis for a trajectory
     struct Triplet
