@@ -70,7 +70,7 @@ namespace ProbabilisticSceneRecognition {
                             innerMaxProbability = 0.0;
                             currentInnerReferenceObject = findObjectOfType(pEvidenceList, currentType);
                         }
-                        double innerTestProbability = differenceBetween(currentReferenceObject, currentInnerReferenceObject, *object, *innerObject); // funktion einfügen "berechneWahrscheinlichkeit evidence - innerObject"
+                        double innerTestProbability = differenceBetween(currentReferenceObject, currentInnerReferenceObject, *object, *innerObject);
                         if(innerTestProbability > innerMaxProbability)
                             innerMaxProbability = innerTestProbability;
                      }
@@ -87,10 +87,19 @@ namespace ProbabilisticSceneRecognition {
   }
 
   double DifferenceForegroundInferenceAlgorithm::differenceBetween(ISM::Object pRoot, ISM::Object pTar, ISM::Object pDiffRoot, ISM::Object pDiffTar) {
-      //ISM::Point point = new ISM::Point(pRoot.pose->point->eigen - pTar.pose->point->eigen - (pDiffRoot.pose->point->eigen - pDiffTar.pose->point->eigen));
-      //ISM::Quaternion quat;// = pRoot.pose->quat->eigen - pTar.pose->quat->eigen - (pDiffRoot.pose->quat->eigen - pDiffTar.pose->quat->eigen);
-
-      return 0.0;
+      Eigen::Vector3d distance = pRoot.pose->point->eigen - pTar.pose->point->eigen - (pDiffRoot.pose->point->eigen - pDiffTar.pose->point->eigen);
+      Eigen::Vector3d pRootEuler = pRoot.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
+      normalizeVector3d(pRootEuler);
+      Eigen::Vector3d pTarEuler = pTar.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
+      normalizeVector3d(pTarEuler);
+      Eigen::Vector3d pDiffRootEuler = pDiffRoot.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
+      normalizeVector3d(pDiffRootEuler);
+      Eigen::Vector3d pDiffTarEuler = pDiffTar.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
+      normalizeVector3d(pDiffTarEuler);
+      Eigen::Vector3d rotationDistance = pRootEuler - pTarEuler - (pDiffRootEuler - pDiffTarEuler);
+      double rotationNorm = sqrt(pow(rotationDistance.x(), 2.0) + pow(rotationDistance.y(), 2.0) + pow(rotationDistance.z(), 2.0));
+      double positionNorm = sqrt(pow(distance.x(), 2.0) + pow(distance.y(), 2.0) + pow(distance.z(), 2.0));
+      return (100.0 - rotationNorm)/100.0 * (100.0 - positionNorm)/100.0;                                       // Parameter anpassen.
   }
 
   ISM::Object DifferenceForegroundInferenceAlgorithm::findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId) {
@@ -106,6 +115,12 @@ namespace ProbabilisticSceneRecognition {
   double DifferenceForegroundInferenceAlgorithm::getProbability()
   {
     return mProbability;
+  }
+
+  void DifferenceForegroundInferenceAlgorithm::normalizeVector3d(Eigen::Vector3d input)
+  {
+    double norm = sqrt(pow(input.x(), 2.0) + pow(input.y(), 2.0) + pow(input.z(), 2.0));
+    input = input * (1 / sqrt(norm));
   }
   
 }

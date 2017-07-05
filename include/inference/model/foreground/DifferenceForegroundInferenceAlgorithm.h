@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Global includes
 #include <string>
 #include <vector>
+#include <math.h>
 
 // Package includes
 #include <boost/property_tree/ptree.hpp>
@@ -81,6 +82,13 @@ namespace ProbabilisticSceneRecognition {
      * @param pTypeAndObservedId A combination of type and id.
      */
     ISM::Object findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId);
+
+    /**
+     * Normalizes a vector.
+     *
+     * @param input vector to get normalized
+     */
+    void normalizeVector3d(Eigen::Vector3d input);
 
     
     /**
