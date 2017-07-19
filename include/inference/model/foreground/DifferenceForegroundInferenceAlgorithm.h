@@ -44,7 +44,7 @@ namespace ProbabilisticSceneRecognition {
   /**
    * Implementation of the abstract ForegroundInferenceAlgorithm class. It evaluates all foreground scene objects and takes the one with the best score.
    *
-   * @author Joachim Gehrung
+   * @author Joshua Link
    * @version See SVN
    */
   class DifferenceForegroundInferenceAlgorithm : public ForegroundInferenceAlgorithm {
@@ -75,13 +75,7 @@ namespace ProbabilisticSceneRecognition {
      */
     double differenceBetween(ISM::Object pRoot, ISM::Object pTar, ISM::Object pDiffRoot, ISM::Object pDiffTar);
 
-    /**
-     * Executes the inference based on the given evidence.
-     *
-     * @param pList A list containing all objects to search in.
-     * @param pTypeAndObservedId A combination of type and id.
-     */
-    ISM::Object findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId);
+
 
     /**
      * Normalizes a vector.

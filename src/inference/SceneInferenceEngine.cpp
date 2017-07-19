@@ -125,7 +125,7 @@ namespace ProbabilisticSceneRecognition {
     {
       // Get the first entry.
 
-      boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();//HERE: mEvidenceBuffer.front();
+      boost::shared_ptr<asr_msgs::AsrObject> evidence = mEvidenceBuffer.front();
 
       
       // Remove the entry processed from the queue.
