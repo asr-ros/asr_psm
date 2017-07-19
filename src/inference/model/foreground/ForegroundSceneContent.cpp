@@ -55,13 +55,13 @@ namespace ProbabilisticSceneRecognition {
   void ForegroundSceneContent::initializeInferenceAlgorithms(std::string pAlgorithm)
   {
     // Select the inference algorithm described by the parameter.
-    if(pAlgorithm.compare("powerset") == 0) {
+    if(pAlgorithm.substr(0,8).compare("powerset") == 0) {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new PowerSetForegroundInferenceAlgorithm(mSceneObjects)));
-    } else if(pAlgorithm.compare("summarized") == 0) {
+    } else if(pAlgorithm.substr(0,10).compare("summarized") == 0) {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new SummarizedForegroundInferenceAlgorithm(mSceneObjects)));
-    } else if(pAlgorithm.compare("multiplied") == 0) {
+    } else if(pAlgorithm.substr(0,10).compare("multiplied") == 0) {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new MultipliedForegroundInferenceAlgorithm(mSceneObjects)));
-    } else if(pAlgorithm.compare("maximum") == 0) {
+    } else if(pAlgorithm.substr(0,7).compare("maximum") == 0) {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new MaximumForegroundInferenceAlgorithm(mSceneObjects)));
     } else if(pAlgorithm.substr(0,10).compare("difference") == 0) {
       setInferenceAlgorithm(boost::shared_ptr<InferenceAlgorithm>(new DifferenceForegroundInferenceAlgorithm(mSceneObjects , pAlgorithm.substr(10,pAlgorithm.size()))));

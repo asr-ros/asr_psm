@@ -76,6 +76,13 @@ namespace ProbabilisticSceneRecognition {
     double differenceBetween(ISM::Object pRoot, ISM::Object pTar, ISM::Object pDiffRoot, ISM::Object pDiffTar);
 
 
+    /**
+     * Executes the inference based on the given evidence.
+     *
+     * @param pList A list containing all objects to search in.
+     * @param pTypeAndObservedId A combination of type and id.
+     */
+    ISM::Object findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId);
 
     /**
      * Normalizes a vector.
@@ -103,6 +110,11 @@ namespace ProbabilisticSceneRecognition {
      * The database name of samples of the scene.
      */
     std::string mDataBaseName;
+
+    /**
+     * The pattern name of the scene.
+     */
+    std::string patternName;
 
     /**
      * TableHelper to extract Objects from ".sqlite"-file.

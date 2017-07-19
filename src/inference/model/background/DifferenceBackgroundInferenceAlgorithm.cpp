@@ -49,7 +49,11 @@ namespace ProbabilisticSceneRecognition {
     unsigned int numberOfSceneObjects = pEvidenceList.size();
 
     // No need to find the maximum, all scores are the same.
-    mProbability = calculateProbabilityOfBackgroundSceneObject(numberOfSceneObjects, numberOfSceneObjects);
+    mProbability = 1.0;
+    for(int i = 0; i < numberOfSceneObjects; i++){
+        mProbability *= 0.1;                                                            //TODO: Parameter überdenken?
+    }
+    //mProbability = calculateProbabilityOfBackgroundSceneObject(numberOfSceneObjects, numberOfSceneObjects);
   }
   
   double DifferenceBackgroundInferenceAlgorithm::getProbability()

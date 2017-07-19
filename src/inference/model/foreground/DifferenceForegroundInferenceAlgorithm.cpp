@@ -24,6 +24,11 @@ namespace ProbabilisticSceneRecognition {
   , mProbability(0.0)
   {
       mDataBaseName = pDataBaseName;
+      const char *str = mDataBaseName.c_str();
+      const char *result = strstr(str, ".sqlite");
+      int position = result - str;
+      patternName = mDataBaseName.substr(position + 7,mDataBaseName.size());
+      mDataBaseName = mDataBaseName.substr(0, position + 7);
   }
   
   DifferenceForegroundInferenceAlgorithm::~DifferenceForegroundInferenceAlgorithm()
@@ -34,25 +39,23 @@ namespace ProbabilisticSceneRecognition {
   {
     ROS_INFO_STREAM("Calculating scene probability.");
 
+
+
     // Iterate over all scene objects, evaluate them and summarize the results.
     mProbability = 0.0;
 
-    ROS_INFO_STREAM("Pulling Objects from database " << mDataBaseName.c_str());
+    ROS_INFO_STREAM("Pulling Objects from database " << mDataBaseName.c_str() << " for scene '" << patternName.c_str() << "'");
       tableHelper = ISM::TableHelperPtr(new ISM::TableHelper(mDataBaseName));
 
     for(auto recordedObject : pEvidenceList){
        std::string currentType = recordedObject.type + recordedObject.observedId;
        double maxProbability = 0.0;
 
-       for(auto patternName : tableHelper->getRecordedPatternNames())
-       {
+
           ISM::RecordedPatternPtr pattern = tableHelper->getRecordedPattern(patternName);
-
-
 
           for(ISM::ObjectSetPtr objectSet : pattern->objectSets)
           {
-
                      ISM::Object testReference;
                      for(auto object : objectSet->objects) {
                          std::string objectType = object->type + object->observedId;
@@ -60,32 +63,26 @@ namespace ProbabilisticSceneRecognition {
                             testReference = *object;
                      }
                      double testProbability = 1.0;
-                     for(auto innerRecordedObject : pEvidenceList){
-                         std::string recordedSecondType = innerRecordedObject.type + innerRecordedObject.observedId;
-                         if(currentType.compare(recordedSecondType) != 0){
+
+                                                    //TODO: Parameter??
 
                      for(auto object : objectSet->objects) {
-                         std::string objectType = object->type + object->observedId;
+                          std::string objectType = object->type + object->observedId;
 
+                          double innerTestProbability = 0.1;
+                          if(objectType.compare(currentType) != 0){
+                              ISM::Object innerRecordedObject =findObjectOfType(pEvidenceList, objectType);
+                              if(innerRecordedObject.type.compare("") != 0)
+                                    innerTestProbability = differenceBetween(recordedObject, innerRecordedObject, testReference, *object);
+                          }
 
-                             if(objectType.compare(recordedSecondType) == 0)
-                             {
+                     testProbability *= innerTestProbability;
+                     }
 
-
-                                double innerTestProbability = differenceBetween(recordedObject, innerRecordedObject, testReference, *object);
-                                testProbability *= innerTestProbability;
-
-
-                             }
-                       }
-
-
-                   }
-                }
                      if(testProbability > maxProbability)
                         maxProbability = testProbability;
             }
-        }
+
 
        if(maxProbability > mProbability) {
            mProbability = maxProbability;
@@ -108,7 +105,20 @@ namespace ProbabilisticSceneRecognition {
       Eigen::Vector3d rotationDistance = pRootEuler - pTarEuler - (pDiffRootEuler - pDiffTarEuler);
       double rotationNorm = sqrt(pow(rotationDistance.x(), 2.0) + pow(rotationDistance.y(), 2.0) + pow(rotationDistance.z(), 2.0));
       double positionNorm = sqrt(pow(distance.x(), 2.0) + pow(distance.y(), 2.0) + pow(distance.z(), 2.0));
-      return (100.0 - rotationNorm)/100.0 * (100.0 - positionNorm)/100.0;                                       // Parameter anpassen.
+
+      double result = (10.0 - rotationNorm)/10.0 * (10.0 - positionNorm)/10.0;
+      if(result < 0) return 0;
+      return result;                                                          // Parameter anpassen. Gewichtung? multipliziert vs addiert
+  }
+
+  ISM::Object DifferenceForegroundInferenceAlgorithm::findObjectOfType(std::vector<ISM::Object> pList, std::string pTypeAndObservedId) {
+         for(ISM::Object object : pList) {
+             if(pTypeAndObservedId.compare(object.type + object.observedId) == 0) {
+                 return object;
+             }
+         }
+         return *(new ISM::Object());
+
   }
 
   

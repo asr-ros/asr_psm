@@ -64,7 +64,7 @@ namespace ProbabilisticSceneRecognition {
     }
     
     // Load scene content and initialize the inference algorithm.
-    mContent->initializeInferenceAlgorithms(pAlgorithm);
+    mContent->initializeInferenceAlgorithms(pAlgorithm + mIdentifier->mDescription);
     mContent->load(pPt);
     
     // Initialize output file for runtime evaluation results.

@@ -3,7 +3,7 @@
   <node name="js_probabilistic_scene_learner" pkg="asr_psm" type="learner" output="screen">
     <!-- The list of basg files containing scene graphs that should be used for learning. -->
     <rosparam param="input_db_file">
-    /home/SMBAD/students/link/Downloads/experiment_1/experiment_1/experiment_1.sqlite
+    /home/SMBAD/students/link/Downloads/experiment_1/experiment_1/experiment_2_part_1_and_2.sqlite
     </rosparam>
     <!-- That's how the scene should be called. -->
     <param name="scene_model_name" value="advertisement"/>
