@@ -52,7 +52,7 @@ namespace ProbabilisticSceneRecognition {
     mDateTime = ss.str();
     
 
-    // Try to get names of bag files with PbdSceneGraph message input, if any exist.
+    // Try to get teh database file, if any exist.
     if(!mPrivateNamespaceHandle.getParam("input_db_file", mInputDbFilename))
     {
         throw std::runtime_error("Please specify parameter " + std::string("input_db_file") + " when starting this node.");

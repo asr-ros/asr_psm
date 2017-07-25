@@ -41,47 +41,63 @@ namespace ProbabilisticSceneRecognition {
 
 
 
+
     // Iterate over all scene objects, evaluate them and summarize the results.
     mProbability = 0.0;
 
     ROS_INFO_STREAM("Pulling Objects from database " << mDataBaseName.c_str() << " for scene '" << patternName.c_str() << "'");
       tableHelper = ISM::TableHelperPtr(new ISM::TableHelper(mDataBaseName));
+    double maxProbability = 0.0;
 
     for(auto recordedObject : pEvidenceList){
        std::string currentType = recordedObject.type + recordedObject.observedId;
-       double maxProbability = 0.0;
+
 
 
           ISM::RecordedPatternPtr pattern = tableHelper->getRecordedPattern(patternName);
 
           for(ISM::ObjectSetPtr objectSet : pattern->objectSets)
           {
+
                      ISM::Object testReference;
                      for(auto object : objectSet->objects) {
                          std::string objectType = object->type + object->observedId;
                          if(objectType.compare(currentType) == 0)
                             testReference = *object;
                      }
-                     double testProbability = 1.0;
+                     if(testReference.type.compare("")){                    //got a reference object to this evidence object?
 
-                                                    //TODO: Parameter??
+                         ROS_INFO_STREAM("--- object set --- " << objectSet->mIdentifier);
+                         ROS_INFO_STREAM("reference object is " << testReference.type + testReference.observedId);
 
-                     for(auto object : objectSet->objects) {
-                          std::string objectType = object->type + object->observedId;
+                         double testProbability = 0.0;
 
-                          double innerTestProbability = 0.1;
-                          if(objectType.compare(currentType) != 0){
-                              ISM::Object innerRecordedObject =findObjectOfType(pEvidenceList, objectType);
-                              if(innerRecordedObject.type.compare("") != 0)
-                                    innerTestProbability = differenceBetween(recordedObject, innerRecordedObject, testReference, *object);
-                          }
+                                                        //TODO: Parameter??
 
-                     testProbability *= innerTestProbability;
-                     }
+                         for(auto object : objectSet->objects) {
+                              std::string objectType = object->type + object->observedId;
 
-                     if(testProbability > maxProbability)
-                        maxProbability = testProbability;
-            }
+                              double innerTestProbability = 0.0;
+                              if(objectType.compare(currentType) != 0){
+                                  ISM::Object innerRecordedObject = findObjectOfType(pEvidenceList, objectType);
+                                  if(innerRecordedObject.type.compare("") != 0)
+                                        innerTestProbability = differenceBetween(recordedObject, innerRecordedObject, testReference, *object);
+                                  ROS_INFO_STREAM("inner Probability: " << innerTestProbability);
+
+                              }
+
+                         testProbability += innerTestProbability;
+                         }
+                         int objectCount = pEvidenceList.size() - 1;   // 1 weniger weil ein Object Referenz ist! ( damit mit wahrscheinlichkeit 1 richtig)
+
+                         if(testProbability / (objectCount * 1.0) > maxProbability){
+
+                            maxProbability = testProbability / (objectCount * 1.0);
+                         ROS_INFO_STREAM(" >new maximum Probability: " << maxProbability << " - " << objectCount);
+                         }
+
+                }
+          }
 
 
        if(maxProbability > mProbability) {
@@ -106,7 +122,7 @@ namespace ProbabilisticSceneRecognition {
       double rotationNorm = sqrt(pow(rotationDistance.x(), 2.0) + pow(rotationDistance.y(), 2.0) + pow(rotationDistance.z(), 2.0));
       double positionNorm = sqrt(pow(distance.x(), 2.0) + pow(distance.y(), 2.0) + pow(distance.z(), 2.0));
 
-      double result = (10.0 - rotationNorm)/10.0 * (10.0 - positionNorm)/10.0;
+      double result =  (10.0 - positionNorm)/10.0; //(10.0 - rotationNorm)/10.0 *
       if(result < 0) return 0;
       return result;                                                          // Parameter anpassen. Gewichtung? multipliziert vs addiert
   }
