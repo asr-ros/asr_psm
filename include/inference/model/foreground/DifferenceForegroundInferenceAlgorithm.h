@@ -98,6 +98,24 @@ namespace ProbabilisticSceneRecognition {
      * @return Probability for this scene.
      */
     double getProbability();
+
+    /**
+     *  the nearest distance that has propability = 0.0
+     *
+     */
+    double mMaximumDistance;
+
+    /**
+     * The lowest rotation norm that has propability = 0.0
+     *
+     */
+    double  mMaximumRotation;
+
+    /**
+     * points to the patterned filled with learned objects
+     *
+     */
+    ISM::RecordedPatternPtr mPattern;
     
   private:
     

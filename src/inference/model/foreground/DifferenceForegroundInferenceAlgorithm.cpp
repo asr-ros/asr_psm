@@ -29,6 +29,13 @@ namespace ProbabilisticSceneRecognition {
       int position = result - str;
       patternName = mDataBaseName.substr(position + 7,mDataBaseName.size());
       mDataBaseName = mDataBaseName.substr(0, position + 7);
+
+      mMaximumDistance = 10.0;
+      mMaximumRotation = 1.0;
+
+      ROS_INFO_STREAM("Pulling Objects from database " << mDataBaseName.c_str() << " for scene '" << patternName.c_str() << "'");
+      tableHelper = ISM::TableHelperPtr(new ISM::TableHelper(mDataBaseName));
+      mPattern = tableHelper->getRecordedPattern(patternName);
   }
   
   DifferenceForegroundInferenceAlgorithm::~DifferenceForegroundInferenceAlgorithm()
@@ -40,13 +47,10 @@ namespace ProbabilisticSceneRecognition {
     ROS_INFO_STREAM("Calculating scene probability.");
 
 
-
-
     // Iterate over all scene objects, evaluate them and summarize the results.
     mProbability = 0.0;
 
-    ROS_INFO_STREAM("Pulling Objects from database " << mDataBaseName.c_str() << " for scene '" << patternName.c_str() << "'");
-      tableHelper = ISM::TableHelperPtr(new ISM::TableHelper(mDataBaseName));
+
     double maxProbability = 0.0;
 
     for(auto recordedObject : pEvidenceList){
@@ -54,9 +58,7 @@ namespace ProbabilisticSceneRecognition {
 
 
 
-          ISM::RecordedPatternPtr pattern = tableHelper->getRecordedPattern(patternName);
-
-          for(ISM::ObjectSetPtr objectSet : pattern->objectSets)
+          for(ISM::ObjectSetPtr objectSet : mPattern->objectSets)
           {
 
                      ISM::Object testReference;
@@ -88,12 +90,12 @@ namespace ProbabilisticSceneRecognition {
 
                          testProbability += innerTestProbability;
                          }
-                         int objectCount = pEvidenceList.size() - 1;   // 1 weniger weil ein Object Referenz ist! ( damit mit wahrscheinlichkeit 1 richtig)
+                         int objectCount = objectSet->objects.size();   // 1 weniger, weil ein Object Referenz ist! ( damit mit wahrscheinlichkeit 1 richtig)
 
-                         if(testProbability / (objectCount * 1.0) > maxProbability){
+                         if((testProbability + 1.0) / (objectCount * 1.0) > maxProbability){
 
-                            maxProbability = testProbability / (objectCount * 1.0);
-                         ROS_INFO_STREAM(" >new maximum Probability: " << maxProbability << " - " << objectCount);
+                            maxProbability = (testProbability + 1.0) / (objectCount * 1.0);
+                         ROS_INFO_STREAM(" ->new maximum Probability: " << maxProbability << " - " << objectCount);
                          }
 
                 }
@@ -111,18 +113,18 @@ namespace ProbabilisticSceneRecognition {
   double DifferenceForegroundInferenceAlgorithm::differenceBetween(ISM::Object pRoot, ISM::Object pTar, ISM::Object pDiffRoot, ISM::Object pDiffTar) {
       Eigen::Vector3d distance = pRoot.pose->point->eigen - pTar.pose->point->eigen - (pDiffRoot.pose->point->eigen - pDiffTar.pose->point->eigen);
       Eigen::Vector3d pRootEuler = pRoot.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
-      normalizeVector3d(pRootEuler);
+      //normalizeVector3d(pRootEuler);
       Eigen::Vector3d pTarEuler = pTar.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
-      normalizeVector3d(pTarEuler);
+      //normalizeVector3d(pTarEuler);
       Eigen::Vector3d pDiffRootEuler = pDiffRoot.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
-      normalizeVector3d(pDiffRootEuler);
+      //normalizeVector3d(pDiffRootEuler);
       Eigen::Vector3d pDiffTarEuler = pDiffTar.pose->quat->eigen.toRotationMatrix().eulerAngles(2, 1, 0);
-      normalizeVector3d(pDiffTarEuler);
+      //normalizeVector3d(pDiffTarEuler);
       Eigen::Vector3d rotationDistance = pRootEuler - pTarEuler - (pDiffRootEuler - pDiffTarEuler);
-      double rotationNorm = sqrt(pow(rotationDistance.x(), 2.0) + pow(rotationDistance.y(), 2.0) + pow(rotationDistance.z(), 2.0));
+      double rotationAngle = sqrt(3 * pow(rotationDistance.x(), 2.0) + 2 * pow(rotationDistance.y(), 2.0) + pow(rotationDistance.z(), 2.0));
       double positionNorm = sqrt(pow(distance.x(), 2.0) + pow(distance.y(), 2.0) + pow(distance.z(), 2.0));
-
-      double result =  (10.0 - positionNorm)/10.0; //(10.0 - rotationNorm)/10.0 *
+      if(rotationAngle < 0 || positionNorm < 0) return 0;
+      double result =  (mMaximumDistance - positionNorm)/mMaximumDistance *(mMaximumRotation - rotationAngle)/mMaximumRotation;
       if(result < 0) return 0;
       return result;                                                          // Parameter anpassen. Gewichtung? multipliziert vs addiert
   }
