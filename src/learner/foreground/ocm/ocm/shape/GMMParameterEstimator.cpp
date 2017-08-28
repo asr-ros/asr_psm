@@ -219,7 +219,7 @@ namespace ProbabilisticSceneRecognition {
     for (unsigned int i = 0; i < numberOfKernels; i++)
     {
         // Extract the mean and covariance of the kernel.
-        GaussianKernel kernel = mBestGMM.getKernels().at(i);
+        PSMLearner::GaussianKernel kernel = mBestGMM.getKernels().at(i);
         boost::shared_ptr<Eigen::VectorXd> mean = kernel.mMean;
         boost::shared_ptr<Eigen::MatrixXd> cov = kernel.mCovariance;
 
@@ -277,9 +277,10 @@ namespace ProbabilisticSceneRecognition {
         for (unsigned int i = 0; i < histOutYaw.size(); i++) histOutYaw.at(i).second /= histOutYaw.size();
 
         // plot them into the gnuplot files and on screen
-        plotOrientationHistogram(mPathOrientationPlots + "/" + std::to_string(timestamp) + "-roll.gp", histOutRoll, "roll");
-        plotOrientationHistogram(mPathOrientationPlots + "/" + std::to_string(timestamp) + "-pitch.gp", histOutPitch, "pitch");
-        plotOrientationHistogram(mPathOrientationPlots + "/" + std::to_string(timestamp) + "-yaw.gp", histOutYaw, "yaw");
+        Visualization::GMMGnuplotVisualization orientationVisualizer;
+        orientationVisualizer.plotOrientationHistogram(mPathOrientationPlots + "/" + std::to_string(timestamp) + "-roll.gp", histOutRoll, "roll");
+        orientationVisualizer.plotOrientationHistogram(mPathOrientationPlots + "/" + std::to_string(timestamp) + "-pitch.gp", histOutPitch, "pitch");
+        orientationVisualizer.plotOrientationHistogram(mPathOrientationPlots + "/" + std::to_string(timestamp) + "-yaw.gp", histOutYaw, "yaw");
     }
   }
 
@@ -404,7 +405,7 @@ namespace ProbabilisticSceneRecognition {
       // Iterate over all gaussian kernels and save them.
       for(unsigned int i = 0; i < weights.size(); i++)
       {
-        GaussianKernel kernel;          // Create a new gaussian kernel.
+        PSMLearner::GaussianKernel kernel;          // Create a new gaussian kernel.
         kernel.mWeight = weights[i];    // Set the weight.
         kernel.mMean = means[i];        // Set the mean vector.
         kernel.mCovariance = covs[i];   // Set the covariance matrix.
@@ -433,38 +434,5 @@ namespace ProbabilisticSceneRecognition {
       bic = llk - 0.25 * (double) nparams * std::log((double) data.size());
 
       return true;  // Training succeeded: return true
-  }
-
-  void GMMParameterEstimator::plotOrientationHistogram(const std::string& filename, const std::vector<std::pair<double, double>> data, const std::string& rotaxis)
-  {
-      PlotHelper plotHelper(filename);
-
-      double min_x, max_x, min_y, max_y;
-      min_x = max_x = min_y = max_y = 0;
-      for (std::pair<double, double> datum: data)
-      {
-          if (datum.first < min_x) min_x = datum.first;
-          if (datum.first > max_x) max_x = datum.first;
-          if (datum.second < min_y) min_y = datum.second;
-          if (datum.second > max_y) max_y = datum.second;
-      }
-      double xdistance = 0;
-      if (data.size() > 1) xdistance = std::abs(data.at(1).first - data.at(0).first);   // Assuming all data points have equal distance on the x axis
-      std::pair<double, double> xRange(min_x, max_x + xdistance);                       // Add xdistance to be able to stretch the last point out, see below
-      std::pair<double, double> yRange(min_y, max_y + ((double) 1 / data.size()));          // y axis goes up to the bucket of the histogram with the highest value and a little above
-
-      plotHelper.initPlot("Tabular(" + rotaxis + ")", rotaxis, "P(" + rotaxis + ")", xRange, yRange, data.size()); // using data.size() as amount of samples
-      for (unsigned int i = 0; i < data.size() - 1; i++)    // add each data point twice for histogram-like look
-      {
-          plotHelper.addPointToBuffer(data.at(i).first, data.at(i).second);
-          plotHelper.addPointToBuffer(data.at(i+1).first, data.at(i).second);
-      }
-      if (!data.empty())    // add last point twice too
-      {
-          plotHelper.addPointToBuffer(data.at(data.size() - 1).first, data.at(data.size() - 1).second);
-          plotHelper.addPointToBuffer(data.at(data.size() - 1).first + xdistance, data.at(data.size() - 1).second);
-      }
-      plotHelper.sendPlot();
-  }
-  
+  }  
 }

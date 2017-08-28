@@ -113,7 +113,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Debug message.
     ROS_INFO_STREAM("The relative probability for scene '" << mIdentifier->mDescription << "' is '" << result << "'.");
-    
+
     // Return P(D|S) * P(S)
     mIdentifier->mLikelihood = result * mIdentifier->mPriori;
   }

@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
+Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,6 +21,13 @@ namespace ProbabilisticSceneRecognition {
  
   HierarchicalShapeModel::HierarchicalShapeModel()
   {
+      ros::NodeHandle nodeHandle("~");
+      // Try to get the type of the conditional probability algorithm.
+      if(!nodeHandle.getParam("conditional_probability_algorithm", mConditionalProbabilityAlgorithm))
+      {
+         ROS_INFO_STREAM("Could not find ROS parameter conditional_probability_algorithm. Using standard method of using the minimum (value=\"minimum\").");
+         mConditionalProbabilityAlgorithm = "minimum";     // for compatability with old launch files.
+      }
   }
   
   HierarchicalShapeModel::~HierarchicalShapeModel()
@@ -31,13 +38,51 @@ namespace ProbabilisticSceneRecognition {
   {
     // Load the volume of the space we're working in. It is required for the uniform distribution.
     mWorkspaceVolume = pPt.get<double>("shape.root.<xmlattr>.volume");
-    
+
+    unsigned int id = 1;
+    // this, the root, implicitly has id 0.
+
     // Load the childs of the root node.
-    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pPt.get_child("shape.root"))
+    for(boost::property_tree::ptree::value_type &v: pPt.get_child("shape.root"))
     {
       // Only access the 'child' child nodes.
       if(!std::strcmp(v.first.c_str(), "child"))
-	mChildren.push_back(HierarchicalShapeModelNode(v.second));
+    mChildren.push_back(boost::shared_ptr<HierarchicalShapeModelNode>(new HierarchicalShapeModelNode(v.second, id)));
+    }
+
+    // Assign references based on the IDs and set parent types:
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> nodesToVisit;
+    for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
+        nodesToVisit.push_back(child);
+
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> references;
+    std::map<unsigned int, boost::shared_ptr<HierarchicalShapeModelNode>> nonReferencesById;
+    while(!nodesToVisit.empty())
+    {
+        // pop first node:
+        boost::shared_ptr<HierarchicalShapeModelNode> currentNode = nodesToVisit[0];
+        nodesToVisit.erase(nodesToVisit.begin());
+
+        unsigned int referenceTo;
+        bool isReference = currentNode->isReference(referenceTo);
+        if (!isReference)
+        {
+            nonReferencesById[referenceTo] = currentNode;
+            for (boost::shared_ptr<HierarchicalShapeModelNode> child: currentNode->getChildren())
+                nodesToVisit.push_back(child);
+        }
+        else
+        {
+            references.push_back(currentNode);
+        }
+    }
+
+    for (boost::shared_ptr<HierarchicalShapeModelNode> currentReference: references)
+    {
+        unsigned int referenceTo;
+        if (!currentReference->isReference(referenceTo)) throw std::runtime_error("Trying to make a non-reference node a reference.");
+
+        currentReference->setReferencedNode(nonReferencesById[referenceTo]);
     }
   }
   
@@ -48,11 +93,13 @@ namespace ProbabilisticSceneRecognition {
     
     // Forward visualizer to the child nodes representing the secondary scene objects.
     for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].initializeVisualizer(mSuperior);
+      mChildren[i]->initializeVisualizer(mSuperior);
   }
 
   double HierarchicalShapeModel::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments)
   {
+      for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren) child->resetVisit();
+
     double result = 1.0;
 
     // If no part was assigned to the root node, we don't need to continue (because the model doesn't allow cases like this).
@@ -71,18 +118,53 @@ namespace ProbabilisticSceneRecognition {
       // Evaluate evidence for root node under uniform distribution (FOR EVERY DIMENSION. Could only be done, it a root object was assigned to the root node.
       // THIS IS NECESSARY! When we have only one object, a scene containing it and a background scene,
       // then the probabilities MUST BE 50/50 (of course assumed that both scenes only consider shape)!
-      result *= 1.0 / (mWorkspaceVolume * 2.0 * pow(M_PI, 2.0));
+      double rootResult = 1.0 / (mWorkspaceVolume * 2.0 * pow(M_PI, 2.0));
+      result *= rootResult;
       
+      // vector to hold the conditional probability of each slot:
+      std::vector<boost::shared_ptr<ConditionalProbability>> conditionalProbabilities(pAssignments.size());
+      // initialize conditional probabilites:
+      if (mConditionalProbabilityAlgorithm == "minimum")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new MinimumConditionalProbability());
+      else if (mConditionalProbabilityAlgorithm == "multiplied")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new MultipliedConditionalProbability());
+      else if (mConditionalProbabilityAlgorithm == "root_of_multiplied")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new RootOfMultipliedConditionalProbability());
+      else if (mConditionalProbabilityAlgorithm == "average")
+          for (unsigned int i = 0; i < conditionalProbabilities.size(); i++)
+              conditionalProbabilities[i] = boost::shared_ptr<ConditionalProbability>(new AverageConditionalProbability());
+      else throw std::runtime_error("In HierarchicalShapeModel::calculateProbabilityForHypothesis(): conditional probability algorithm type "
+                                    + mConditionalProbabilityAlgorithm + " is invalid. Valid types are minimum, multiplied, root_of_multiplied, average.");
+
+      // set probability of reference object (represented by this class):
+      conditionalProbabilities[0]->setProbability("Root", rootResult);
+
       // Iterate over all children, assign the given evidence to them and evaluate
-      BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
+      for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
       {	
+          child->setParentObjectType(mVisualizer->getSceneObjectName());
+
 	// Update the transformation from world coordinates to parent coordinates.
-	child.setAbsoluteParentPose(mAbsolutePose);
+    child->setAbsoluteParentPose(mAbsolutePose);
 	
 	// If zero-object was assigned to child, continue iterating down the tree to set the right slot id,
-	// but don't use the probabilities based on the occluded subtree.
-    result *= child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0);
+    // but don't use the probabilities based on the occluded subtree.
+    result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, slotId, pAssignments[0] == 0, conditionalProbabilities);
       }
+
+      double slotProduct = 1.0;
+      for (boost::shared_ptr<ConditionalProbability> cP: conditionalProbabilities) {
+        double slotProbability = cP->getProbability();
+        //ROS_DEBUG_STREAM("Parent probabilities: " << cP->printParentProbabilities() << " => " << slotProbability);
+        slotProduct *= slotProbability;
+      }
+      // keep the old result around for comparison:
+      //ROS_DEBUG_STREAM("Product of all probabilities: " << result << ". Product of conditional probabilities: " << slotProduct);
+
+      result = slotProduct; // overwrite it for output.
       
       // Forward position of this primary scene object to visualizer.
       mVisualizer->setBestPoseCandidate(mAbsolutePose);
@@ -112,13 +194,13 @@ namespace ProbabilisticSceneRecognition {
 	
 	// Forward the pose of this node as parent node pose to the child nodes.
 	for(unsigned int i = 0; i < mChildren.size(); i++)
-	  mChildren[i].setAbsoluteParentPose(mAbsolutePose);
+      mChildren[i]->setAbsoluteParentPose(mAbsolutePose);
       }
     }
     
     // Forward visualization command to the child nodes representing the secondary scene objects.
     for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].visualize(pEvidenceList);
+      mChildren[i]->visualize(pEvidenceList);
   }
   
   unsigned int HierarchicalShapeModel::getNumberOfNodes()
@@ -126,9 +208,9 @@ namespace ProbabilisticSceneRecognition {
     unsigned int result = 1;
     
     // Let the children of this node count their children.
-    BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
+    for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
     {
-      result += child.getNumberOfNodes();
+      result += child->getNumberOfNodes();
     }
     return result;
   }

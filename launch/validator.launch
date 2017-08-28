@@ -1,0 +1,26 @@
+<!-- Launches the validator, which tests the given model against the given test sets and counts false recognitions and runtime.
+Calculates some statistical values (average of runtime and false recognitions, ratio of false recognition against number of sets).
+Writes the results as csv to the given file -->
+<launch>
+  <node name="js_validator" pkg="asr_psm" type="validator" output="screen">
+    <!--Threshold above which a probability is regarded as saying that the scene was recognized, after normaization with background and other scenes (not identical to the one used in optimization) -->
+    <param name="recognition_threshold" value="0.5"/>
+    <!-- File to load the valid sets from. -->
+    <param name="valid_testset_db_filename" value="$(find asr_psm)/data/test/validValidationSets.sqlite"/>
+    <!-- File to load the invalid sets from. -->
+    <param name="invalid_testset_db_filename" value="$(find asr_psm)/data/test/invalidValidationSets.sqlite"/>
+    <!-- Name of the file containing the model. -->
+    <param name="scene_model" value="$(find asr_psm)/data/advertisement.xml"/>
+    <!-- Name of the output file. -->
+    <param name="output_file" value="$(find asr_psm)/data/test/validationResult.csv"/>
+    
+    <!--The name of the frame the objects should be transformed to. -->
+    <param name="base_frame_id" value="/PTU"/>
+    <!-- The visualization is pretty small, this scale factor enlarges it. -->
+    <param name="scale_factor" value="1.0"/>
+    <!-- This factor determines the multiple of the standard deviation. -->
+    <param name="sigma_multiplicator" value="2.0"/>
+    <!-- The timeout for object evidences in milliseconds. -->
+    <param name="evidence_timeout" value="100"/>
+  </node>
+</launch>

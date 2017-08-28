@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
+Copyright (c) 2016, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meissner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,35 +19,53 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
   
-  HierarchicalShapeModelNode::HierarchicalShapeModelNode(boost::property_tree::ptree& pPt)
+  HierarchicalShapeModelNode::HierarchicalShapeModelNode(boost::property_tree::ptree& pPt, unsigned int& pID): mWasVisited(false)
   {
     // Initialize shared pointer to gaussian mixture distribution;
     mGaussianMixtureDistributionPosition.reset(new GaussianMixtureDistribution(3));
     mGaussianMixtureDistributionOrientation.reset(new GaussianMixtureDistribution(4));
-    
+
     // Execute the loading process.
-    load(pPt);
+    load(pPt, pID);
   }
   
   HierarchicalShapeModelNode::~HierarchicalShapeModelNode()
   {
   }
   
-  void HierarchicalShapeModelNode::load(boost::property_tree::ptree& pPt)
+  void HierarchicalShapeModelNode::load(boost::property_tree::ptree& pPt, unsigned int& pID)
   {
     // Load the name of the object that is represented by this node.
     mSceneObject = pPt.get<std::string>("<xmlattr>.name");
+
+    // Try to load the index of the object referenced by this node. If attribute is not found, node is not a reference.
+    boost::optional<std::string> referenceTo = pPt.get_optional<std::string>("<xmlattr>.references");
+    if (referenceTo)
+    {
+        mIsReference = true;
+        mReferenceTo = boost::lexical_cast<unsigned int>(*referenceTo);
+    }
+    else
+    {
+        mIsReference = false;
+        mReferenceTo = pID;
+        pID++;
+    }
     
     // Load the gaussian mixture distribution associated with this node.
     mGaussianMixtureDistributionPosition->load(pPt, "position");
     mGaussianMixtureDistributionOrientation->load(pPt, "orientation");
     
     // Load the childs of the node, if there are any.
-    BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pPt)
+    for(boost::property_tree::ptree::value_type &v: pPt)
     {
       // Only access the 'child' nodes.
       if(!std::strcmp(v.first.c_str(), "child"))
-	mChildren.push_back(HierarchicalShapeModelNode(v.second));
+      {
+          boost::shared_ptr<HierarchicalShapeModelNode> child(new HierarchicalShapeModelNode(v.second, pID));
+          child->setParentObjectType(mSceneObject);
+          mChildren.push_back(child);
+      }
     }
   }
   
@@ -58,16 +76,16 @@ namespace ProbabilisticSceneRecognition {
     
     // Create a new coordinator for seondary scene object visualization.
     mVisualizer.reset(new Visualization::ProbabilisticSecondarySceneObjectVisualization());
-    
+
     // Append it to supperior visualizer.
     mSuperior->appendVisualizer(mVisualizer);
-    
+
     // Initialize the visualizer for the gaussian mixture distribution.
     mGaussianMixtureDistributionPosition->initializeVisualizer(mVisualizer);
-    
+
     // Iterate over all child nodes and append them, too!
     for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].initializeVisualizer(mSuperior);
+      mChildren[i]->initializeVisualizer(mSuperior);
   }
   
   void HierarchicalShapeModelNode::setAbsoluteParentPose(boost::shared_ptr<ISM::Pose> pPose)
@@ -75,54 +93,73 @@ namespace ProbabilisticSceneRecognition {
     mAbsoluteParentPose = pPose;
   }
 
-  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut)
+  double HierarchicalShapeModelNode::calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
+																		std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities)
   {
-    double result = 1.0;
-    
-    // Go to the next slot.
-    pSlotId++;
-    
-    // Subtree already cut?
-    if(pCut || pAssignments[pSlotId] == 0)
-    {
-      // Continue moving down the tree to increment the slot id.
-      BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
-	child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true);
-    } else {
-      // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
-      mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[pSlotId] - 1].pose));
-      mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
-      
-      // Evaluate the relative pose under the the probability distribution describing the scene shape.
-      // We remember: the scene shape is defined in the coordinate frame of the parent node.
-      double scorePos = mGaussianMixtureDistributionPosition->evaluate(mRelativePose);
-      double scoreOri = mGaussianMixtureDistributionOrientation->evaluate(mRelativePose);
-      double score = scorePos * scoreOri;
-      
-//       ROS_DEBUG_STREAM("Pose fitting report for scene object '" << mSceneObject <<"'. Position is " << scorePos << ", orientation is " << scoreOri << ". Total is " << score << ".");
-      
-      // Add score to global result.
-      result *= score;
-      
-      // Forward the current score to the visualizer. If this is part of the best hypothesis,
-      // it will be used for coloring the link to the parent object.
-      mVisualizer->setBestPoseCandidate(score);
-      
-      // Ok, now we need to give the pose of this object to the children of this node.
-      // Using this information and the evidence they're also able to calculate their probabilities.
-      BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
+      double result = 1.0;
+
+      unsigned int oldSlotId = pSlotId;
+      if (!mIsReference)
+          // Go to the next slot.
+          pSlotId++;
+      else pSlotId = mReferenceTo;
+
+      std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> children;
+      if (!mIsReference) children = mChildren;
+      else children = mReferencedNode->getChildren();
+
+      // Subtree already cut?
+      if(pCut || pAssignments[pSlotId] == 0)
       {
- 	// Update the tranformation of the child node (from world frame to this nodes frame).
-	child.setAbsoluteParentPose(mAbsolutePose);
-	
-	// If zero-object was assigned to child, continue iterating down the tree to INCREMENT THE SLOT ID.
-	// The returned probability will be one, so it has no influence at all.
-	result *= child.calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, false);
+          if (!mWasVisited)
+              pConditionalProbabilities[pSlotId]->setProbability(mParentObject, 1.0);   // only if this node never gets visited through a not cut path, the associated probability remains set to 1.
+          // Continue moving down the tree to increment the slot id.
+          for(boost::shared_ptr<HierarchicalShapeModelNode> child: children)
+              child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, true, pConditionalProbabilities);
       }
-      
-      // Forward position of this primary scene object to visualizer.
-      mVisualizer->setBestCandidatePose(mAbsolutePose);
-    }
+      else
+      {
+          mWasVisited = true;
+
+          // Extract the pose of the object associates with this node/slot and convert it into the parent frame.
+          mAbsolutePose.reset(new ISM::Pose(*pEvidenceList[pAssignments[pSlotId] - 1].pose));
+          mAbsolutePose->convertPoseIntoFrame(mAbsoluteParentPose, mRelativePose);
+
+          // Evaluate the relative pose under the the probability distribution describing the scene shape.
+          // We remember: the scene shape is defined in the coordinate frame of the parent node.
+          double scorePos = mGaussianMixtureDistributionPosition->evaluate(mRelativePose);
+          double scoreOri = mGaussianMixtureDistributionOrientation->evaluate(mRelativePose);
+          double score = scorePos * scoreOri;
+
+          pConditionalProbabilities[pSlotId]->setProbability(mParentObject, score);
+
+          //ROS_DEBUG_STREAM("Pose fitting report for scene object '" << mSceneObject <<"'. Position is " << scorePos << ", orientation is " << scoreOri << ". Total is " << score << ".");
+
+          // Add score to global result.
+          result *= score;
+
+          // Forward the current score to the visualizer. If this is part of the best hypothesis,
+          // it will be used for coloring the link to the parent object.
+          mVisualizer->setBestPoseCandidate(score);
+
+          // Ok, now we need to give the pose of this object to the children of this node.
+          // Using this information and the evidence they're also able to calculate their probabilities.
+          for(boost::shared_ptr<HierarchicalShapeModelNode> child: children)
+          {
+              // Update the tranformation of the child node (from world frame to this nodes frame).
+              child->setAbsoluteParentPose(mAbsolutePose);
+
+              // If zero-object was assigned to child, continue iterating down the tree to INCREMENT THE SLOT ID.
+              // The returned probability will be one, so it has no influence at all.
+              result *= child->calculateProbabilityForHypothesis(pEvidenceList, pAssignments, pSlotId, false, pConditionalProbabilities);
+          }
+
+          // Forward position of this primary scene object to visualizer.
+          mVisualizer->setBestCandidatePose(mAbsolutePose);
+      }
+
+      if (mIsReference) pSlotId = oldSlotId;
+
     return result;
   }
 
@@ -159,25 +196,50 @@ namespace ProbabilisticSceneRecognition {
 	
 	// For the given child node, set the pose of this node as parent pose in world.
 	for(unsigned int i = 0; i < mChildren.size(); i++)
-	  mChildren[i].setAbsoluteParentPose(mAbsolutePose);
+      mChildren[i]->setAbsoluteParentPose(mAbsolutePose);
       }
     }
     
     // Forward evidence to all child nodes.
     for(unsigned int i = 0; i < mChildren.size(); i++)
-      mChildren[i].visualize(pEvidenceList);
+      mChildren[i]->visualize(pEvidenceList);
   }
   
   unsigned int HierarchicalShapeModelNode::getNumberOfNodes()
   {
+    if (mIsReference) return 0;     // References not counted as unique nodes
+
     unsigned int result = 1;
     
     // Let the children of this node count their children.
-    BOOST_FOREACH(HierarchicalShapeModelNode child, mChildren)
+    for(boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren)
     {
-      result += child.getNumberOfNodes();
+      result += child->getNumberOfNodes();
     }
     return result;
   }
-  
+
+  bool HierarchicalShapeModelNode::isReference(unsigned int& pReferenceTo)
+  {
+      pReferenceTo = mReferenceTo;
+      return mIsReference;
+  }
+
+  std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> HierarchicalShapeModelNode::getChildren()
+  {
+    return mChildren;
+  }
+
+  void HierarchicalShapeModelNode::setReferencedNode(boost::shared_ptr<HierarchicalShapeModelNode> pReferencedNode)
+  {
+    if (mSceneObject != pReferencedNode->getSceneObjectType())
+        throw std::runtime_error("Node with type " + mSceneObject + " is trying to reference a node of different type " + pReferencedNode->getSceneObjectType());
+    mReferencedNode = pReferencedNode;
+  }
+
+  void HierarchicalShapeModelNode::resetVisit()
+  {
+    mWasVisited = false;
+    for (boost::shared_ptr<HierarchicalShapeModelNode> child: mChildren) child->resetVisit();
+  }
 }

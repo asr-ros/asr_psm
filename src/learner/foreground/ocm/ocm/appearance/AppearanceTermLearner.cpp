@@ -61,6 +61,8 @@ namespace ProbabilisticSceneRecognition {
   
   void AppearanceTermLearner::learnTable(boost::shared_ptr<OcmModel> pModel, boost::shared_ptr<OcmTree> pNode, unsigned int& pSlot)
   {
+    if (pNode->mIsReference) return;    // do not consider references for the appearance term, only important for shape
+
     // Iterate over all observations for the given node and count
     BOOST_FOREACH(boost::shared_ptr<ISM::Object> object, pNode->mObjectSet->objects)
       pModel->mAppearanceTable->add(pSlot, object->type);

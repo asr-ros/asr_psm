@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <visualization/psm/ProbabilisticSceneVisualization.h>
 
 #include <trainer/PSMTrainer.h>
+#include <trainer/FullyMeshedTrainer.h>
+#include <trainer/TopologyTreeTrainer.h>
+#include <topology_creator/TopologyCreator.h>
+
 
 // Local includes
 #include "learner/foreground/ForegroundSceneLearner.h"
@@ -38,8 +42,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "learner/foreground/ocm/ocm/OcmSceneObjectLearner.h"
 
-#include <ISM/common_type/Tracks.hpp>
-#include <ISM/common_type/Track.hpp>
+#include <learner/foreground/ocm/combinatorial_optimization/CombinatorialTrainer.h>
+
 
 namespace ProbabilisticSceneRecognition {
   

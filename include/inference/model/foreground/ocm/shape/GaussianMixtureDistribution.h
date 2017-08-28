@@ -105,6 +105,6 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The gaussian kernels (and weights) forming the gaussian mixture distribution.
      */
-    std::vector<GaussianKernel> mKernels;
+    std::vector<PSMInference::GaussianKernel> mKernels;
   };
 }

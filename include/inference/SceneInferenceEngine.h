@@ -143,7 +143,7 @@ namespace ProbabilisticSceneRecognition {
      * A buffer for storing evidences.
      */
     std::queue<boost::shared_ptr<asr_msgs::AsrObject> > mEvidenceBuffer;
-    
+   
     /**
      * A transformer for objects into the target coordinate frame.
      */

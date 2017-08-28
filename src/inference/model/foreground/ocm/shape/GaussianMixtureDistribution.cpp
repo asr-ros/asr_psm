@@ -35,12 +35,12 @@ namespace ProbabilisticSceneRecognition {
     {
       // Only access the 'distribution' child nodes.
       if(!std::strcmp(v.first.c_str(), "kernel"))
-	mKernels.push_back(GaussianKernel(mDimension, v.second));
+    mKernels.push_back(PSMInference::GaussianKernel(mDimension, v.second));
     }
     
     // Sum up all mixture weights.
     double sum = 0.0;
-    BOOST_FOREACH(GaussianKernel kernel, mKernels)
+    BOOST_FOREACH(PSMInference::GaussianKernel kernel, mKernels)
       sum += kernel.getWeight();
     
     // Check, if the mixture weights summed up before are one.
@@ -51,7 +51,7 @@ namespace ProbabilisticSceneRecognition {
   void GaussianMixtureDistribution::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> pVisualizer)
   {
     // Iterate over all gaussian kernels and add them to the visualizer.
-    for(GaussianKernel kernel : mKernels)
+    for(PSMInference::GaussianKernel kernel : mKernels)
       kernel.initializeVisualizer(pVisualizer);
   }
   
@@ -64,7 +64,7 @@ namespace ProbabilisticSceneRecognition {
     
     // Marginalize over all kernels to get the probability.
     // Normalization is already done by the mixture weights in the kernel.
-    BOOST_FOREACH(GaussianKernel kernel, mKernels)
+    BOOST_FOREACH(PSMInference::GaussianKernel kernel, mKernels)
       result += kernel.evaluate(evidence);
 
     // The result is a marginalisation over all gaussian kernels. 
@@ -78,7 +78,7 @@ namespace ProbabilisticSceneRecognition {
     mVisualizer->resetCertainty();
     
     // Iterate over all kernels and take the best score.
-    for(GaussianKernel kernel : mKernels)
+    for(PSMInference::GaussianKernel kernel : mKernels)
       kernel.visualize(mVisualizer, getVectorFromObject(pPose));
   }
   

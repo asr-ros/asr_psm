@@ -1,6 +1,6 @@
 /**
 
-Copyright (c) 2016, Braun Kai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
+Copyright (c) 2017, Braun Kai, Gaßner Nikolai, Gehrung Joachim, Heizmann Heinrich, Meißner Pascal
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <ISM/common_type/Pose.hpp>
 #include <ISM/common_type/Object.hpp>
 
+#include "inference/model/foreground/ocm/shape/ConditionalProbability.h"
+
+
 namespace ProbabilisticSceneRecognition {
   
   /**
@@ -50,7 +53,7 @@ namespace ProbabilisticSceneRecognition {
     * 
     * @param pPt Data structure for performing XML operations.
     */
-    HierarchicalShapeModelNode(boost::property_tree::ptree& pPt);
+    HierarchicalShapeModelNode(boost::property_tree::ptree& pPt, unsigned int& pID);
     
     /**
     * Destructor.
@@ -62,8 +65,8 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pPt Data structure for performing XML operations.
      */
-    void load(boost::property_tree::ptree& pPt);
-    
+    void load(boost::property_tree::ptree& pPt, unsigned int& pID);  
+ 
     /**
      * Initializes the visualization mechanism.
      * 
@@ -85,9 +88,11 @@ namespace ProbabilisticSceneRecognition {
      * @param pAssignments Assignments of parts to slots.
      * @param pSlotId The id of the slot this node is associated with.
      * @param pCut True, if a zero-object was assigned to a direct parent node.
+     * @param pConditionalProbabilities List of conditional probabilities associated with each slot.
      * @return Probability as determined by this subtree the hierarchical shape model.
      */
-    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut);
+    double calculateProbabilityForHypothesis(std::vector<ISM::Object> pEvidenceList, std::vector<unsigned int> pAssignments, unsigned int& pSlotId, bool pCut,
+			std::vector<boost::shared_ptr<ConditionalProbability>>& pConditionalProbabilities);
     
     /**
      * Update the visualizers based on the evidence.
@@ -100,7 +105,43 @@ namespace ProbabilisticSceneRecognition {
      * Return the number of nodes in the OCM.
      */
     unsigned int getNumberOfNodes();
-    
+
+    /**
+     * Return whether the node is a reference to another.
+     * @param pReferenceTo  the ID of the node this is a reference to or its own ID (non-reference nodes reference themselves).
+     * @return whether the node is a reference to another.
+     */
+    bool isReference(unsigned int& pReferenceTo);
+
+    /**
+     * Get the node's child nodes.
+     * @return the node's children.
+     */
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> getChildren();
+
+    /**
+     * set the actually referenced node.
+     * @param pReferencedNode   the node that this one actually references, if it is a reference.
+     */
+    void setReferencedNode(boost::shared_ptr<HierarchicalShapeModelNode> pReferencedNode);
+
+    /**
+     * set the node to unvisited.
+     */
+    void resetVisit();
+
+    /**
+     * get the type of the object that is represented by this node.
+     * @return  the type of the object that is represented by this node.
+     */
+    std::string getSceneObjectType() { return mSceneObject; }
+
+    /**
+     * set the type of the node's parent.
+     * @param pParentObject the type of the node's parent.
+     */
+    void setParentObjectType(const std::string& pParentObject) { mParentObject = pParentObject; }
+
   private:
     
     /**
@@ -141,11 +182,38 @@ namespace ProbabilisticSceneRecognition {
     /**
      * The chrildren of this node.
      */
-    std::vector<HierarchicalShapeModelNode> mChildren;
+    std::vector<boost::shared_ptr<HierarchicalShapeModelNode>> mChildren;
     
     /**
      * Coordinates the secondary scene object visualizers.
      */
     boost::shared_ptr<Visualization::ProbabilisticSecondarySceneObjectVisualization> mVisualizer;
+
+    /**
+     * Whether this node is only a reference to another one.
+     */
+    bool mIsReference;
+    /**
+     * The ID of the node this one is a reference to, if it is.
+     * If node is not a reference, ID of the node, which the references to it use
+     * (a non-reference references itself)
+     */
+    unsigned int mReferenceTo;
+
+    /**
+     * The actual node this one is a reference to, if it is, null otherwise.
+     */
+    boost::shared_ptr<HierarchicalShapeModelNode> mReferencedNode;
+
+    /**
+     * Whether this node was visited through a not cut path before
+     * (that is a path through the tree that does not contain an assignment to the null object)
+     */
+    bool mWasVisited;
+
+    /**
+     * The type of the parent object of this node.
+     */
+    std::string mParentObject;
   };
 }

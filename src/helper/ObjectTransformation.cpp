@@ -35,6 +35,7 @@ namespace ProbabilisticSceneRecognition {
 
   void ObjectTransformation::transform(const boost::shared_ptr<asr_msgs::AsrObject>& pObject)
   {
+      if (mBaseFrame == pObject->header.frame_id) return;   // shortcut when both frames are equal.
 
     // Create everything required for the transformation
     geometry_msgs::PoseStamped input, output;

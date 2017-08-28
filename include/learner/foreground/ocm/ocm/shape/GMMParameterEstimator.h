@@ -37,11 +37,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <opencv2/opencv.hpp>
 
+#include <visualization/gnuplot/GMMGnuplotVisualization.h>
+
 // Local includes.
 #include "learner/foreground/ocm/ocm/shape/GaussianMixtureModel.h"
 
 #include "helper/MathHelper.h"
-#include "helper/PlotHelper.h"
 
 namespace ProbabilisticSceneRecognition {
    
@@ -130,14 +131,6 @@ namespace ProbabilisticSceneRecognition {
                     GaussianMixtureModel& model,
                     bool useGenericMatrices = true);
 
-    /**
-     * Writes the data to the gnuplot file with the given name and displays the gnuplot as a histogram
-     * @param filename  Name of the gnuplot file to write into.
-     * @param data      Data to be written. Interpreted as buckets over [-pi,pi].
-     * @param rotaxis   Name of the axis around which the orientation is given.
-     */
-    void plotOrientationHistogram(const std::string& filename, const std::vector<std::pair<double, double>> data, const std::string& rotaxis);
-    
     /**
      * The number of dimensions of the learning samples.
      */

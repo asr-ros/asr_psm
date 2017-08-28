@@ -24,7 +24,7 @@ namespace ProbabilisticSceneRecognition {
     ros::NodeHandle mNodeHandle("~");
     
     // Try to get the timeout for object evidences.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/evidence_timeout", mTimeout))
+    if(!mNodeHandle.getParam("evidence_timeout", mTimeout))
       throw std::runtime_error("Please specify parameter " + std::string("evidence_timeout") + " when starting this node.");
   }
   

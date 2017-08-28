@@ -33,7 +33,7 @@ namespace ProbabilisticSceneRecognition {
     // Load hierarchical shape model
     mHsm.load(pPt);
   }
-  
+
   void ShapeTermEvaluator::initializeVisualizer(boost::shared_ptr<Visualization::ProbabilisticPrimarySceneObjectVisualization> mSuperior)
   {
     // Forward visualizer to hierarchical shape model.

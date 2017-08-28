@@ -33,7 +33,7 @@ namespace ProbabilisticSceneRecognition {
     
     // The name of the algorithm that should be used for the inference.
     std::string inferenceAlgorithm;
-    
+
     // The frame to transform the object poses to.
     // Also the coordinate frame in which the visualization should take place.
     std::string baseFrameId;
@@ -43,43 +43,43 @@ namespace ProbabilisticSceneRecognition {
     
     // This factor determines the radii of the covariance ellipse.
     double sigmaMultiplicator;
-    
+
     // Try to get the clearance for plotting the scene probabilties.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/plot", showPlot))
+    if(!mNodeHandle.getParam("plot", showPlot))
       throw std::runtime_error("Please specify parameter " + std::string("plot") + " when starting this node.");
     
     // Try to get the name of the topic to listen to for new evidences.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/object_topic", pPbdObjectTopic))
+    if(!mNodeHandle.getParam("object_topic", pPbdObjectTopic))
       throw std::runtime_error("Please specify parameter " + std::string("object_topic") + " when starting this node.");
     
     // Try to get the name of the topic to listen to for scene graph messages.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/scene_graph_topic", pPbdSceneGraphTopic))
+    if(!mNodeHandle.getParam("scene_graph_topic", pPbdSceneGraphTopic))
       throw std::runtime_error("Please specify parameter " + std::string("scene_graph_topic") + " when starting this node.");
     
     // Try to get the file name of the XML file from which the scene model should be read.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/scene_model_filename", sceneModelFileName))
+    if(!mNodeHandle.getParam("scene_model_filename", sceneModelFileName))
       throw std::runtime_error("Please specify parameter " + std::string("scene_model_filename") + " when starting this node.");
 
     // Try to get the name of the scene to be published.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/base_frame_id", baseFrameId))
+    if(!mNodeHandle.getParam("base_frame_id", baseFrameId))
        throw std::runtime_error("Please specify parameter " + std::string("base_frame_id") + " when starting this node.");
     
     // Try to get the visualization scale factor.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/scale_factor", scaleFactor))
+    if(!mNodeHandle.getParam("scale_factor", scaleFactor))
        throw std::runtime_error("Please specify parameter " + std::string("scale_factor") + " when starting this node.");
     
     // Try to get the sigma multiplicator.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/sigma_multiplicator", sigmaMultiplicator))
+    if(!mNodeHandle.getParam("sigma_multiplicator", sigmaMultiplicator))
        throw std::runtime_error("Please specify parameter " + std::string("sigma_multiplicator") + " when starting this node.");
     
     // Try to get the targeting help flag.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/targeting_help", mTargetingHelp))
+    if(!mNodeHandle.getParam("targeting_help", mTargetingHelp))
        throw std::runtime_error("Please specify parameter " + std::string("targeting_help") + " when starting this node.");
     
     // Try to get the name of the inference algorithm.
-    if(!mNodeHandle.getParam("/js_probabilistic_scene_inference_engine/inference_algorithm", inferenceAlgorithm))
+    if(!mNodeHandle.getParam("inference_algorithm", inferenceAlgorithm))
        throw std::runtime_error("Please specify parameter " + std::string("inference_algorithm") + " when starting this node.");
-    
+
     // Initialize the transformations of objects into the given frame.
     mObjectTransform.setBaseFrame(baseFrameId);
     
@@ -119,10 +119,10 @@ namespace ProbabilisticSceneRecognition {
       
       // Status information for the user.
       ROS_INFO_STREAM("Object of type '" << evidence->type << "' found.");
-      
+
       try{
 	// Try to transform evidence into target coordinate system.
-	mObjectTransform.transform(evidence);
+    mObjectTransform.transform(evidence);
       }
       catch(std::exception& exception){
 	// No transformation found, dropping object!
@@ -143,12 +143,12 @@ namespace ProbabilisticSceneRecognition {
     // Get the results and show them.
     std::vector<SceneIdentifier> pSceneList;
     mModel.getSceneListWithProbabilities(pSceneList);
-    
+
     printf("===========================================");
     printf("This are the scene probabilities:\n");
     for(SceneIdentifier i : pSceneList)
       printf(" -> %s (%s): %f (%f)\n", i.mDescription.c_str(), i.mType.c_str(), i.mLikelihood, i.mPriori);
-    
+
     // Show plot of scene probabilities?
     if(showPlot)
     {
@@ -165,7 +165,7 @@ namespace ProbabilisticSceneRecognition {
       mVisGnuplot.updateBarChartValues(currentData);
       mVisGnuplot.sendBarChartToGnuplot(true);
     }
-    
+
     /********************************************************************
      * Visualize the scene.
      ********************************************************************/
@@ -176,7 +176,7 @@ namespace ProbabilisticSceneRecognition {
     else
       mVisualizer->drawInInferenceMode();
   }
-  
+
   void SceneInferenceEngine::executeInStackMode()
   {
     // Try to get the bag path. We read it here so it doesn't throw any errors in online mode.

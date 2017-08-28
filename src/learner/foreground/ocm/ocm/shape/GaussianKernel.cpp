@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "learner/foreground/ocm/ocm/shape/GaussianKernel.h"
 
 namespace ProbabilisticSceneRecognition {
+
+namespace PSMLearner {
  
   GaussianKernel::GaussianKernel()
   {
@@ -79,4 +81,6 @@ namespace ProbabilisticSceneRecognition {
     pPt.add_child("kernel", subtree);
   }
   
+}
+
 }

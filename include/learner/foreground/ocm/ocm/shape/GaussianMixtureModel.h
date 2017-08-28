@@ -55,7 +55,7 @@ namespace ProbabilisticSceneRecognition {
      * 
      * @param pKernel The kernel to add.
      */
-    void addKernel(const GaussianKernel& pKernel);
+    void addKernel(const PSMLearner::GaussianKernel& pKernel);
     
     /**
      * Normalizes the weights to sum up to one. This is necessary after removing duplicate kernels.
@@ -88,13 +88,13 @@ namespace ProbabilisticSceneRecognition {
      * returns the kernels of the GMM
      * @return  The kernels of the GMM
      */
-    std::vector<GaussianKernel> getKernels() const;
+    std::vector<PSMLearner::GaussianKernel> getKernels() const;
 
   private:
     
     /**
      * The gaussian kernels the GMM is made of.
      */
-    std::vector<GaussianKernel> mKernels;
+    std::vector<PSMLearner::GaussianKernel> mKernels;
   };
 }
