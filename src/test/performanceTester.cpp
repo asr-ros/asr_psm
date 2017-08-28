@@ -18,15 +18,6 @@
 #include <random>
 #include <algorithm>
 
-/* This program serves to test training and recognition performance of asr_psm.
- * Note that it does not generate test sets (for learning) and validation sets (for recognition)
- * on its own. Generate them using the standard combinatorial optimization launch file with quit_after_test_set_generation set to true
- * and the same parameters as below. Write the databases to asr_psm/data/test/performanceTestRessources/[ValidationSets/]demoRecording_X_Y00.sqlite
- * with X from objectCounts, Y from timestepCounts below.
- * Also note that training will, unless stopped earlier, perform 1000 runs while cycling through the different algorithms, so the comparably long
- * tests can be run mostly automated. Errors are tolerated and marked in the results, again to allow it to run without needing constant supervision.
- * The recognition tests have to be run one each, but they are also usually much quicker. */
-
 using boost::posix_time::ptime;
 using boost::posix_time::time_duration;
 using boost::filesystem::path;
@@ -339,6 +330,12 @@ struct PerformanceEvaluationResult
     unsigned int falseNegatives;
     double averageRecognitionRuntime;
     std::vector<std::pair<std::string, double>> recognitionRuntimes;
+    std::string getDescription()
+    {
+        std::stringstream out;
+        out << falsePositives << " false positives, " << falseNegatives << ", falseNegatives, " << averageRecognitionRuntime << "s average recognition runtime";
+        return out.str();
+    }
 };
 
 PerformanceEvaluationResult evaluate(const std::vector<ObjectSetPtr>& ts, bool valid, const std::string& patternName, const std::string& trainedScenePath)
@@ -452,7 +449,8 @@ void testPerformance()
 
             PerformanceEvaluationResult validER = evaluate(validSets, true, sceneName, trainedScenePath);
             PerformanceEvaluationResult invalidER = evaluate(invalidSets, false, sceneName, trainedScenePath);
-            EvaluationResult er;
+
+            PerformanceEvaluationResult er;
             er.falseNegatives = validER.falseNegatives + invalidER.falseNegatives;
             er.falsePositives = validER.falsePositives + invalidER.falsePositives;
 
@@ -509,6 +507,14 @@ void testPerformance()
     writeFile(outputPath, "runtimes.csv", os);
 }
 
+/** This program serves to test training and recognition performance of asr_psm.
+ * Note that it does not generate test sets (for learning) and validation sets (for recognition)
+ * on its own. Generate them using the standard combinatorial optimization launch file with quit_after_test_set_generation set to true
+ * and the same parameters as below. Write the databases to asr_psm/data/test/performanceTestRessources/[ValidationSets/]demoRecording_X_Y00.sqlite
+ * with X from objectCounts, Y from timestepCounts below.
+ * Also note that training will, unless stopped earlier, perform 1000 runs while cycling through the different algorithms, so the comparably long
+ * tests can be run mostly automated. Errors are tolerated and marked in the results, again to allow it to run without needing constant supervision.
+ * The recognition tests have to be run one each, but they are also usually much quicker. */
 int main(int argc, char *argv[])
 {
     std::string packagePath = ros::package::getPath("asr_psm");
