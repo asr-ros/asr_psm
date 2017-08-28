@@ -205,10 +205,10 @@ private:
     boost::shared_ptr<SceneModel::Topology> mBestOptimizedTopology;
 
     /**
-     * The best star topology. This pointer only gets set when it was requested via parameter optimize_star_topologies
+     * The worst star topology. This pointer only gets set when it was requested via parameter get_worst_star_topology
      * that only star topologies are compared (for testing purposes).
      */
-    boost::shared_ptr<SceneModel::Topology> mBestStarIfRequested;
+    boost::shared_ptr<SceneModel::Topology> mWorstStarIfRequested;
 
     /**
      * Probability that, in HillClimbing, a random restart is performed. Set to 0 for all other algorithms.

@@ -8,7 +8,7 @@
     <!-- The topic to get the the AsrSceneGraph messages from. -->
     <param name="scene_graph_topic" value="/scene_graphs"/>
     <!-- Path to the file containing the probabilistic scene model.-->
-    <param name="scene_model_filename" value="$(find asr_psm)/data/example_test_fullymeshed.xml"/>
+    <param name="scene_model_filename" value="$(find asr_psm)/data/advertisement.xml"/>
     <!--The name of the frame the objects should be transformed to. -->
     <param name="base_frame_id" value="/PTU"/>
     <!-- The visualization is pretty small, this scale factor enlarges it. -->

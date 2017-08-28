@@ -143,21 +143,23 @@ std::vector<boost::shared_ptr<TestSet>> TestSetGenerator::loadTestSetsFromFile(c
     // compare ISM CombinatorialTrainer
     try
     {
+        std::vector<boost::shared_ptr<TestSet>> testSets;
+
         ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(pFilename));
         std::vector<std::string> patternNames = localTableHelper->getRecordedPatternNames();
         if (std::find(patternNames.begin(), patternNames.end(), mSceneId) == patternNames.end())
-            throw std::runtime_error("In TestSetGenerator::loadTestSetsFromFile(" + pFilename + "): scene id " + mSceneId + " is not a valid pattern in the database.");
+            ROS_INFO_STREAM("In TestSetGenerator::loadTestSetsFromFile(" << pFilename + "): scene id " << mSceneId << " is not a valid pattern in the database.");
+        else {
+            std::vector<ISM::ObjectSetPtr> loadedTestSets;
+            loadedTestSets = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
 
-        std::vector<ISM::ObjectSetPtr> loadedTestSets;
-        loadedTestSets = localTableHelper->getRecordedPattern(mSceneId)->objectSets;
-
-        std::vector<boost::shared_ptr<TestSet>> testSets;
-        for (ISM::ObjectSetPtr loadedTestSet: loadedTestSets)
-        {
-            boost::shared_ptr<TestSet> testSet(new TestSet());
-            for (ISM::ObjectPtr object: loadedTestSet->objects)
-                testSet->mObjectSet->insert(object);
-            testSets.push_back(testSet);
+            for (ISM::ObjectSetPtr loadedTestSet: loadedTestSets)
+            {
+                boost::shared_ptr<TestSet> testSet(new TestSet());
+                for (ISM::ObjectPtr object: loadedTestSet->objects)
+                    testSet->mObjectSet->insert(object);
+                testSets.push_back(testSet);
+            }
         }
         ROS_INFO_STREAM("Loaded " << testSets.size() << " test sets.");
 
@@ -177,7 +179,6 @@ void TestSetGenerator::writeTestSetsToFile(const std::string& pFilename, const s
         try
         {
             ISM::TableHelperPtr localTableHelper(new ISM::TableHelper(pFilename));
-            localTableHelper->dropTables();
             localTableHelper->createTablesIfNecessary();
             localTableHelper->insertRecordedPattern(mSceneId);
             for (boost::shared_ptr<TestSet> testSet: pTestSets)

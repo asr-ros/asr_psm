@@ -97,9 +97,8 @@ namespace ProbabilisticSceneRecognition {
         }
 
         initStarTopologies();
-        initStartingTopologies(numberOfStartingTopologies, startingTopologiesType);
 
-        // Initialize components od combinatorial optimization:
+        // Initialize components of combinatorial optimization:
 
         std::string costFunctionType;
         // Try to get the type of the cost function.
@@ -115,29 +114,35 @@ namespace ProbabilisticSceneRecognition {
 
         std::vector<boost::shared_ptr<SceneModel::Topology>> starTopologies = mTopologyManager->getStarTopologies();
         boost::shared_ptr<SceneModel::Topology> bestStar = starTopologies[0];
+        boost::shared_ptr<SceneModel::Topology> worstStar = starTopologies[0];
         mCostFunction->calculateCost(bestStar);
+        mCostFunction->calculateCost(worstStar);
         for (unsigned int i = 1; i < starTopologies.size(); i++)
         {
             boost::shared_ptr<SceneModel::Topology> star = starTopologies[i];
             mCostFunction->calculateCost(star);
             if (star->getCost() < bestStar->getCost())
                 bestStar = star;
+            if (star->getCost() > worstStar->getCost())
+                worstStar = star;
         }
         if (bestStar->getCost() < mBestOptimizedTopology->getCost())
             mBestOptimizedTopology = bestStar;
 
         ROS_INFO_STREAM("Found best topology from fully meshed and stars. Was " << mBestOptimizedTopology->mIdentifier << " with cost " << mBestOptimizedTopology->getCost());
 
-        bool optimizeStarTopologies;
-        // Try to get whether to optimize only the star topologies.
-        if(!mNodeHandle.getParam("optimize_star_topologies", optimizeStarTopologies))
-           throw std::runtime_error("Please specify parameter optimize_star_topologies when starting this node.");
+        bool getWorstStarTopology;
+        // Try to get whether to get the worst of the star topologies.
+        if(!mNodeHandle.getParam("get_worst_star_topology", getWorstStarTopology))
+           throw std::runtime_error("Please specify parameter get_worst_star_topology when starting this node.");
 
-        if (optimizeStarTopologies)
+        if (getWorstStarTopology)
         {
-            ROS_INFO_STREAM("Best star is " << bestStar->mIdentifier << " with cost " << bestStar->getCost());
-            mBestStarIfRequested = bestStar;
+            ROS_INFO_STREAM("Worst star is " << worstStar->mIdentifier << " with cost " << worstStar->getCost());
+            mWorstStarIfRequested = worstStar;
         }
+
+        initStartingTopologies(numberOfStartingTopologies, startingTopologiesType);
 
         std::string neighbourhoodFunctionType;
         // Try to get the type of the neighbourhood function.
@@ -157,8 +162,8 @@ namespace ProbabilisticSceneRecognition {
 
     boost::shared_ptr<SceneModel::Topology> CombinatorialOptimizer::runOptimization()
     {
-        if (mBestStarIfRequested)
-            return mBestStarIfRequested;
+        if (mWorstStarIfRequested)
+            return mWorstStarIfRequested;
 
         mPrintHelper.printAsHeader("Starting optimization.");
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();   // Get the start time.
@@ -335,11 +340,14 @@ namespace ProbabilisticSceneRecognition {
 
         if (pStartingTopologiesType == "BestStarOrFullyMeshed")
         {
+            ROS_INFO_STREAM("Using best star or fully meshed as starting topology.");
             if (pNumberOfStartingTopologies > 1)
             {
                 ROS_INFO_STREAM("There is only one best topology from stars and fully meshed, which will be used as the single starting topology ");
                 ROS_INFO_STREAM("(change number_of_starting_topologies to 1 or start_topologies to something other than BestStarOrFullyMeshed)");
             }
+            if (!mBestOptimizedTopology)
+                throw std::runtime_error("In CombinatorialOptimizer::initStartingTopologies(): no valid topology found.");
             // use the best topology found in setting up the optimization:
             mStartingTopologies.push_back(mBestOptimizedTopology);
         }

@@ -217,7 +217,7 @@ void TopologyEvaluator::xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopol
         }
         else if (mXmlOutput == "file")
         {
-            std::string xmlFileName = mXmlFilePath + "partial_model" + boost::lexical_cast<std::string>(mRunNumber);
+            std::string xmlFileName = mXmlFilePath + "partial_model_" + boost::lexical_cast<std::string>(mRunNumber) + ".xml";
             write_xml(xmlFileName, extendedModel);
         }
         else throw std::runtime_error("Parameter xml_output has invalid value " + mXmlOutput);

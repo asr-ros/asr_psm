@@ -33,18 +33,22 @@ namespace ProbabilisticSceneRecognition {
         unsigned int size = mEvaluator->getValidTestSets().size() + mEvaluator->getInvalidTestSets().size();
         for (unsigned int counter = 0; counter < size; counter++)
         {
+            minValidProbability = 1.0;
+            maxInvalidProbability = 0.0;
+
             unsigned int minValidIndex = mEvaluator->getValidTestSets().size();
             for (unsigned int i = 0; i < mEvaluator->getValidTestSets().size(); i++)
             {
                 double validProbability = mEvaluator->getValidTestSets()[i]->getFullyMeshedProbability();
                 if (validProbability <= minValidProbability)
                 {
+                    ROS_INFO_STREAM("Found smaller valid probability " << validProbability);
                     minValidProbability = validProbability;
                     minValidIndex = i;
                 }
             }
             if (minValidIndex == mEvaluator->getValidTestSets().size())
-                throw std::runtime_error("In CombinatorialTrainer::initFullyMeshedTopology(): No minimum valid probability could be found.");
+                throw std::runtime_error("In TestSetSelection::removeUnusableTestSets(): No minimum valid probability could be found.");
 
             unsigned int maxInvalidIndex = mEvaluator->getInvalidTestSets().size();
             for (unsigned int i = 0; i < mEvaluator->getInvalidTestSets().size(); i++) {
@@ -56,7 +60,7 @@ namespace ProbabilisticSceneRecognition {
                 }
             }
             if (maxInvalidIndex == mEvaluator->getInvalidTestSets().size())
-                throw std::runtime_error("In CombinatorialTrainer::initFullyMeshedTopology(): No maximum invalid probability could be found.");
+                throw std::runtime_error("In TestSetSelection::removeUnusableTestSets(): No maximum invalid probability could be found.");
 
             mPrintHelper.printAsHeader("Minimum valid probability: " + boost::lexical_cast<std::string>(minValidProbability) + ", Maximum invalid probability: " + boost::lexical_cast<std::string>(maxInvalidProbability));
 
@@ -93,6 +97,7 @@ namespace ProbabilisticSceneRecognition {
                     ROS_INFO_STREAM("Ratio of invalid probabilities worse. Removing minimum valid probability.");
                     mEvaluator->eraseValidTestSet(minValidIndex);
                 }
+                ROS_INFO_STREAM("There are " << mEvaluator->getValidTestSets().size() << " valid and " << mEvaluator->getInvalidTestSets().size() << " invalid test sets left.");
             }
             else
             {

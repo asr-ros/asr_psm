@@ -246,7 +246,7 @@ target_link_libraries(inference_batch
   
 )
 
-add_executable(performanceTest src/performanceTester.cpp
+add_executable(performanceTest src/test/performanceTester.cpp
 			     src/learner/SceneLearningEngine.cpp
 			     src/learner/SceneModelLearner.cpp src/learner/SceneLearner.cpp
 			     
@@ -284,9 +284,10 @@ target_link_libraries(performanceTest
   ism
 )
 
-add_executable(scene_example_generator src/scene_example_generator.cpp)
-target_link_libraries(scene_example_generator
+add_executable(validator src/test/validator.cpp)
+target_link_libraries(validator
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ism
+  psm_inference
 )

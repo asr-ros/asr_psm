@@ -39,12 +39,14 @@ TopologyManager::TopologyManager(std::vector<boost::shared_ptr<ISM::ObjectSet>> 
     if(!nodeHandle.getParam("revisit_topologies", mRevisitTopologies))
         throw std::runtime_error("Please specify parameter revisit_topologies when starting this node.");
 
-    if (mHistoryOutput == "svg") mSVGHelper.reset(new ISM::SVGHelper(mHistoryFilePath));
+    if (mHistoryOutput == "svg")
+        mSVGHelper.reset(new ISM::SVGHelper(mHistoryFilePath));
 }
 
 TopologyManager::~TopologyManager()
 {
-    if (mHistoryOutput == "svg") mSVGHelper->writeResult();
+    if (mHistoryOutput == "svg")
+        mSVGHelper->writeResult();
 }
 
 boost::shared_ptr<SceneModel::Topology> TopologyManager::getNextNeighbour()
@@ -244,6 +246,7 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
             // Print History:
             documentation << divider.str() << "History of optimization run " << pRunNumber << ":" << std::endl << divider.str();
 
+            unsigned int numberOfVisitedTopologies = 0;
             for (unsigned int i = 0; i < mHistory.size(); i++)
             {
                 std::string padding = "";
@@ -259,6 +262,7 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
                     std::pair<boost::shared_ptr<SceneModel::Topology>, bool> topologyPair = step[j];
                     boost::shared_ptr<SceneModel::Topology> topology = topologyPair.first;
                     documentation << topology->mIdentifier << ": ";
+                    numberOfVisitedTopologies++;
                     if (topology->isEvaluated())
                     {
                         documentation << topology->getFalsePositives() << " false positives, " << topology->getFalseNegatives() << " false negatives, " <<  topology->getAverageRecognitionRuntime() << "s average recognition runtime.";
@@ -274,7 +278,11 @@ void TopologyManager::printHistory(unsigned int pRunNumber)
                     documentation << std::endl;
                 }
             }
-            documentation << divider.str() << "best cost overall: " << overallBestCost  << std::endl << divider.str();
+            documentation << divider.str();
+            documentation << "Visited " << numberOfVisitedTopologies << " topologies  in " << mHistory.size() << " steps." << std::endl;
+            documentation << "Best topology overall: " << std::endl;
+            documentation << mHistory[bestCostIndices.first][bestCostIndices.second].first->mIdentifier << ": ";
+            documentation << " cost: "  << overallBestCost << std::endl << divider.str();
 
             if (mHistoryOutput == "screen") // print to console:
             {

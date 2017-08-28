@@ -158,11 +158,11 @@ namespace ProbabilisticSceneRecognition {
       double slotProduct = 1.0;
       for (boost::shared_ptr<ConditionalProbability> cP: conditionalProbabilities) {
         double slotProbability = cP->getProbability();
-        ROS_DEBUG_STREAM("Parent probabilities: " << cP->printParentProbabilities() << " => " << slotProbability);
+        //ROS_DEBUG_STREAM("Parent probabilities: " << cP->printParentProbabilities() << " => " << slotProbability);
         slotProduct *= slotProbability;
       }
       // keep the old result around for comparison:
-      ROS_DEBUG_STREAM("Product of all probabilities: " << result << ". Product of conditional probabilities: " << slotProduct);
+      //ROS_DEBUG_STREAM("Product of all probabilities: " << result << ". Product of conditional probabilities: " << slotProduct);
 
       result = slotProduct; // overwrite it for output.
       
