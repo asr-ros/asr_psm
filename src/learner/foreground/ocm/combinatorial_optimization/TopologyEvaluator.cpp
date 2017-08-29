@@ -211,7 +211,7 @@ void TopologyEvaluator::xmlOutput(boost::shared_ptr<SceneModel::Topology> pTopol
 
         if (mXmlOutput == "screen")
         {
-            std::cout << "Partial model in TopologyEvaluator run " << mRunNumber << ":" << std::cout;
+            std::cout << "Partial model in TopologyEvaluator run " << mRunNumber << ":" << std::endl;
             write_xml(std::cout, extendedModel);
             std::cout << std::endl;
         }
