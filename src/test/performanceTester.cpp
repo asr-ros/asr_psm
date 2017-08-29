@@ -52,8 +52,8 @@ std::string inferenceAlgorithm = "maximum";
 std::string treeAlgorithm = "fullymeshed";
 std::string optimizationAlgorithm = "RecordHunt";
 
-bool train = true;
-bool test  = true; // recognition runtime
+bool train = false;
+bool test  = !train; // recognition runtime
 
 double scale, sigma;
 std::string frameId;

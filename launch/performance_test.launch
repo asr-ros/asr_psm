@@ -1,5 +1,0 @@
-<!--  -->
-<launch>
-  <node name="js_probabilistic_scene_model_performance_test" pkg="asr_psm" type="performanceTest" output="screen">
-  </node>
-</launch>

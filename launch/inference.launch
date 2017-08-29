@@ -1,6 +1,6 @@
 <!-- Launches the inference engine for probabilistic scene recognition. Incoming AsrObject messages are being processed and the results used for scene recognition. -->
 <launch>
-  <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" output="screen">
+  <node name="js_probabilistic_scene_inference_engine" pkg="asr_psm" type="inference" launch-prefix="xterm -sl 10000 -maximized -e gdb -ex run --args">
     <!-- Set true, to show the gnuplot bar diagram of the scene probabilities. -->
     <param name="plot" value="true"/>
     <!-- The topic to get the the AsrObject messages from. -->
