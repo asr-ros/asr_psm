@@ -85,7 +85,7 @@ namespace ProbabilisticSceneRecognition {
 	
 	// If no learner was found, create a new one.
 	if(!isExisting) {
-	  mSceneObjectLearners.push_back(boost::shared_ptr<SceneObjectLearner>(new OcmSceneObjectLearner(type)));
+      mSceneObjectLearners.push_back(boost::shared_ptr<SceneObjectLearner>(new OcmSceneObjectLearner(type, mSceneName)));
       types.push_back(type);
 	  ROS_INFO_STREAM("Found a new scene object of type '" << type << "' in scene '" << mSceneName << "'.");
 	}

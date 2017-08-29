@@ -23,6 +23,20 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <param name="intermediate_results" value="false"/>
     <!-- Set true to add timestamps to filename. -->
     <param name="timestamps" value="false"/>
+    
+    <param name="orientation_plot_path" value="UNDEFINED"/>
+    <!-- Max angle deviation for the tree generation. -->
+    <param name="max_angle_deviation" value="45"/>
+    <!--The name of the frame the objects should be transformed to. -->
+    <param name="base_frame_id" value="/PTU"/>
+    <!-- The visualization is pretty small, this scale factor enlarges it. -->
+    <param name="scale_factor" value="1.0"/>
+    <!-- This factor determines the multiple of the standard deviation. -->
+    <param name="sigma_multiplicator" value="3.0"/>
+    
+    <!-- The following parameters (kernels_min, kernels_max, runs_per_kernel, synthetic_samples, interval_position, interval_orientation, attempts_per_run)
+    can be specified for each scene separately by setting "<scene name>/<parameter name>". If unspecified, the default parameter (without added "<scene name>/") is used.
+    This can be done for each parameter separately. -->
     <!-- The minimal number of kernels. -->
     <param name="kernels_min" value="1"/>
     <!-- The maximal number of kernels. -->
@@ -36,15 +50,6 @@ Incoming AsrScenGraph messages are collected and being used for model learning. 
     <!-- The orientation interval for the sample relaxiation (in degrees). -->
     <param name="interval_orientation" value="10"/>
     <!-- Path to the orientation plot. Set to value "UNDEFINED", to prevent export of orientation plots. -->
-    <param name="orientation_plot_path" value="UNDEFINED"/>
-    <!-- Max angle deviation for the tree generation. -->
-    <param name="max_angle_deviation" value="45"/>
-    <!--The name of the frame the objects should be transformed to. -->
-    <param name="base_frame_id" value="/PTU"/>
-    <!-- The visualization is pretty small, this scale factor enlarges it. -->
-    <param name="scale_factor" value="1.0"/>
-    <!-- This factor determines the multiple of the standard deviation. -->
-    <param name="sigma_multiplicator" value="3.0"/>
     <!-- How often the learner attempts to learn a valid model in each run until it gives up and throws an error.
     After half the attempts, the learner switches from a generic to a less precise but more stable diagonal matrix as base for the covariance matrices.
     Use "2" if each matrix type should be tried exactly once and "1" if only a generic matrix should be used once. -->

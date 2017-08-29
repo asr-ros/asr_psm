@@ -57,8 +57,9 @@ namespace ProbabilisticSceneRecognition {
      * Constructor.
      * 
      * @param pSceneObjectType The type of the scene object.
+     * @param pSceneName The name of the scene.
      */
-    OcmSceneObjectLearner(std::string pSceneObjectType);
+    OcmSceneObjectLearner(std::string pSceneObjectType, std::string pSceneName = "");
     
     /**
      * Destructor.

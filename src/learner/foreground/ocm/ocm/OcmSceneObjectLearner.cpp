@@ -19,11 +19,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
 
-  OcmSceneObjectLearner::OcmSceneObjectLearner(std::string pSceneObjectType)
+  OcmSceneObjectLearner::OcmSceneObjectLearner(std::string pSceneObjectType, std::string pSceneName)
   : SceneObjectLearner(pSceneObjectType)
   {
     // Term learners should be specified here.
-    mTermLearners.push_back(boost::shared_ptr<TermLearner>(new ShapeTermLearner()));
+    mTermLearners.push_back(boost::shared_ptr<TermLearner>(new ShapeTermLearner(pSceneName)));
     mTermLearners.push_back(boost::shared_ptr<TermLearner>(new AppearanceTermLearner()));
     mTermLearners.push_back(boost::shared_ptr<TermLearner>(new OcclusionTermLearner()));
   }

@@ -44,8 +44,10 @@ namespace ProbabilisticSceneRecognition {
     
     /**
      * Constructor.
+     *
+     * @param pSceneName The name of the scene.
      */
-    ShapeTermLearner();
+    ShapeTermLearner(std::string pSceneName = "");
     
     /**
      * Destructor.
@@ -75,6 +77,28 @@ namespace ProbabilisticSceneRecognition {
      * @param pChild The child node to assign the learned pose to.
      */
     void learnNodePose(boost::shared_ptr<OcmTree> pParent, boost::shared_ptr<OcmTree> pChild);
+
+    /**
+     * Fetches the parameter from the ROS parameter server.
+     * First attempts to get the parameter specified for this scene (~/mSceneName/pParameterName),
+     * and, if that fails, for the private namespace (~/pParameterName).
+     * If that fails as well, a runtime_error is thrown.
+     *
+     * @param pParameterName    Name of the parameter to fetch.
+     * @param pParameter        Where to write the fetched value.
+     */
+    void getParameter(std::string pParameterName, double& pParameter);
+
+    /**
+     * Fetches the parameter from the ROS parameter server.
+     * First attempts to get the parameter specified for this scene (~/mSceneName/pParameterName),
+     * and, if that fails, for the private namespace (~/pParameterName).
+     * If that fails as well, a runtime_error is thrown.
+     *
+     * @param pParameterName    Name of the parameter to fetch.
+     * @param pParameter        Where to write the fetched value.
+     */
+    void getParameter(std::string pParameterName, int& pParameter);
     
   private:
     
@@ -112,5 +136,10 @@ namespace ProbabilisticSceneRecognition {
      * The number of attempts per run to find a valid model until the learner gives up.
      */
     int mAttemptsPerRun;
+
+    /**
+     * The name of the scene.
+     */
+    std::string mSceneName;
   };
 }

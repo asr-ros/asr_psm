@@ -19,9 +19,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace ProbabilisticSceneRecognition {
  
-  ShapeTermLearner::ShapeTermLearner()
+  ShapeTermLearner::ShapeTermLearner(std::string pSceneName)
   : TermLearner()
   , mPrivateNamespaceHandle("~")
+  , mSceneName(pSceneName)
   {    
   }
   
@@ -66,38 +67,29 @@ namespace ProbabilisticSceneRecognition {
       throw std::runtime_error("Shape term learner: the observation trajectories of child and parent node don't have the same length. This indicates a bug in the scene_graph_generator.");
     
     // Try to get the minmal number of kernels.
-    if(!mPrivateNamespaceHandle.getParam("kernels_min", mNumberKernelsMin))
-      throw std::runtime_error("Please specify parameter " + std::string("kernels_min") + " when starting this node.");
-    
+    getParameter("kernels_min", mNumberKernelsMin);
+
     // Try to get the maximal number of kernels.
-    if(!mPrivateNamespaceHandle.getParam("kernels_max", mNumberKernelsMax))
-      throw std::runtime_error("Please specify parameter " + std::string("kernels_max") + " when starting this node.");
-    
+    getParameter("kernels_max", mNumberKernelsMax);
+
     // Try to get the number of training runs per kernel.
-    if(!mPrivateNamespaceHandle.getParam("runs_per_kernel", mRunsPerKernel))
-      throw std::runtime_error("Please specify parameter " + std::string("runs_per_kernel") + " when starting this node.");
-    
+    getParameter("runs_per_kernel", mRunsPerKernel);
+
     // Try to get the number of synthetic samples per kernel.
-    if(!mPrivateNamespaceHandle.getParam("synthetic_samples", mNumberOfSyntheticSamples))
-      throw std::runtime_error("Please specify parameter " + std::string("synthetic_samples") + " when starting this node.");
-    
+    getParameter("synthetic_samples", mNumberOfSyntheticSamples);
+
     // Try to get sample relaxiation interval for the position.
-    if(!mPrivateNamespaceHandle.getParam("interval_position", mIntervalPosition))
-      throw std::runtime_error("Please specify parameter " + std::string("interval_position") + " when starting this node.");
-    
+    getParameter("interval_position", mIntervalPosition);
+
     // Try to get sample relaxiation interval for the orientation.
-    if(!mPrivateNamespaceHandle.getParam("interval_orientation", mIntervalOrientation))
-      throw std::runtime_error("Please specify parameter " + std::string("interval_orientation") + " when starting this node.");
-    
+    getParameter("interval_orientation", mIntervalOrientation);
+
     // Try to get the path for the orientation plot.
     if(!mPrivateNamespaceHandle.getParam("orientation_plot_path", mPathOrientationPlots))
       mPathOrientationPlots = "UNDEFINED";
 
     // Try to get the number of attempts per run.
-    if(!mPrivateNamespaceHandle.getParam("attempts_per_run", mAttemptsPerRun))
-      throw std::runtime_error("Please specify parameter " + std::string("attempts_per_run") + " when starting this node.");
-    
-    
+    getParameter("attempts_per_run", mAttemptsPerRun);
     
     // Create leaners for position and orientation.
     GMMParameterEstimator learnerPosition(3, mNumberKernelsMin, mNumberKernelsMax, mRunsPerKernel, mNumberOfSyntheticSamples, mIntervalPosition, mIntervalOrientation, mPathOrientationPlots, mAttemptsPerRun);
@@ -133,6 +125,26 @@ namespace ProbabilisticSceneRecognition {
     // Export orientation plots.
     if(mPathOrientationPlots.compare("UNDEFINED") != 0)
       learnerOrientation.plotModel();
+  }
+
+  void ShapeTermLearner::getParameter(std::string pParameterName, double& pParameter)
+  {
+      ros::NodeHandle localNamespaceHandle("~");
+      if (mSceneName != "")
+          localNamespaceHandle = ros::NodeHandle("~/" + mSceneName);
+      if(!localNamespaceHandle.getParam(pParameterName, pParameter))
+      {
+          ROS_DEBUG_STREAM("Could not find parameter " << "~/" << mSceneName << "/" << pParameterName << ". Using unspecific namespace instead.");
+          if (!mPrivateNamespaceHandle.getParam(pParameterName, pParameter))
+              throw std::runtime_error("Please specify parameter " + pParameterName + " when starting this node.");
+      }
+  }
+
+  void ShapeTermLearner::getParameter(std::string pParameterName, int& pParameter)
+  {
+      double tempParameter;
+      getParameter(pParameterName, tempParameter);
+      pParameter = (int) tempParameter;
   }
   
 }
