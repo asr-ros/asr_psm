@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 */
 
 #include "helper/MathHelper.h"
+#include <random>
 
 namespace ProbabilisticSceneRecognition {
  
